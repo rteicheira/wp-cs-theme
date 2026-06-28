@@ -9,8 +9,10 @@ A custom WordPress theme for russteicheira.net.
 
 ## Minimum Requirements
 
-WordPress: 6.2
-PHP: 7.4
+| Software | Version |
+| -- | -- |
+| WordPress | v. 6.2 |
+| PHP | v. 7.4 |
 
 ## Structure
 
