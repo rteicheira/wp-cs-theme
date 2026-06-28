@@ -16,7 +16,7 @@
 					if ( $i < count( $cats ) - 1 ) echo ', ';
 				}
 			}
-			echo ' &middot; ' . get_the_author();
+			echo ' &middot; ' . esc_html( get_the_author() );
 			?>
 		</div>
 		<h1 class="single-post__title"><?php the_title(); ?></h1>

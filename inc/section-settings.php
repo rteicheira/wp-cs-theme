@@ -40,11 +40,163 @@ function rt_sections_settings_init() {
 add_action( 'admin_init', 'rt_sections_settings_init' );
 
 
-// ── ADMIN STYLES (skills tag input) ───────────────────────────
+// ── ADMIN STYLES + SCRIPTS ────────────────────────────────────
 function rt_sections_admin_enqueue( $hook ) {
 	if ( 'toplevel_page_rt-sections' !== $hook ) {
 		return;
 	}
+	wp_enqueue_style( 'wp-components' );
+	wp_enqueue_script( 'wp-components' );
+	wp_enqueue_script( 'wp-element' );
+	wp_enqueue_script( 'wp-dom-ready' );
+	wp_enqueue_media();
+
+	wp_localize_script( 'wp-dom-ready', 'rtSectionsL10n', array(
+		'selectBgImage'     => __( 'Select Background Image', 'russteicheira' ),
+		'useAsBg'           => __( 'Use as Background',       'russteicheira' ),
+		'changeImage'       => __( 'Change Image',            'russteicheira' ),
+		'uploadSelectImage' => __( 'Upload / Select Image',   'russteicheira' ),
+	) );
+
+	$admin_js = <<<'ENDJS'
+wp.domReady( function () {
+    var el       = wp.element.createElement;
+    var useState = wp.element.useState;
+    var Popover  = wp.components.Popover;
+    var Picker   = wp.components.ColorPicker;
+
+    function ColorField( props ) {
+        var s1 = useState( false );
+        var isOpen = s1[0], setOpen = s1[1];
+        var s2 = useState( props.value || props.defaultColor || '' );
+        var color = s2[0], setColor = s2[1];
+
+        var swatchBg = color || props.defaultColor || 'repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/8px 8px';
+
+        return el( 'span', { style: { display: 'inline-flex', alignItems: 'center', gap: '8px', position: 'relative' } },
+            el( 'button', {
+                type: 'button',
+                onClick: function() { setOpen( !isOpen ); },
+                style: {
+                    width: '28px', height: '28px',
+                    background:   swatchBg,
+                    border:       '1px solid #8c8f94',
+                    borderRadius: '3px',
+                    cursor:       'pointer',
+                    padding:      0,
+                    flexShrink:   0,
+                },
+                'aria-label': 'Open color picker',
+            } ),
+            el( 'span', { style: { fontFamily: 'monospace', fontSize: '12px', color: '#50575e' } },
+                color || '— theme default'
+            ),
+            isOpen && el( Popover, {
+                onClose:      function() { setOpen( false ); },
+                placement:    'bottom-start',
+                focusOnMount: false,
+            },
+                el( 'div', { style: { padding: '8px 8px 0' } },
+                    el( Picker, {
+                        color:       color || props.defaultColor || '#000000',
+                        onChange:    function( c ) { setColor( c ); props.onChange( c ); },
+                        enableAlpha: true,
+                        copyFormat:  'hex',
+                    } )
+                ),
+                el( 'div', { style: { padding: '4px 8px 8px', borderTop: '1px solid #e2e4e7', marginTop: '4px', textAlign: 'right' } },
+                    el( 'button', {
+                        type: 'button',
+                        className: 'button button-small',
+                        onClick: function() { setColor( '' ); props.onChange( '' ); setOpen( false ); },
+                    }, 'Reset to default' )
+                )
+            )
+        );
+    }
+
+    document.querySelectorAll( '.rt-color-field' ).forEach( function ( wrap ) {
+        var input    = wrap.querySelector( '.rt-color-input' );
+        var mount    = wrap.querySelector( '.rt-color-picker-mount' );
+        var defColor = wrap.dataset.defaultColor || '';
+        var comp     = el( ColorField, {
+            value:        input.value,
+            defaultColor: defColor,
+            onChange:     function( c ) { input.value = c; },
+        } );
+        if ( wp.element.createRoot ) {
+            wp.element.createRoot( mount ).render( comp );
+        } else {
+            wp.element.render( comp, mount );
+        }
+    } );
+
+    ( function ( $ ) {
+        $( document ).on( 'click', '.rt-bg-upload', function ( e ) {
+            e.preventDefault();
+            var $wrap  = $( this ).closest( '.rt-bg-image' );
+            var $table = $( this ).closest( 'table' );
+            var frame  = wp.media( {
+                title:    rtSectionsL10n.selectBgImage,
+                button:   { text: rtSectionsL10n.useAsBg },
+                multiple: false,
+                library:  { type: 'image' }
+            } );
+            frame.on( 'select', function () {
+                var att   = frame.state().get( 'selection' ).first().toJSON();
+                var thumb = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
+                $wrap.find( '.rt-bg-id' ).val( att.id );
+                $wrap.find( '.rt-bg-preview img' ).attr( 'src', thumb );
+                $wrap.find( '.rt-bg-preview' ).show();
+                $wrap.find( '.rt-bg-upload' ).text( rtSectionsL10n.changeImage );
+                $wrap.find( '.rt-bg-remove' ).show();
+                $table.find( '.rt-bg-fixed-row' ).show();
+            } );
+            frame.open();
+        } );
+
+        $( document ).on( 'click', '.rt-bg-remove', function () {
+            var $wrap  = $( this ).closest( '.rt-bg-image' );
+            var $table = $( this ).closest( 'table' );
+            $wrap.find( '.rt-bg-id' ).val( '' );
+            $wrap.find( '.rt-bg-preview' ).hide();
+            $wrap.find( '.rt-bg-upload' ).text( rtSectionsL10n.uploadSelectImage );
+            $( this ).hide();
+            $table.find( '.rt-bg-fixed-row' ).hide();
+        } );
+    } )( jQuery );
+
+    document.querySelectorAll( '.rt-tab-nav .nav-tab' ).forEach( function ( tab ) {
+        tab.addEventListener( 'click', function ( e ) {
+            e.preventDefault();
+            var nav     = tab.closest( '.rt-tab-nav' );
+            var wrapper = tab.closest( '.rt-tab-wrapper' );
+            nav.querySelectorAll( '.nav-tab' ).forEach( function ( t ) {
+                t.classList.remove( 'nav-tab-active' );
+            } );
+            tab.classList.add( 'nav-tab-active' );
+            wrapper.querySelectorAll( '.rt-tab-panel' ).forEach( function ( panel ) {
+                panel.style.display = 'none';
+            } );
+            var target = document.getElementById( tab.dataset.tab );
+            if ( target ) { target.style.display = 'block'; }
+        } );
+    } );
+
+    var resetBtn = document.getElementById( 'rt-reset-colors' );
+    if ( resetBtn ) {
+        resetBtn.addEventListener( 'click', function () {
+            if ( ! confirm( 'Reset all section colors to theme defaults? This cannot be undone.' ) ) { return; }
+            document.querySelectorAll( '.rt-color-input' ).forEach( function ( input ) {
+                input.value = '';
+            } );
+            document.getElementById( 'submit' ).click();
+        } );
+    }
+} );
+ENDJS;
+	wp_add_inline_script( 'wp-components', $admin_js );
+
 	wp_add_inline_style( 'wp-admin', '
 .rt-tag-wrap {
     border: 1px solid #8c8f94;
@@ -122,9 +274,69 @@ function rt_sections_admin_enqueue( $hook ) {
 .rt-tag-dropdown li:hover,
 .rt-tag-dropdown li.rt-focused { background: #f0f6fc; color: #2271b1; }
 .rt-tag-dropdown li.rt-add-new { color: #2271b1; font-style: italic; }
+.rt-bg-preview img { max-width: 120px; height: 80px; object-fit: cover; border-radius: 4px; display: block; border: 1px solid #ddd; }
+.rt-color-picker-mount { display: inline-block; }
+.rt-tab-wrapper .nav-tab-wrapper { border-bottom: 1px solid #c3c4c7; }
+.rt-tab-panel { padding-top: 2px; }
+#rt-reset-colors:hover { background: #f0f6fc !important; }
 ' );
 }
 add_action( 'admin_enqueue_scripts', 'rt_sections_admin_enqueue' );
+
+
+// ── COLOR SANITIZER ───────────────────────────────────────────
+// Accepts hex3/6/8, rgb(), rgba(), hsl(), hsla() — all formats
+// the WP block editor ColorPicker can emit. Values are rebuilt
+// from validated numeric parts so CSS injection is impossible.
+function rt_sanitize_color( $color ) {
+	$color = trim( (string) $color );
+	if ( '' === $color ) {
+		return '';
+	}
+
+	// #rgb or #rrggbb
+	$hex = sanitize_hex_color( $color );
+	if ( $hex ) {
+		return $hex;
+	}
+
+	// #rrggbbaa (8-digit hex with alpha)
+	if ( preg_match( '/^#[0-9a-fA-F]{8}$/', $color ) ) {
+		return strtolower( $color );
+	}
+
+	// rgb(r, g, b) or rgba(r, g, b, a)
+	if ( preg_match(
+		'/^rgba?\(\s*(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\s*,\s*(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\s*,\s*(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(?:\s*,\s*(1|0|0?\.\d+))?\s*\)$/i',
+		$color, $m
+	) ) {
+		$r = intval( $m[1] );
+		$g = intval( $m[2] );
+		$b = intval( $m[3] );
+		if ( isset( $m[4] ) && '' !== $m[4] ) {
+			$a = round( min( 1.0, max( 0.0, (float) $m[4] ) ), 4 );
+			return sprintf( 'rgba(%d, %d, %d, %s)', $r, $g, $b, $a );
+		}
+		return sprintf( 'rgb(%d, %d, %d)', $r, $g, $b );
+	}
+
+	// hsl(h, s%, l%) or hsla(h, s%, l%, a)
+	if ( preg_match(
+		'/^hsla?\(\s*(360|3[0-5]\d|[12]\d{2}|[1-9]\d|\d)\s*,\s*(100|[1-9]?\d)%\s*,\s*(100|[1-9]?\d)%(?:\s*,\s*(1|0|0?\.\d+))?\s*\)$/i',
+		$color, $m
+	) ) {
+		$h = intval( $m[1] );
+		$s = intval( $m[2] );
+		$l = intval( $m[3] );
+		if ( isset( $m[4] ) && '' !== $m[4] ) {
+			$a = round( min( 1.0, max( 0.0, (float) $m[4] ) ), 4 );
+			return sprintf( 'hsla(%d, %d%%, %d%%, %s)', $h, $s, $l, $a );
+		}
+		return sprintf( 'hsl(%d, %d%%, %d%%)', $h, $s, $l );
+	}
+
+	return '';
+}
 
 
 // ── SANITIZE ──────────────────────────────────────────────────
@@ -172,23 +384,47 @@ function rt_sections_sanitize( $input ) {
 
 	// About — always enabled, has body + skills
 	$out['about'] = array(
-		'eyebrow' => isset( $input['about']['eyebrow'] ) ? sanitize_text_field( $input['about']['eyebrow'] ) : '',
-		'heading' => isset( $input['about']['heading'] ) ? sanitize_text_field( $input['about']['heading'] ) : '',
-		'body'    => isset( $input['about']['body'] )    ? wp_kses_post( $input['about']['body'] ) : '',
-		'skills'  => rt_sections_sanitize_skills(
+		'eyebrow'      => isset( $input['about']['eyebrow'] )      ? sanitize_text_field( $input['about']['eyebrow'] )      : '',
+		'heading'      => isset( $input['about']['heading'] )      ? sanitize_text_field( $input['about']['heading'] )      : '',
+		'body'         => isset( $input['about']['body'] )         ? wp_kses_post( $input['about']['body'] )                : '',
+		'skills'       => rt_sections_sanitize_skills(
 			isset( $input['about']['skills'] ) && is_array( $input['about']['skills'] )
 				? $input['about']['skills'] : array()
 		),
+		'bg_color'     => isset( $input['about']['bg_color'] )     ? rt_sanitize_color( $input['about']['bg_color'] )     : '',
+		'accent_color' => isset( $input['about']['accent_color'] ) ? rt_sanitize_color( $input['about']['accent_color'] ) : '',
+		'bg_image_id'  => isset( $input['about']['bg_image_id'] )  ? absint( $input['about']['bg_image_id'] )              : 0,
+		'bg_fixed'     => isset( $input['about']['bg_fixed'] ) && '1' === $input['about']['bg_fixed'] ? '1' : '0',
+		'badge_bg'      => isset( $input['about']['badge_bg'] )      ? rt_sanitize_color( $input['about']['badge_bg'] )      : '',
+		'badge_color'   => isset( $input['about']['badge_color'] )   ? rt_sanitize_color( $input['about']['badge_color'] )   : '',
+		'eyebrow_color'   => isset( $input['about']['eyebrow_color'] )   ? rt_sanitize_color( $input['about']['eyebrow_color'] )   : '',
+		'heading_color'   => isset( $input['about']['heading_color'] )   ? rt_sanitize_color( $input['about']['heading_color'] )   : '',
+		'body_color'      => isset( $input['about']['body_color'] )      ? rt_sanitize_color( $input['about']['body_color'] )      : '',
+		'card_title_color' => isset( $input['about']['card_title_color'] ) ? rt_sanitize_color( $input['about']['card_title_color'] ) : '',
+		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
 	);
 
 	// Expertise, Portfolio, Blog — enabled toggle + header text
 	foreach ( array( 'expertise', 'portfolio', 'blog' ) as $s ) {
 		$out[ $s ] = array(
-			'enabled' => ! empty( $input[ $s ]['enabled'] ) ? '1' : '0',
-			'eyebrow' => isset( $input[ $s ]['eyebrow'] ) ? sanitize_text_field( $input[ $s ]['eyebrow'] ) : '',
-			'heading' => isset( $input[ $s ]['heading'] ) ? sanitize_text_field( $input[ $s ]['heading'] ) : '',
-			'sub'     => isset( $input[ $s ]['sub'] )     ? sanitize_text_field( $input[ $s ]['sub'] )     : '',
+			'enabled'      => ! empty( $input[ $s ]['enabled'] ) ? '1' : '0',
+			'eyebrow'      => isset( $input[ $s ]['eyebrow'] )      ? sanitize_text_field( $input[ $s ]['eyebrow'] )     : '',
+			'heading'      => isset( $input[ $s ]['heading'] )      ? sanitize_text_field( $input[ $s ]['heading'] )     : '',
+			'sub'          => isset( $input[ $s ]['sub'] )          ? sanitize_text_field( $input[ $s ]['sub'] )         : '',
+			'bg_color'     => isset( $input[ $s ]['bg_color'] )     ? rt_sanitize_color( $input[ $s ]['bg_color'] )     : '',
+			'accent_color' => isset( $input[ $s ]['accent_color'] ) ? rt_sanitize_color( $input[ $s ]['accent_color'] ) : '',
+			'bg_image_id'  => isset( $input[ $s ]['bg_image_id'] )  ? absint( $input[ $s ]['bg_image_id'] )              : 0,
+			'bg_fixed'      => isset( $input[ $s ]['bg_fixed'] ) && '1' === $input[ $s ]['bg_fixed'] ? '1' : '0',
+			'eyebrow_color'   => isset( $input[ $s ]['eyebrow_color'] )   ? rt_sanitize_color( $input[ $s ]['eyebrow_color'] )   : '',
+			'heading_color'   => isset( $input[ $s ]['heading_color'] )   ? rt_sanitize_color( $input[ $s ]['heading_color'] )   : '',
+			'body_color'      => isset( $input[ $s ]['body_color'] )      ? rt_sanitize_color( $input[ $s ]['body_color'] )      : '',
+			'card_title_color' => isset( $input[ $s ]['card_title_color'] ) ? rt_sanitize_color( $input[ $s ]['card_title_color'] ) : '',
+			'card_body_color'  => isset( $input[ $s ]['card_body_color'] )  ? rt_sanitize_color( $input[ $s ]['card_body_color'] )  : '',
 		);
+		if ( 'blog' !== $s ) {
+			$out[ $s ]['card_tag_bg']    = isset( $input[ $s ]['card_tag_bg'] )    ? rt_sanitize_color( $input[ $s ]['card_tag_bg'] )    : '';
+			$out[ $s ]['card_tag_color'] = isset( $input[ $s ]['card_tag_color'] ) ? rt_sanitize_color( $input[ $s ]['card_tag_color'] ) : '';
+		}
 	}
 
 	// Contact — always visible, heading + subtext + 5 configurable link rows
@@ -205,10 +441,19 @@ function rt_sections_sanitize( $input ) {
 		);
 	}
 	$out['contact'] = array(
-		'eyebrow' => isset( $input['contact']['eyebrow'] ) ? sanitize_text_field( $input['contact']['eyebrow'] ) : '',
-		'heading' => isset( $input['contact']['heading'] ) ? sanitize_text_field( $input['contact']['heading'] ) : '',
-		'sub'     => isset( $input['contact']['sub'] )     ? sanitize_textarea_field( $input['contact']['sub'] ) : '',
-		'links'   => $contact_links,
+		'eyebrow'      => isset( $input['contact']['eyebrow'] )      ? sanitize_text_field( $input['contact']['eyebrow'] )      : '',
+		'heading'      => isset( $input['contact']['heading'] )      ? sanitize_text_field( $input['contact']['heading'] )      : '',
+		'sub'          => isset( $input['contact']['sub'] )          ? sanitize_textarea_field( $input['contact']['sub'] )      : '',
+		'links'        => $contact_links,
+		'bg_color'     => isset( $input['contact']['bg_color'] )     ? rt_sanitize_color( $input['contact']['bg_color'] )     : '',
+		'accent_color' => isset( $input['contact']['accent_color'] ) ? rt_sanitize_color( $input['contact']['accent_color'] ) : '',
+		'bg_image_id'  => isset( $input['contact']['bg_image_id'] )  ? absint( $input['contact']['bg_image_id'] )              : 0,
+		'bg_fixed'      => isset( $input['contact']['bg_fixed'] ) && '1' === $input['contact']['bg_fixed'] ? '1' : '0',
+		'eyebrow_color'   => isset( $input['contact']['eyebrow_color'] )   ? rt_sanitize_color( $input['contact']['eyebrow_color'] )   : '',
+		'heading_color'   => isset( $input['contact']['heading_color'] )   ? rt_sanitize_color( $input['contact']['heading_color'] )   : '',
+		'body_color'      => isset( $input['contact']['body_color'] )      ? rt_sanitize_color( $input['contact']['body_color'] )      : '',
+		'card_title_color' => isset( $input['contact']['card_title_color'] ) ? rt_sanitize_color( $input['contact']['card_title_color'] ) : '',
+		'card_body_color'  => isset( $input['contact']['card_body_color'] )  ? rt_sanitize_color( $input['contact']['card_body_color'] )  : '',
 	);
 
 	return $out;
@@ -311,7 +556,7 @@ function rt_sections_page() {
 
 		<?php settings_errors( 'rt_sections_group' ); ?>
 
-		<form method="post" action="options.php">
+		<form id="rt-sections-form" method="post" action="options.php">
 			<?php settings_fields( 'rt_sections_group' ); ?>
 
 			<?php foreach ( $sections as $key => $meta ) :
@@ -337,6 +582,37 @@ function rt_sections_page() {
 					<?php endif; ?>
 				</div>
 
+				<?php
+				$section_color_defaults = array(
+					'about'     => array( 'bg' => '#FFFFFF', 'accent' => '#0D1B2A', 'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#4A5A6A', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
+					'expertise' => array( 'bg' => '#0D1B2A', 'accent' => '#122336', 'eyebrow' => '#1A7A6E', 'heading' => '#FFFFFF',  'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#7A8EA0', 'card_tag' => '#C9A84C', 'card_tag_bg' => 'rgba(201, 168, 76, 0.1)' ),
+					'portfolio' => array( 'bg' => '#F0F4F8', 'accent' => '#FFFFFF',  'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#5A6A7A', 'card_title' => '#0D1B2A', 'card_body' => '#4A5A6A', 'card_tag' => '#1A7A6E', 'card_tag_bg' => 'rgba(26, 122, 110, 0.07)' ),
+					'blog'      => array( 'bg' => '#FFFFFF', 'accent' => '#0D1B2A', 'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#5A6A7A', 'card_title' => '#0D1B2A', 'card_body' => '#6A7A8A' ),
+					'contact'   => array( 'bg' => '#0D1B2A', 'accent' => '#1A7A6E', 'eyebrow' => '#1A7A6E', 'heading' => '#FFFFFF',  'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
+				);
+				$def                  = isset( $section_color_defaults[ $key ] ) ? $section_color_defaults[ $key ] : array();
+				$def_bg               = isset( $def['bg'] )          ? $def['bg']          : '';
+				$def_accent           = isset( $def['accent'] )       ? $def['accent']       : '';
+				$def_eyebrow_color    = isset( $def['eyebrow'] )      ? $def['eyebrow']      : '#1A7A6E';
+				$def_heading_color    = isset( $def['heading'] )      ? $def['heading']      : '#0D1B2A';
+				$def_body_color       = isset( $def['body'] )         ? $def['body']         : '#4A5A6A';
+				$def_card_title_color = isset( $def['card_title'] )  ? $def['card_title']  : '#FFFFFF';
+				$def_card_body_color  = isset( $def['card_body'] )   ? $def['card_body']   : '#8899AA';
+				$def_card_tag_color   = isset( $def['card_tag'] )    ? $def['card_tag']    : '#C9A84C';
+				$def_card_tag_bg      = isset( $def['card_tag_bg'] ) ? $def['card_tag_bg'] : 'rgba(201, 168, 76, 0.1)';
+				$bg_color         = $v( $key, 'bg_color' );
+				$accent_col       = $v( $key, 'accent_color' );
+				$eyebrow_col      = $v( $key, 'eyebrow_color' );
+				$heading_col      = $v( $key, 'heading_color' );
+				$body_col         = $v( $key, 'body_color' );
+				$card_title_col   = $v( $key, 'card_title_color' );
+				$card_body_col    = $v( $key, 'card_body_color' );
+				$card_tag_col     = $v( $key, 'card_tag_color' );
+				$card_tag_bg_col  = $v( $key, 'card_tag_bg' );
+				$img_id    = absint( $v( $key, 'bg_image_id' ) );
+				$bg_fixed  = $v( $key, 'bg_fixed' );
+				$img_thumb = $img_id ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : '';
+				?>
 				<table class="form-table" style="margin-top:0;">
 					<tr>
 						<th style="width:160px;">
@@ -345,12 +621,23 @@ function rt_sections_page() {
 							</label>
 						</th>
 						<td>
-							<input type="text"
-								id="<?php echo esc_attr( $key ); ?>_eyebrow"
-								name="rt_sections[<?php echo esc_attr( $key ); ?>][eyebrow]"
-								value="<?php echo esc_attr( $v( $key, 'eyebrow' ) ); ?>"
-								class="regular-text"
-								placeholder="<?php echo esc_attr( '// ' . strtolower( $meta['label'] ) ); ?>" />
+							<div style="display:flex;align-items:center;gap:10px;">
+								<input type="text"
+									id="<?php echo esc_attr( $key ); ?>_eyebrow"
+									name="rt_sections[<?php echo esc_attr( $key ); ?>][eyebrow]"
+									value="<?php echo esc_attr( $v( $key, 'eyebrow' ) ); ?>"
+									class="regular-text"
+									placeholder="<?php echo esc_attr( '// ' . strtolower( $meta['label'] ) ); ?>" />
+								<div class="rt-color-field"
+									data-default-color="<?php echo esc_attr( $def_eyebrow_color ); ?>"
+									data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][eyebrow_color]">
+									<input type="hidden"
+										name="rt_sections[<?php echo esc_attr( $key ); ?>][eyebrow_color]"
+										class="rt-color-input"
+										value="<?php echo esc_attr( $eyebrow_col ); ?>" />
+									<div class="rt-color-picker-mount"></div>
+								</div>
+							</div>
 							<p class="description"><?php _e( 'Small label shown above the heading.', 'russteicheira' ); ?></p>
 						</td>
 					</tr>
@@ -361,11 +648,22 @@ function rt_sections_page() {
 							</label>
 						</th>
 						<td>
-							<input type="text"
-								id="<?php echo esc_attr( $key ); ?>_heading"
-								name="rt_sections[<?php echo esc_attr( $key ); ?>][heading]"
-								value="<?php echo esc_attr( $v( $key, 'heading' ) ); ?>"
-								class="regular-text" />
+							<div style="display:flex;align-items:center;gap:10px;">
+								<input type="text"
+									id="<?php echo esc_attr( $key ); ?>_heading"
+									name="rt_sections[<?php echo esc_attr( $key ); ?>][heading]"
+									value="<?php echo esc_attr( $v( $key, 'heading' ) ); ?>"
+									class="regular-text" />
+								<div class="rt-color-field"
+									data-default-color="<?php echo esc_attr( $def_heading_color ); ?>"
+									data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][heading_color]">
+									<input type="hidden"
+										name="rt_sections[<?php echo esc_attr( $key ); ?>][heading_color]"
+										class="rt-color-input"
+										value="<?php echo esc_attr( $heading_col ); ?>" />
+									<div class="rt-color-picker-mount"></div>
+								</div>
+							</div>
 						</td>
 					</tr>
 
@@ -684,12 +982,363 @@ function rt_sections_page() {
 						</td>
 					</tr>
 					<?php endif; ?>
+
 				</table>
+
+				<div class="rt-tab-wrapper" style="margin-top:16px;border-top:1px solid #f0f0f1;">
+					<nav class="nav-tab-wrapper rt-tab-nav" style="padding:12px 0 0;margin-bottom:0;">
+						<a href="#" class="nav-tab nav-tab-active"
+							data-tab="rt-tab-section-<?php echo esc_attr( $key ); ?>">
+							<?php _e( 'Section Colors', 'russteicheira' ); ?>
+						</a>
+						<a href="#" class="nav-tab"
+							data-tab="rt-tab-cards-<?php echo esc_attr( $key ); ?>">
+							<?php _e( 'Card Colors', 'russteicheira' ); ?>
+						</a>
+					</nav>
+
+					<div id="rt-tab-section-<?php echo esc_attr( $key ); ?>" class="rt-tab-panel">
+						<table class="form-table" style="margin-top:0;">
+							<tr>
+								<th style="width:160px; padding-top:12px;">
+									<?php _e( 'Background Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_bg ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $bg_color ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Overrides the section\'s default background. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Body Text Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_body_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $body_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for body/description text within this section. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;"><?php _e( 'Background Image', 'russteicheira' ); ?></th>
+								<td>
+									<div class="rt-bg-image">
+										<div class="rt-bg-preview" style="<?php echo $img_thumb ? '' : 'display:none;'; ?>margin-bottom:8px;">
+											<img src="<?php echo esc_url( $img_thumb ); ?>" />
+										</div>
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_image_id]"
+											class="rt-bg-id"
+											value="<?php echo $img_id ?: ''; ?>" />
+										<button type="button" class="button rt-bg-upload">
+											<?php echo $img_id ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
+										</button>
+										<button type="button" class="button rt-bg-remove" style="<?php echo $img_id ? '' : 'display:none;'; ?>margin-left:6px;">
+											<?php _e( 'Remove', 'russteicheira' ); ?>
+										</button>
+									</div>
+									<p class="description" style="margin-top:6px;">
+										<?php _e( 'Optional. Gradient overlays and grid patterns remain on top of the image.', 'russteicheira' ); ?>
+									</p>
+								</td>
+							</tr>
+							<tr class="rt-bg-fixed-row" <?php echo $img_id ? '' : 'style="display:none;"'; ?>>
+								<th><?php _e( 'Image Behavior', 'russteicheira' ); ?></th>
+								<td>
+									<label style="margin-right:1.5rem;">
+										<input type="radio"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
+											value="0"
+											<?php checked( '1' !== $bg_fixed ); ?> />
+										<?php _e( 'Scroll with page', 'russteicheira' ); ?>
+									</label>
+									<label>
+										<input type="radio"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
+											value="1"
+											<?php checked( $bg_fixed, '1' ); ?> />
+										<?php _e( 'Fixed (parallax)', 'russteicheira' ); ?>
+									</label>
+									<p class="description"><?php _e( 'Fixed: the image stays in place as the page scrolls through the section. Not supported on iOS Safari.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+					<div id="rt-tab-cards-<?php echo esc_attr( $key ); ?>" class="rt-tab-panel" style="display:none;">
+						<table class="form-table" style="margin-top:0;">
+							<tr>
+								<th style="width:160px; padding-top:12px;">
+									<?php _e( 'Card / Object Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_accent ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $accent_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php echo 'about' === $key ? esc_html__( 'Background color for the capabilities panel on the right side of the About section.', 'russteicheira' ) : esc_html__( 'Background color for the primary cards or info boxes within this section.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Title Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_title_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_title_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for the primary heading/title text inside cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Body Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_body_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_body_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for the description/body text inside cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php if ( in_array( $key, array( 'expertise', 'portfolio' ) ) ) : ?>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Tag Background', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_tag_bg ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_tag_bg_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Background fill for skill/stack tag badges on cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Tag Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_tag_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_tag_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Text and border color for skill/stack tag badges on cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php endif; ?>
+							<?php if ( 'about' === $key ) :
+								$badge_bg_val    = $v( 'about', 'badge_bg' );
+								$badge_color_val = $v( 'about', 'badge_color' );
+							?>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Skill Tag Background', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="rgba(26, 122, 110, 0.05)"
+										data-input-name="rt_sections[about][badge_bg]">
+										<input type="hidden"
+											name="rt_sections[about][badge_bg]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $badge_bg_val ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Background fill for the skill/badge tags.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Skill Tag Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="#1A7A6E"
+										data-input-name="rt_sections[about][badge_color]">
+										<input type="hidden"
+											name="rt_sections[about][badge_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $badge_color_val ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Text and border color for the skill/badge tags.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php endif; ?>
+						</table>
+					</div>
+				</div>
 			</div>
 			<?php endforeach; ?>
 
-			<?php submit_button( __( 'Save Section Settings', 'russteicheira' ) ); ?>
+			<p class="submit" style="display:flex;align-items:center;justify-content:space-between;">
+				<input type="submit" name="submit" id="submit" class="button button-primary"
+					value="<?php esc_attr_e( 'Save Section Settings', 'russteicheira' ); ?>" />
+				<button type="button" id="rt-reset-colors" class="button"
+					style="color:#2271b1;border-color:#2271b1;background:#fff;box-shadow:0 0 0 1px #2271b1;">
+					<?php _e( 'Reset All Section Colors', 'russteicheira' ); ?>
+				</button>
+			</p>
 		</form>
+
 	</div>
 	<?php
 }
+
+
+// ── SECTION BACKGROUND CSS OUTPUT ────────────────────────────
+// Outputs scoped background/card overrides only for values that have been set.
+// Runs at priority 25, after rt-main loads, so inline styles win specificity.
+function rt_output_section_css() {
+	$map = array(
+		'about'     => array(
+			'id'         => 'about',
+			'card'       => '.about__highlight',
+			'card_title' => '.highlight-item__text strong',
+			'card_body'  => '.highlight-item__text span',
+			'body'       => '.about__content p',
+		),
+		'expertise' => array(
+			'id'         => 'expertise',
+			'card'       => '.expertise-card',
+			'card_title' => '.expertise-card__title',
+			'card_body'  => '.expertise-card__desc',
+			'card_tag'   => '.card-tag',
+			'body'       => '.section-sub',
+		),
+		'portfolio' => array(
+			'id'         => 'projects',
+			'card'       => '.project-card',
+			'card_title' => '.project-card__title',
+			'card_body'  => '.project-card__desc',
+			'card_tag'   => '.stack-tag',
+			'body'       => '.section-sub',
+		),
+		'blog'      => array(
+			'id'         => 'blog',
+			'card'       => '.blog-card__top',
+			'card_title' => '.blog-card__title',
+			'card_body'  => '.blog-card__excerpt',
+			'body'       => '.section-sub',
+		),
+		'contact'   => array(
+			'id'         => 'contact',
+			'card'       => '.contact-link__icon',
+			'card_title' => '.contact-link__value',
+			'card_body'  => '.contact-link__label',
+			'body'       => '.section-sub',
+		),
+	);
+	$css = '';
+	foreach ( $map as $key => $sel ) {
+		$bg_color = rt_sanitize_color( rt_section_opt( $key, 'bg_color' ) );
+		$accent   = rt_sanitize_color( rt_section_opt( $key, 'accent_color' ) );
+		$img_id   = absint( rt_section_opt( $key, 'bg_image_id' ) );
+		$fixed    = '1' === rt_section_opt( $key, 'bg_fixed', '0' );
+
+		$sec  = '';
+		$card = '';
+
+		if ( $bg_color ) {
+			$sec .= 'background-color:' . $bg_color . ';';
+		}
+		if ( $img_id ) {
+			$img_url = wp_get_attachment_image_url( $img_id, 'full' );
+			if ( $img_url ) {
+				$sec .= 'background-image:url(' . esc_url( $img_url ) . ');'
+				      . 'background-size:cover;'
+				      . 'background-position:center;'
+				      . 'background-repeat:no-repeat;'
+				      . 'background-attachment:' . ( $fixed ? 'fixed' : 'scroll' ) . ';';
+			}
+		}
+		if ( $accent ) {
+			$card .= 'background:' . $accent . ';';
+		}
+
+		if ( $sec ) {
+			$css .= '#' . $sel['id'] . '{' . $sec . '}';
+		}
+		if ( $card ) {
+			$css .= '#' . $sel['id'] . ' ' . $sel['card'] . '{' . $card . '}';
+		}
+
+		if ( 'about' === $key ) {
+			$badge_bg    = rt_sanitize_color( rt_section_opt( 'about', 'badge_bg' ) );
+			$badge_color = rt_sanitize_color( rt_section_opt( 'about', 'badge_color' ) );
+			$badge_css = '';
+			if ( $badge_bg )    { $badge_css .= 'background:' . $badge_bg . ';'; }
+			if ( $badge_color ) { $badge_css .= 'color:' . $badge_color . ';border-color:' . $badge_color . ';'; }
+			if ( $badge_css )   { $css .= '#about .badge{' . $badge_css . '}'; }
+		}
+
+		$eyebrow_color   = rt_sanitize_color( rt_section_opt( $key, 'eyebrow_color' ) );
+		$heading_color   = rt_sanitize_color( rt_section_opt( $key, 'heading_color' ) );
+		$body_color      = rt_sanitize_color( rt_section_opt( $key, 'body_color' ) );
+		$card_title_color = rt_sanitize_color( rt_section_opt( $key, 'card_title_color' ) );
+		$card_body_color  = rt_sanitize_color( rt_section_opt( $key, 'card_body_color' ) );
+		if ( $eyebrow_color )   { $css .= '#' . $sel['id'] . ' .section-eyebrow{color:' . $eyebrow_color . ';}'; }
+		if ( $heading_color )   { $css .= '#' . $sel['id'] . ' .section-title{color:' . $heading_color . ';}'; }
+		if ( $body_color ) {
+			$css .= '#' . $sel['id'] . ' ' . $sel['body'] . '{color:' . $body_color . ';}';
+			if ( 'about' === $key ) {
+				$css .= '#about .about__content strong{color:' . $body_color . ';}';
+			}
+		}
+		if ( $card_title_color ) { $css .= '#' . $sel['id'] . ' ' . $sel['card_title'] . '{color:' . $card_title_color . ';}'; }
+		if ( $card_body_color )  { $css .= '#' . $sel['id'] . ' ' . $sel['card_body']  . '{color:' . $card_body_color  . ';}'; }
+		if ( isset( $sel['card_tag'] ) ) {
+			$card_tag_bg    = rt_sanitize_color( rt_section_opt( $key, 'card_tag_bg' ) );
+			$card_tag_color = rt_sanitize_color( rt_section_opt( $key, 'card_tag_color' ) );
+			$tag_sel = '#' . $sel['id'] . ' ' . $sel['card_tag'];
+			if ( $card_tag_bg )    { $css .= $tag_sel . '{background:' . $card_tag_bg . ';}'; }
+			if ( $card_tag_color ) { $css .= $tag_sel . '{color:' . $card_tag_color . ';border-color:' . $card_tag_color . ';}'; }
+		}
+	}
+	if ( $css ) {
+		wp_add_inline_style( 'rt-main', $css );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'rt_output_section_css', 25 );
