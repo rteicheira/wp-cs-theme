@@ -1,4 +1,4 @@
-# Cybersecurity & Compliance WordPress Theme
+# Cybersecurity & Compliance Portfolio WordPress Theme
 
 A custom WordPress theme for russteicheira.net.
 
