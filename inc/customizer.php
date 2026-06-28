@@ -34,6 +34,30 @@ function rt_customizer_register( $wp_customize ) {
 		'priority'    => 40,
 	) );
 
+	$wp_customize->add_setting( 'site_tagline_color', array(
+		'default'           => '#22A090',
+		'sanitize_callback' => 'sanitize_hex_color',
+		'transport'         => 'postMessage',
+	) );
+	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'site_tagline_color', array(
+		'label'       => __( 'Site Tagline Color', 'russteicheira' ),
+		'description' => __( 'Color for the tagline text in the hero and footer. Defaults to the theme accent color.', 'russteicheira' ),
+		'section'     => 'title_tagline',
+		'priority'    => 41,
+	) ) );
+
+	$wp_customize->add_setting( 'hero_desc_color', array(
+		'default'           => '#99AABB',
+		'sanitize_callback' => 'sanitize_hex_color',
+		'transport'         => 'postMessage',
+	) );
+	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'hero_desc_color', array(
+		'label'       => __( 'Description Color', 'russteicheira' ),
+		'description' => __( 'Color for the description paragraph in the hero section. Defaults to the theme body text color.', 'russteicheira' ),
+		'section'     => 'title_tagline',
+		'priority'    => 42,
+	) ) );
+
 	// ════════════════════════════════════════════════════════════
 	// SECTION: Site Colors
 	// ════════════════════════════════════════════════════════════
@@ -79,6 +103,25 @@ function rt_customizer_register( $wp_customize ) {
 		'title'    => __( 'Hero Section', 'russteicheira' ),
 		'panel'    => 'rt_homepage',
 		'priority' => 10,
+	) );
+
+	// Typing Lines
+	$wp_customize->add_setting( 'hero_typing_lines', array(
+		'default'           => implode( "\n", array(
+			'> securing cardholder data environments',
+			'> automating the boring stuff',
+			'> docker run --rm compliance-check',
+			'> grep -r "risk" /etc/security/',
+			'> building things that hold up under audit',
+		) ),
+		'sanitize_callback' => 'rt_sanitize_typing_lines',
+		'transport'         => 'refresh',
+	) );
+	$wp_customize->add_control( 'hero_typing_lines', array(
+		'label'       => __( 'Hero Typing Lines', 'russteicheira' ),
+		'description' => __( 'One phrase per line — max 66 characters each. These cycle through the typewriter animation on the homepage.', 'russteicheira' ),
+		'section'     => 'rt_hero',
+		'type'        => 'textarea',
 	) );
 
 	// Stat 1
@@ -234,27 +277,6 @@ function rt_customizer_register( $wp_customize ) {
 		'section'     => 'rt_footer',
 		'type'        => 'textarea',
 	) );
-	// ════════════════════════════════════════════════════════════
-	// SECTION: Site Identity — typing lines
-	// ════════════════════════════════════════════════════════════
-	$wp_customize->add_setting( 'hero_typing_lines', array(
-		'default'           => implode( "\n", array(
-			'> securing cardholder data environments',
-			'> automating the boring stuff',
-			'> docker run --rm compliance-check',
-			'> grep -r "risk" /etc/security/',
-			'> building things that hold up under audit',
-		) ),
-		'sanitize_callback' => 'rt_sanitize_typing_lines',
-		'transport'         => 'refresh',
-	) );
-	$wp_customize->add_control( 'hero_typing_lines', array(
-		'label'       => __( 'Hero Typing Lines', 'russteicheira' ),
-		'description' => __( 'One phrase per line — max 66 characters each. These cycle through the typewriter animation on the homepage.', 'russteicheira' ),
-		'section'     => 'title_tagline',
-		'type'        => 'textarea',
-		'priority'     => 50,
-	) );
 }
 add_action( 'customize_register', 'rt_customizer_register' );
 
@@ -281,6 +303,16 @@ function rt_output_color_css() {
 	}
 	if ( ! empty( $decls ) ) {
 		wp_add_inline_style( 'rt-main', ':root{' . implode( ';', $decls ) . '}' );
+	}
+
+	$tagline_color = sanitize_hex_color( get_theme_mod( 'site_tagline_color', '#22A090' ) );
+	if ( $tagline_color && strtolower( $tagline_color ) !== '#22a090' ) {
+		wp_add_inline_style( 'rt-main', '.hero__eyebrow,.footer-tagline{color:' . $tagline_color . ';}.hero__eyebrow::before{background:' . $tagline_color . ';}' );
+	}
+
+	$desc_color = sanitize_hex_color( get_theme_mod( 'hero_desc_color', '#99AABB' ) );
+	if ( $desc_color && strtolower( $desc_color ) !== '#99aabb' ) {
+		wp_add_inline_style( 'rt-main', '.hero__desc{color:' . $desc_color . ';}' );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'rt_output_color_css', 20 );
@@ -332,3 +364,16 @@ if ( ! function_exists( 'rt_get' ) ) {
 		return get_theme_mod( $key, $default );
 	}
 }
+
+
+// ── ONE-TIME CLEANUP: remove empty-string stored values so color pickers
+//    show their PHP defaults instead of a gray/blank swatch.
+//    get_theme_mods() is autoloaded — no extra DB hit per page load.
+add_action( 'after_setup_theme', function() {
+	$mods = get_theme_mods();
+	foreach ( array( 'site_tagline_color', 'hero_desc_color' ) as $key ) {
+		if ( isset( $mods[ $key ] ) && '' === $mods[ $key ] ) {
+			remove_theme_mod( $key );
+		}
+	}
+} );

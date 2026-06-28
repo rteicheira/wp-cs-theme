@@ -7,6 +7,11 @@ A custom WordPress theme for russteicheira.net.
 
 ![Screenshot](screenshot.png)
 
+## Minimum Requirements
+
+WordPress: 6.2
+PHP: 7.4
+
 ## Structure
 
 ```text

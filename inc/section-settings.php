@@ -501,6 +501,21 @@ if ( ! function_exists( 'rt_section_enabled' ) ) {
 }
 
 
+// ── HEX → RGBA HELPER ────────────────────────────────────────
+function rt_hex_to_rgba( $hex, $alpha ) {
+	$hex = ltrim( $hex, '#' );
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+	return sprintf( 'rgba(%d, %d, %d, %s)',
+		hexdec( substr( $hex, 0, 2 ) ),
+		hexdec( substr( $hex, 2, 2 ) ),
+		hexdec( substr( $hex, 4, 2 ) ),
+		$alpha
+	);
+}
+
+
 // ── SETTINGS PAGE ─────────────────────────────────────────────
 function rt_sections_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
@@ -583,23 +598,30 @@ function rt_sections_page() {
 				</div>
 
 				<?php
+				// Read live Customizer palette so defaults stay in sync when site colors change.
+				$c_navy     = sanitize_hex_color( get_theme_mod( 'color_navy',     '#0D1B2A' ) );
+				$c_navy_mid = sanitize_hex_color( get_theme_mod( 'color_navy_mid', '#122336' ) );
+				$c_teal     = sanitize_hex_color( get_theme_mod( 'color_teal',     '#1A7A6E' ) );
+				$c_gold     = sanitize_hex_color( get_theme_mod( 'color_gold',     '#C9A84C' ) );
+				$c_offwhite = sanitize_hex_color( get_theme_mod( 'color_offwhite', '#F0F4F8' ) );
+
 				$section_color_defaults = array(
-					'about'     => array( 'bg' => '#FFFFFF', 'accent' => '#0D1B2A', 'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#4A5A6A', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
-					'expertise' => array( 'bg' => '#0D1B2A', 'accent' => '#122336', 'eyebrow' => '#1A7A6E', 'heading' => '#FFFFFF',  'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#7A8EA0', 'card_tag' => '#C9A84C', 'card_tag_bg' => 'rgba(201, 168, 76, 0.1)' ),
-					'portfolio' => array( 'bg' => '#F0F4F8', 'accent' => '#FFFFFF',  'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#5A6A7A', 'card_title' => '#0D1B2A', 'card_body' => '#4A5A6A', 'card_tag' => '#1A7A6E', 'card_tag_bg' => 'rgba(26, 122, 110, 0.07)' ),
-					'blog'      => array( 'bg' => '#FFFFFF', 'accent' => '#0D1B2A', 'eyebrow' => '#1A7A6E', 'heading' => '#0D1B2A', 'body' => '#5A6A7A', 'card_title' => '#0D1B2A', 'card_body' => '#6A7A8A' ),
-					'contact'   => array( 'bg' => '#0D1B2A', 'accent' => '#1A7A6E', 'eyebrow' => '#1A7A6E', 'heading' => '#FFFFFF',  'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
+					'about'     => array( 'bg' => '#FFFFFF', 'accent' => $c_navy,     'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#4A5A6A', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
+					'expertise' => array( 'bg' => $c_navy,   'accent' => $c_navy_mid, 'eyebrow' => $c_teal,     'heading' => '#FFFFFF',   'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#7A8EA0', 'card_tag' => $c_gold,  'card_tag_bg' => rt_hex_to_rgba( $c_gold, '0.1' ) ),
+					'portfolio' => array( 'bg' => $c_offwhite, 'accent' => '#FFFFFF', 'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#5A6A7A', 'card_title' => $c_navy,   'card_body' => '#4A5A6A', 'card_tag' => $c_teal,  'card_tag_bg' => rt_hex_to_rgba( $c_teal, '0.07' ) ),
+					'blog'      => array( 'bg' => '#FFFFFF', 'accent' => $c_navy,     'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#5A6A7A', 'card_title' => $c_navy,   'card_body' => '#6A7A8A' ),
+					'contact'   => array( 'bg' => $c_navy,   'accent' => $c_teal,     'eyebrow' => $c_teal,     'heading' => '#FFFFFF',   'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
 				);
 				$def                  = isset( $section_color_defaults[ $key ] ) ? $section_color_defaults[ $key ] : array();
 				$def_bg               = isset( $def['bg'] )          ? $def['bg']          : '';
 				$def_accent           = isset( $def['accent'] )       ? $def['accent']       : '';
-				$def_eyebrow_color    = isset( $def['eyebrow'] )      ? $def['eyebrow']      : '#1A7A6E';
-				$def_heading_color    = isset( $def['heading'] )      ? $def['heading']      : '#0D1B2A';
-				$def_body_color       = isset( $def['body'] )         ? $def['body']         : '#4A5A6A';
+				$def_eyebrow_color    = isset( $def['eyebrow'] )     ? $def['eyebrow']     : $c_teal;
+				$def_heading_color    = isset( $def['heading'] )     ? $def['heading']     : $c_navy;
+				$def_body_color       = isset( $def['body'] )        ? $def['body']        : '#4A5A6A';
 				$def_card_title_color = isset( $def['card_title'] )  ? $def['card_title']  : '#FFFFFF';
 				$def_card_body_color  = isset( $def['card_body'] )   ? $def['card_body']   : '#8899AA';
-				$def_card_tag_color   = isset( $def['card_tag'] )    ? $def['card_tag']    : '#C9A84C';
-				$def_card_tag_bg      = isset( $def['card_tag_bg'] ) ? $def['card_tag_bg'] : 'rgba(201, 168, 76, 0.1)';
+				$def_card_tag_color   = isset( $def['card_tag'] )    ? $def['card_tag']    : $c_gold;
+				$def_card_tag_bg      = isset( $def['card_tag_bg'] ) ? $def['card_tag_bg'] : rt_hex_to_rgba( $c_gold, '0.1' );
 				$bg_color         = $v( $key, 'bg_color' );
 				$accent_col       = $v( $key, 'accent_color' );
 				$eyebrow_col      = $v( $key, 'eyebrow_color' );

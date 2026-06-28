@@ -64,6 +64,38 @@
         } );
     } );
 
+    // Helper: write/update a rule inside a dedicated <style> tag keyed by id.
+    function liveStyle( id, css ) {
+        var el = document.getElementById( id );
+        if ( ! el ) {
+            el = document.createElement( 'style' );
+            el.id = id;
+            document.head.appendChild( el );
+        }
+        el.textContent = css;
+    }
+
+    // site_tagline_color — hero eyebrow text + dash + footer tagline
+    wp.customize( 'site_tagline_color', function ( value ) {
+        value.bind( function ( to ) {
+            if ( to ) {
+                liveStyle( 'rt-tagline-color',
+                    '.hero__eyebrow,.footer-tagline{color:' + to + '}' +
+                    '.hero__eyebrow::before{background:' + to + '}'
+                );
+            } else {
+                liveStyle( 'rt-tagline-color', '' );
+            }
+        } );
+    } );
+
+    // hero_desc_color — hero description paragraph
+    wp.customize( 'hero_desc_color', function ( value ) {
+        value.bind( function ( to ) {
+            liveStyle( 'rt-desc-color', to ? '.hero__desc{color:' + to + '}' : '' );
+        } );
+    } );
+
     // Site Colors — update CSS custom properties live on the <html> element,
     // which overrides the :root block in main.css without a page reload.
     var colorVarMap = {
