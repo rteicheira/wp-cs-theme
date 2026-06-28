@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 2,
+  "settings": {
+    "color": {
+      "palette": [
+        { "slug": "navy",      "color": "#0D1B2A", "name": "Navy" },
+        { "slug": "navy-mid",  "color": "#122336", "name": "Navy Mid" },
+        { "slug": "teal",      "color": "#1A7A6E", "name": "Teal" },
+        { "slug": "teal-lt",   "color": "#22A090", "name": "Teal Light" },
+        { "slug": "charcoal",  "color": "#2C3E50", "name": "Charcoal" },
+        { "slug": "gold",      "color": "#C9A84C", "name": "Gold" },
+        { "slug": "gold-lt",   "color": "#E0BF6B", "name": "Gold Light" },
+        { "slug": "offwhite",  "color": "#F0F4F8", "name": "Off White" },
+        { "slug": "gray",      "color": "#8899AA", "name": "Gray" },
+        { "slug": "white",     "color": "#FFFFFF", "name": "White" }
+      ]
+    },
+    "typography": {
+      "fontFamilies": [
+        {
+          "slug": "display",
+          "name": "Space Grotesk",
+          "fontFamily": "'Space Grotesk', sans-serif"
+        },
+        {
+          "slug": "body",
+          "name": "Inter",
+          "fontFamily": "'Inter', sans-serif"
+        },
+        {
+          "slug": "mono",
+          "name": "JetBrains Mono",
+          "fontFamily": "'JetBrains Mono', monospace"
+        }
+      ]
+    },
+    "spacing": {
+      "units": [ "px", "rem", "em", "%" ]
+    },
+    "useRootPaddingAwareAlignments": true
+  },
+  "styles": {}
+}

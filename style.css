@@ -1,0 +1,22 @@
+/*
+Theme Name:  RussTeicheira
+Theme URI:   https://russteicheira.net
+Author:      Russ Teicheira
+Author URI:  https://russteicheira.net
+Description: Custom WordPress theme for russteicheira.net — cybersecurity, PCI compliance, and automation portfolio with blog.
+Version:     1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+Domain Path: /languages
+License:     GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: russteicheira
+Tags:        portfolio, blog, one-page, dark, responsive
+*/
+
+/*
+ * This file intentionally left minimal.
+ * All styles live in css/main.css, enqueued via functions.php.
+ * WordPress requires this file to exist with the theme header above.
+ */
