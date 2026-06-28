@@ -5,6 +5,8 @@ Custom WordPress theme for russteicheira.net.
 > [!CAUTION]
 > This is a work in progress - use at your own risk. The below readme is **VERY** out-of-date!
 
+![Screenshot](screenshot.png)
+
 ## Structure
 
 ```
