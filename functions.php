@@ -191,6 +191,34 @@ function rt_register_post_types() {
 		'supports'           => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields' ),
 	) );
 
+	register_post_type( 'certification', array(
+		'labels' => array(
+			'name'          => __( 'Certifications',         'russteicheira' ),
+			'singular_name' => __( 'Certification',          'russteicheira' ),
+			'add_new_item'  => __( 'Add New Certification',  'russteicheira' ),
+			'edit_item'     => __( 'Edit Certification',     'russteicheira' ),
+			'new_item'      => __( 'New Certification',      'russteicheira' ),
+			'search_items'  => __( 'Search Certifications',  'russteicheira' ),
+			'not_found'     => __( 'No certifications found', 'russteicheira' ),
+			'menu_name'     => __( 'Certifications',         'russteicheira' ),
+		),
+		'public'             => false,
+		'publicly_queryable' => false,
+		'show_ui'            => true,
+		'show_in_menu'       => true,
+		'show_in_rest'       => false,
+		'query_var'          => false,
+		'rewrite'            => false,
+		'capability_type'    => array( 'rt_certification', 'rt_certifications' ),
+		'map_meta_cap'       => true,
+		'has_archive'        => false,
+		'hierarchical'       => false,
+		'menu_position'      => 8,
+		'menu_icon'          => 'dashicons-welcome-learn-more',
+		// title = cert name, excerpt = optional description, page-attributes = Order
+		'supports'           => array( 'title', 'excerpt', 'page-attributes' ),
+	) );
+
 	register_taxonomy( 'stack', 'project', array(
 		'labels' => array(
 			'name'          => __( 'Stack Tags',  'russteicheira' ),
@@ -222,9 +250,10 @@ if ( ! function_exists( 'rt_grant_cpt_caps' ) ) {
 			return;
 		}
 		$sets = array(
-			array( 'rt_capability', 'rt_capabilities' ),
-			array( 'rt_expertise',  'rt_expertises'   ),
-			array( 'rt_project',    'rt_projects'     ),
+			array( 'rt_capability',    'rt_capabilities'    ),
+			array( 'rt_expertise',     'rt_expertises'      ),
+			array( 'rt_project',       'rt_projects'        ),
+			array( 'rt_certification', 'rt_certifications'  ),
 		);
 		foreach ( $sets as $set ) {
 			list( $singular, $plural ) = $set;
@@ -258,6 +287,35 @@ if ( ! function_exists( 'rt_maybe_grant_cpt_caps' ) ) {
 	}
 }
 add_action( 'admin_init', 'rt_maybe_grant_cpt_caps' );
+
+// One-time grant for certification caps on existing installs (v1 already ran).
+if ( ! function_exists( 'rt_maybe_grant_cpt_caps_v2' ) ) {
+	function rt_maybe_grant_cpt_caps_v2() {
+		if ( get_option( 'rt_cpt_caps_v2' ) ) {
+			return;
+		}
+		$administrator = get_role( 'administrator' );
+		if ( $administrator ) {
+			foreach ( array(
+				'edit_rt_certifications',
+				'edit_others_rt_certifications',
+				'edit_published_rt_certifications',
+				'edit_private_rt_certifications',
+				'create_rt_certifications',
+				'publish_rt_certifications',
+				'read_private_rt_certifications',
+				'delete_rt_certifications',
+				'delete_published_rt_certifications',
+				'delete_private_rt_certifications',
+				'delete_others_rt_certifications',
+			) as $cap ) {
+				$administrator->add_cap( $cap );
+			}
+		}
+		update_option( 'rt_cpt_caps_v2', true, false );
+	}
+}
+add_action( 'admin_init', 'rt_maybe_grant_cpt_caps_v2' );
 
 
 
@@ -578,6 +636,128 @@ function rt_save_expertise_meta( $post_id ) {
 	update_post_meta( $post_id, '_expertise_icon', $icon );
 }
 add_action( 'save_post_expertise', 'rt_save_expertise_meta' );
+
+
+// ── CERTIFICATION META BOXES ──────────────────────────────────
+function rt_add_cert_meta_boxes() {
+	add_meta_box(
+		'rt_cert_details',
+		__( 'Certification Details', 'russteicheira' ),
+		'rt_cert_meta_box_cb',
+		'certification',
+		'normal',
+		'high'
+	);
+}
+add_action( 'add_meta_boxes', 'rt_add_cert_meta_boxes' );
+
+function rt_cert_meta_box_cb( $post ) {
+	wp_nonce_field( 'rt_cert_meta', 'rt_cert_nonce' );
+	$icon    = get_post_meta( $post->ID, '_cert_icon',    true );
+	$issuer  = get_post_meta( $post->ID, '_cert_issuer',  true );
+	$date    = get_post_meta( $post->ID, '_cert_date',    true );
+	$expires = get_post_meta( $post->ID, '_cert_expires', true );
+	$cert_id = get_post_meta( $post->ID, '_cert_id',      true );
+	$url     = get_post_meta( $post->ID, '_cert_url',     true );
+	?>
+	<table class="form-table" style="margin-top:0;">
+		<tr>
+			<th style="width:180px;">
+				<label for="cert_icon"><?php _e( 'Icon (emoji)', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="cert_icon" name="cert_icon"
+					value="<?php echo esc_attr( $icon ); ?>"
+					style="width:60px;font-size:1.4rem;text-align:center;" />
+				<p class="description"><?php _e( 'Emoji shown on the card (e.g. 🏅 🎓 🔐 📜). Defaults to 🏅 if blank.', 'russteicheira' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				<label for="cert_issuer"><?php _e( 'Issuing Organization', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="cert_issuer" name="cert_issuer"
+					value="<?php echo esc_attr( $issuer ); ?>"
+					class="regular-text"
+					placeholder="<?php esc_attr_e( 'e.g. ISC2, CompTIA, ISACA', 'russteicheira' ); ?>" />
+			</td>
+		</tr>
+		<tr>
+			<th>
+				<label for="cert_date"><?php _e( 'Date Obtained', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="cert_date" name="cert_date"
+					value="<?php echo esc_attr( $date ); ?>"
+					style="width:160px;"
+					placeholder="<?php esc_attr_e( 'e.g. 2023 or Jan 2023', 'russteicheira' ); ?>" />
+			</td>
+		</tr>
+		<tr>
+			<th>
+				<label for="cert_expires"><?php _e( 'Expiration Date', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="cert_expires" name="cert_expires"
+					value="<?php echo esc_attr( $expires ); ?>"
+					style="width:160px;"
+					placeholder="<?php esc_attr_e( 'e.g. 2026 or Jan 2026', 'russteicheira' ); ?>" />
+				<p class="description"><?php _e( 'Leave blank if the certification does not expire.', 'russteicheira' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				<label for="cert_id"><?php _e( 'Certification ID', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="text" id="cert_id" name="cert_id"
+					value="<?php echo esc_attr( $cert_id ); ?>"
+					class="regular-text"
+					placeholder="<?php esc_attr_e( 'e.g. ABC-123456', 'russteicheira' ); ?>" />
+				<p class="description"><?php _e( 'Credential or certificate ID number. Leave blank to hide.', 'russteicheira' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				<label for="cert_url"><?php _e( 'Credential URL', 'russteicheira' ); ?></label>
+			</th>
+			<td>
+				<input type="url" id="cert_url" name="cert_url"
+					value="<?php echo esc_attr( $url ); ?>"
+					class="large-text"
+					placeholder="https://" />
+				<p class="description"><?php _e( 'Link to the digital credential or verification page. Leave blank to hide the "Verify →" link.', 'russteicheira' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+function rt_save_cert_meta( $post_id ) {
+	if ( ! isset( $_POST['rt_cert_nonce'] ) ) {
+		return;
+	}
+	if ( ! wp_verify_nonce( $_POST['rt_cert_nonce'], 'rt_cert_meta' ) ) {
+		return;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	$text_fields = array( 'cert_icon' => '_cert_icon', 'cert_issuer' => '_cert_issuer', 'cert_date' => '_cert_date', 'cert_expires' => '_cert_expires', 'cert_id' => '_cert_id' );
+	foreach ( $text_fields as $post_key => $meta_key ) {
+		if ( isset( $_POST[ $post_key ] ) ) {
+			update_post_meta( $post_id, $meta_key, sanitize_text_field( wp_unslash( $_POST[ $post_key ] ) ) );
+		}
+	}
+	$url = isset( $_POST['cert_url'] ) ? esc_url_raw( wp_unslash( $_POST['cert_url'] ) ) : '';
+	update_post_meta( $post_id, '_cert_url', $url );
+}
+add_action( 'save_post_certification', 'rt_save_cert_meta' );
 
 // Hard-limit title (32) and excerpt (200) before the row hits the database.
 function rt_expertise_limit_fields( $data ) {

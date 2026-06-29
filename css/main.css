@@ -401,7 +401,7 @@ section { padding: var(--section-pad) 0; }
 .hero__eyebrow {
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  color: var(--teal-lt);
+  color: #22A090;
   letter-spacing: 0.08em;
   margin-bottom: 1.5rem;
   display: flex;
@@ -413,7 +413,7 @@ section { padding: var(--section-pad) 0; }
   display: block;
   width: 32px;
   height: 1px;
-  background: var(--teal-lt);
+  background: #22A090;
   flex-shrink: 0;
 }
 .hero__name {
@@ -428,7 +428,7 @@ section { padding: var(--section-pad) 0; }
 .hero__terminal {
   font-family: var(--font-mono);
   font-size: clamp(0.85rem, 1.5vw, 1.05rem);
-  color: var(--teal-lt);
+  color: #22A090;
   margin-bottom: 1.75rem;
   min-height: 1.6em;
 }
@@ -577,6 +577,90 @@ section { padding: var(--section-pad) 0; }
   overflow-wrap: break-word;
   word-break: break-word;
 }
+
+/* ── CERTIFICATIONS ─────────────────────────────────────────── */
+.certs { background: var(--offwhite); }
+.certs__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.cert-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+  display: flex;
+  flex-direction: column;
+}
+.cert-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 8px 30px rgba(26,122,110,0.1);
+  transform: translateY(-3px);
+}
+.cert-card__icon { font-size: 1.75rem; margin-bottom: 0.875rem; }
+.cert-card__name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+.cert-card__issuer {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--teal);
+  background: rgba(26,122,110,0.07);
+  border: 1px solid rgba(26,122,110,0.2);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+}
+.cert-card__desc {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+  flex: 1;
+}
+.cert-card__cert-id {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #6A7A8A;
+  margin-bottom: 0.5rem;
+}
+.cert-card__cert-id-label {
+  color: #8A9AAA;
+  margin-right: 0.25rem;
+}
+.cert-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  gap: 0.5rem;
+}
+.cert-card__dates {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: #6A7A8A;
+}
+.cert-card__date-sep { color: #AABBCC; }
+.cert-card__expires { color: #6A7A8A; }
+.cert-card__link {
+  font-size: 0.78rem;
+  color: var(--teal);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cert-card__link:hover { text-decoration: underline; }
 
 /* ── EXPERTISE ───────────────────────────────────────────────── */
 .expertise { background: var(--navy); }
@@ -1195,6 +1279,7 @@ section { padding: var(--section-pad) 0; }
 
 /* Tablet: ≤ 1024px */
 @media (max-width: 1024px) {
+  .certs__grid     { grid-template-columns: repeat(2, 1fr); }
   .expertise__grid { grid-template-columns: repeat(2, 1fr); }
   .footer-inner { grid-template-columns: 1fr 1fr; }
   .footer-nav { order: 3; grid-column: 1 / -1; }
@@ -1273,6 +1358,7 @@ section { padding: var(--section-pad) 0; }
 
 /* Small mobile: ≤ 640px */
 @media (max-width: 640px) {
+  .certs__grid         { grid-template-columns: 1fr; }
   .expertise__grid     { grid-template-columns: 1fr; }
   .blog-preview__grid  { grid-template-columns: 1fr; }
   .hero__stats         { gap: 1.5rem; }

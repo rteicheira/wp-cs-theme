@@ -278,7 +278,7 @@ ENDJS;
 .rt-color-picker-mount { display: inline-block; }
 .rt-tab-wrapper .nav-tab-wrapper { border-bottom: 1px solid #c3c4c7; }
 .rt-tab-panel { padding-top: 2px; }
-#rt-reset-colors:hover { background: #f0f6fc !important; }
+#rt-reset-colors:hover { background: #b32929 !important; border-color: #b32929 !important; }
 ' );
 }
 add_action( 'admin_enqueue_scripts', 'rt_sections_admin_enqueue' );
@@ -404,8 +404,8 @@ function rt_sections_sanitize( $input ) {
 		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
 	);
 
-	// Expertise, Portfolio, Blog — enabled toggle + header text
-	foreach ( array( 'expertise', 'portfolio', 'blog' ) as $s ) {
+	// Certs, Expertise, Portfolio, Blog — enabled toggle + header text
+	foreach ( array( 'certs', 'expertise', 'portfolio', 'blog' ) as $s ) {
 		$out[ $s ] = array(
 			'enabled'      => ! empty( $input[ $s ]['enabled'] ) ? '1' : '0',
 			'eyebrow'      => isset( $input[ $s ]['eyebrow'] )      ? sanitize_text_field( $input[ $s ]['eyebrow'] )     : '',
@@ -473,7 +473,7 @@ function rt_sections_sanitize( $input ) {
 if ( ! function_exists( 'rt_section_opt' ) ) {
 	function rt_section_opt( $section, $key, $default = '' ) {
 		$opts = get_option( 'rt_sections', array() );
-		if ( isset( $opts[ $section ][ $key ] ) ) {
+		if ( isset( $opts[ $section ][ $key ] ) && '' !== $opts[ $section ][ $key ] ) {
 			return $opts[ $section ][ $key ];
 		}
 		return $default;
@@ -541,6 +541,11 @@ function rt_sections_page() {
 			'toggle' => false,
 			'extra'  => 'about',
 		),
+		'certs' => array(
+			'label'  => __( 'Certifications', 'russteicheira' ),
+			'toggle' => true,
+			'extra'  => 'sub',
+		),
 		'expertise' => array(
 			'label'  => __( 'Core Expertise', 'russteicheira' ),
 			'toggle' => true,
@@ -607,6 +612,7 @@ function rt_sections_page() {
 
 				$section_color_defaults = array(
 					'about'     => array( 'bg' => '#FFFFFF', 'accent' => $c_navy,     'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#4A5A6A', 'card_title' => '#FFFFFF', 'card_body' => '#8899AA' ),
+					'certs'     => array( 'bg' => $c_offwhite, 'accent' => '#FFFFFF',   'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#5A6A7A', 'card_title' => $c_navy,   'card_body' => '#4A5A6A', 'card_tag' => $c_teal,  'card_tag_bg' => rt_hex_to_rgba( $c_teal, '0.07' ) ),
 					'expertise' => array( 'bg' => $c_navy,   'accent' => $c_navy_mid, 'eyebrow' => $c_teal,     'heading' => '#FFFFFF',   'body' => '#99AABB', 'card_title' => '#FFFFFF', 'card_body' => '#7A8EA0', 'card_tag' => $c_gold,  'card_tag_bg' => rt_hex_to_rgba( $c_gold, '0.1' ) ),
 					'portfolio' => array( 'bg' => $c_offwhite, 'accent' => '#FFFFFF', 'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#5A6A7A', 'card_title' => $c_navy,   'card_body' => '#4A5A6A', 'card_tag' => $c_teal,  'card_tag_bg' => rt_hex_to_rgba( $c_teal, '0.07' ) ),
 					'blog'      => array( 'bg' => '#FFFFFF', 'accent' => $c_navy,     'eyebrow' => $c_teal,     'heading' => $c_navy,     'body' => '#5A6A7A', 'card_title' => $c_navy,   'card_body' => '#6A7A8A' ),
@@ -1154,7 +1160,7 @@ function rt_sections_page() {
 									<p class="description"><?php _e( 'Color for the description/body text inside cards.', 'russteicheira' ); ?></p>
 								</td>
 							</tr>
-							<?php if ( in_array( $key, array( 'expertise', 'portfolio' ) ) ) : ?>
+							<?php if ( in_array( $key, array( 'certs', 'expertise', 'portfolio' ) ) ) : ?>
 							<tr>
 								<th style="padding-top:12px;">
 									<?php _e( 'Card Tag Background', 'russteicheira' ); ?>
@@ -1239,7 +1245,7 @@ function rt_sections_page() {
 				<input type="submit" name="submit" id="submit" class="button button-primary"
 					value="<?php esc_attr_e( 'Save Section Settings', 'russteicheira' ); ?>" />
 				<button type="button" id="rt-reset-colors" class="button"
-					style="color:#2271b1;border-color:#2271b1;background:#fff;box-shadow:0 0 0 1px #2271b1;">
+					style="color:#fff;border-color:#dc3232;background:#dc3232;box-shadow:0 0 0 1px #dc3232;">
 					<?php _e( 'Reset All Section Colors', 'russteicheira' ); ?>
 				</button>
 			</p>
@@ -1261,6 +1267,14 @@ function rt_output_section_css() {
 			'card_title' => '.highlight-item__text strong',
 			'card_body'  => '.highlight-item__text span',
 			'body'       => '.about__content p',
+		),
+		'certs'     => array(
+			'id'         => 'certs',
+			'card'       => '.cert-card',
+			'card_title' => '.cert-card__name',
+			'card_body'  => '.cert-card__desc',
+			'card_tag'   => '.cert-card__issuer',
+			'body'       => '.section-sub',
 		),
 		'expertise' => array(
 			'id'         => 'expertise',

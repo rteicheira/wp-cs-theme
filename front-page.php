@@ -12,6 +12,10 @@ get_header();
 <?php get_template_part( 'template-parts/hero' ); ?>
 <?php get_template_part( 'template-parts/about' ); ?>
 
+<?php if ( rt_section_enabled( 'certs' ) ) : ?>
+	<?php get_template_part( 'template-parts/certs' ); ?>
+<?php endif; ?>
+
 <?php if ( rt_section_enabled( 'expertise' ) ) : ?>
 	<?php get_template_part( 'template-parts/expertise' ); ?>
 <?php endif; ?>
