@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<main class="error-404" role="main">
+<div class="error-404">
 	<div style="text-align:center;">
 		<div class="error-404__code" aria-hidden="true">404</div>
 		<h1 class="error-404__title"><?php _e( 'Page Not Found', 'russteicheira' ); ?></h1>
@@ -11,6 +11,6 @@
 			← <?php _e( 'Back to Home', 'russteicheira' ); ?>
 		</a>
 	</div>
-</main>
+</div>
 
 <?php get_footer(); ?>

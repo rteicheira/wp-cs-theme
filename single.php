@@ -6,7 +6,7 @@
 
 	<header class="single-post__header">
 		<div class="single-post__meta">
-			<time datetime="<?php echo get_the_date( 'c' ); ?>"><?php echo get_the_date( 'F j, Y' ); ?></time>
+			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
 			<?php
 			$cats = get_the_category();
 			if ( $cats ) {
@@ -19,7 +19,7 @@
 			echo ' &middot; ' . esc_html( get_the_author() );
 			?>
 		</div>
-		<h1 class="single-post__title"><?php the_title(); ?></h1>
+		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
 	</header>
 
 	<?php if ( has_post_thumbnail() ) : ?>
@@ -44,7 +44,7 @@
 		</div>
 	<?php endif; ?>
 
-	<nav class="post-navigation" style="margin-top:3rem; display:flex; justify-content:space-between; gap:1rem;">
+	<nav class="post-navigation" aria-label="<?php esc_attr_e( 'Post navigation', 'russteicheira' ); ?>" style="margin-top:3rem; display:flex; justify-content:space-between; gap:1rem;">
 		<div><?php previous_post_link( '%link', '← ' . __( 'Previous', 'russteicheira' ) ); ?></div>
 		<div><?php next_post_link( '%link', __( 'Next', 'russteicheira' ) . ' →' ); ?></div>
 	</nav>

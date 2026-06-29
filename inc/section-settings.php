@@ -52,10 +52,13 @@ function rt_sections_admin_enqueue( $hook ) {
 	wp_enqueue_media();
 
 	wp_localize_script( 'wp-dom-ready', 'rtSectionsL10n', array(
-		'selectBgImage'     => __( 'Select Background Image', 'russteicheira' ),
-		'useAsBg'           => __( 'Use as Background',       'russteicheira' ),
-		'changeImage'       => __( 'Change Image',            'russteicheira' ),
-		'uploadSelectImage' => __( 'Upload / Select Image',   'russteicheira' ),
+		'selectBgImage'            => __( 'Select Background Image',                                                  'russteicheira' ),
+		'useAsBg'                  => __( 'Use as Background',                                                        'russteicheira' ),
+		'changeImage'              => __( 'Change Image',                                                             'russteicheira' ),
+		'uploadSelectImage'        => __( 'Upload / Select Image',                                                    'russteicheira' ),
+		'openColorPicker'          => __( 'Open color picker',                                                        'russteicheira' ),
+		'resetToDefault'           => __( 'Reset to default',                                                         'russteicheira' ),
+		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.', 'russteicheira' ),
 	) );
 
 	$admin_js = <<<'ENDJS'
@@ -86,7 +89,7 @@ wp.domReady( function () {
                     padding:      0,
                     flexShrink:   0,
                 },
-                'aria-label': 'Open color picker',
+                'aria-label': rtSectionsL10n.openColorPicker,
             } ),
             el( 'span', { style: { fontFamily: 'monospace', fontSize: '12px', color: '#50575e' } },
                 color || '— theme default'
@@ -109,7 +112,7 @@ wp.domReady( function () {
                         type: 'button',
                         className: 'button button-small',
                         onClick: function() { setColor( '' ); props.onChange( '' ); setOpen( false ); },
-                    }, 'Reset to default' )
+                    }, rtSectionsL10n.resetToDefault )
                 )
             )
         );
@@ -122,7 +125,7 @@ wp.domReady( function () {
         var comp     = el( ColorField, {
             value:        input.value,
             defaultColor: defColor,
-            onChange:     function( c ) { input.value = c; },
+            onChange:     function( c ) { input.value = ( typeof c === 'string' ) ? c : ( c && c.hex ? c.hex : '' ); },
         } );
         if ( wp.element.createRoot ) {
             wp.element.createRoot( mount ).render( comp );
@@ -186,7 +189,7 @@ wp.domReady( function () {
     var resetBtn = document.getElementById( 'rt-reset-colors' );
     if ( resetBtn ) {
         resetBtn.addEventListener( 'click', function () {
-            if ( ! confirm( 'Reset all section colors to theme defaults? This cannot be undone.' ) ) { return; }
+            if ( ! confirm( rtSectionsL10n.resetSectionColorsConfirm ) ) { return; }
             document.querySelectorAll( '.rt-color-input' ).forEach( function ( input ) {
                 input.value = '';
             } );
@@ -1071,7 +1074,7 @@ function rt_sections_page() {
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_image_id]"
 											class="rt-bg-id"
-											value="<?php echo $img_id ?: ''; ?>" />
+											value="<?php echo esc_attr( (int) $img_id ?: '' ); ?>" />
 										<button type="button" class="button rt-bg-upload">
 											<?php echo $img_id ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
 										</button>

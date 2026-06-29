@@ -652,6 +652,7 @@ section { padding: var(--section-pad) 0; }
   font-size: 0.78rem;
   color: #6A7A8A;
 }
+.cert-card__date { font-size: 0.78rem; color: #6A7A8A; }
 .cert-card__date-sep { color: #AABBCC; }
 .cert-card__expires { color: #6A7A8A; }
 .cert-card__link {
@@ -1084,6 +1085,7 @@ section { padding: var(--section-pad) 0; }
   max-width: var(--max-width);
   margin: 0 auto;
 }
+.blog-layout .section-title { margin-bottom: 2rem; }
 .post-list { display: flex; flex-direction: column; gap: 2rem; }
 .post-entry {
   background: var(--white);

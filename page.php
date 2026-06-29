@@ -5,7 +5,7 @@
 <article id="page-<?php the_ID(); ?>" class="single-post" <?php post_class(); ?>>
 
 	<header class="single-post__header">
-		<h1 class="single-post__title"><?php the_title(); ?></h1>
+		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
 	</header>
 
 	<?php if ( has_post_thumbnail() ) : ?>

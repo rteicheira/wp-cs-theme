@@ -1,7 +1,7 @@
 <?php
-$eyebrow = rt_section_opt( 'contact', 'eyebrow' );
-$heading = rt_section_opt( 'contact', 'heading' );
-$subtext = rt_section_opt( 'contact', 'sub' );
+$eyebrow = rt_section_opt( 'contact', 'eyebrow', '// get in touch' );
+$heading = rt_section_opt( 'contact', 'heading', 'Get in Touch' );
+$subtext = rt_section_opt( 'contact', 'sub',     '' );
 $links   = rt_section_opt( 'contact', 'links', array() );
 if ( ! is_array( $links ) ) {
 	$links = array();
@@ -57,7 +57,7 @@ if ( ! is_array( $links ) ) {
 
 					<div class="form-group">
 						<label for="contact-subject"><?php _e( 'Subject', 'russteicheira' ); ?></label>
-						<input type="text" id="contact-subject" name="subject" placeholder="<?php esc_attr_e( 'PCI compliance consultation', 'russteicheira' ); ?>" />
+						<input type="text" id="contact-subject" name="subject" placeholder="<?php esc_attr_e( 'PCI compliance consultation', 'russteicheira' ); ?>" required />
 					</div>
 
 					<div class="form-group">

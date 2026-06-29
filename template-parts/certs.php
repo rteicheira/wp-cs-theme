@@ -88,12 +88,12 @@ $certs_query = new WP_Query( array(
 			else :
 				// Fallback displayed until certifications are created in WP Admin → Certifications
 				$fallback = array(
-					array( '🏅', 'Lorem Ipsum Certified Professional', 'Ipsum Institute',  '2024' ),
-					array( '🎓', 'Dolor Sit Amet Security Analyst',    'Lorem & Co',       '2023' ),
-					array( '🔐', 'Consectetur Adipiscing Expert',      'Adipiscing Group', '2023' ),
-					array( '📜', 'Sed Do Eiusmod Tempor Associate',    'Tempor Inc',       '2022' ),
-					array( '✅', 'Ut Labore Et Dolore Professional',   'Labore Corp',      '2022' ),
-					array( '🛡️', 'Quis Nostrud Risk Practitioner',     'Nostrud Ltd',      '2021' ),
+					array( '🏅', 'Certified Security Professional',  'Example Institute',  '2024' ),
+					array( '🎓', 'Cloud Security Foundations',          'Example Academy',    '2023' ),
+					array( '🔐', 'Risk & Compliance Practitioner',      'Example Group',      '2023' ),
+					array( '📜', 'Network Defense Associate',           'Example Cert Co',    '2022' ),
+					array( '✅', 'Automation Engineering Pro',          'Example Corp',       '2022' ),
+					array( '🛡️', 'Incident Response Specialist',        'Example Ltd',        '2021' ),
 				);
 				foreach ( $fallback as $cert ) : ?>
 					<article class="cert-card">

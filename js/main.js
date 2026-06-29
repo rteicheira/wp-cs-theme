@@ -235,7 +235,7 @@
         } )
         .catch( function () {
           status.className   = 'form-status error';
-          status.textContent = 'Something went wrong. Please try again or email me directly.';
+          status.textContent = RT.contactError;
         } )
         .finally( function () {
           submit.classList.remove( 'is-loading' );

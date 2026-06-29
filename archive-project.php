@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<main class="projects-archive">
+<div class="projects-archive">
 
 	<p class="section-eyebrow"><?php _e( '// portfolio', 'russteicheira' ); ?></p>
 	<h1 class="section-title"><?php _e( 'All Projects', 'russteicheira' ); ?></h1>
@@ -20,7 +20,7 @@
 						<h2 class="project-card__title">
 							<a href="<?php echo esc_url( $link ); ?>"
 							   <?php echo ( $live_url || $gh_url ) ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
-								<?php the_title(); ?>
+								<?php echo esc_html( get_the_title() ); ?>
 							</a>
 						</h2>
 						<span class="project-card__link" aria-hidden="true">↗</span>
@@ -45,6 +45,6 @@
 		<p><?php _e( 'No projects yet. Check back soon.', 'russteicheira' ); ?></p>
 	<?php endif; ?>
 
-</main>
+</div>
 
 <?php get_footer(); ?>

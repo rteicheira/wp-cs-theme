@@ -1,18 +1,13 @@
 <?php
 /**
- * Projects / Portfolio section header.
+ * Projects / Portfolio section.
  *
- * Create once in WP Admin → Pages → Add New:
- *   Slug:    portfolio-content
- *   Status:  Draft
- *   Excerpt: eyebrow  (e.g. "// portfolio")
- *   Title:   heading  (e.g. "Projects & Work")
- *   Content: sub-description (one sentence)
+ * Section header — managed via WP Admin → Sections → Projects.
  */
 $projects_header = rt_get_section_header( 'portfolio-content', array(
-	'eyebrow' => '// lorem ipsum',
-	'heading' => 'Lorem Ipsum & Amet',
-	'sub'     => 'A lorem of things I\'ve ipsum, consectetur, or adipiscing.',
+	'eyebrow' => '// portfolio',
+	'heading' => 'Projects & Work',
+	'sub'     => 'Things I\'ve built, automated, or shipped.',
 ) );
 ?>
 <section class="projects" id="projects">
@@ -35,8 +30,8 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 					'compare' => '=',
 				],
 			],
-			'orderby' => 'menu_order date',
-			'order'   => 'ASC',
+			'orderby'       => array( 'menu_order' => 'ASC', 'date' => 'ASC' ),
+			'no_found_rows' => true,
 		] );
 
 		// Fallback: show any projects if none are marked featured
@@ -46,6 +41,7 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 				'posts_per_page' => 6,
 				'orderby'        => 'date',
 				'order'          => 'DESC',
+				'no_found_rows'  => true,
 			] );
 		}
 		?>

@@ -474,7 +474,7 @@ add_action( 'customize_controls_print_footer_scripts', function () {
 			num.value     = range.value;
 			num.className = 'rt-op-num';
 			num.style.cssText = 'width:4.5rem;margin-left:8px;vertical-align:middle;';
-			num.setAttribute( 'aria-label', 'Opacity value' );
+			num.setAttribute( 'aria-label', <?php echo wp_json_encode( __( 'Opacity value', 'russteicheira' ) ); ?> );
 
 			range.parentNode.insertBefore( num, range.nextSibling );
 
@@ -507,23 +507,24 @@ add_action( 'customize_controls_print_footer_scripts', function () {
 add_action( 'customize_controls_print_footer_scripts', function () {
 	$home_url = wp_json_encode( home_url( '/' ) );
 	$nonce    = wp_create_nonce( 'rt_reset_colors' );
+	$i18n     = wp_json_encode( array(
+		'confirmMsg' => __( "Reset ALL site colors to their defaults?\n\nThis will clear every color customization across the entire site — the color palette, hero, navigation, and footer.\n\nThis cannot be undone.", 'russteicheira' ),
+		'resetting'  => __( 'Resetting…', 'russteicheira' ),
+		'resetBtn'   => __( 'Reset All Site Colors', 'russteicheira' ),
+		'resetFailed' => __( 'Reset failed. Please try again.', 'russteicheira' ),
+	) );
 	?>
 	<script>
 	( function () {
+		var i18n = <?php echo $i18n; ?>;
 		document.addEventListener( 'click', function ( e ) {
 			if ( ! e.target || e.target.id !== 'rt-reset-colors-btn' ) { return; }
 
-			var confirmed = window.confirm(
-				'Reset ALL site colors to their defaults?\n\n' +
-				'This will clear every color customization across the entire site — ' +
-				'the color palette, hero, navigation, and footer.\n\n' +
-				'This cannot be undone.'
-			);
-			if ( ! confirmed ) { return; }
+			if ( ! window.confirm( i18n.confirmMsg ) ) { return; }
 
 			var btn          = e.target;
 			btn.disabled     = true;
-			btn.textContent  = 'Resetting…';
+			btn.textContent  = i18n.resetting;
 
 			jQuery.post(
 				ajaxurl,
@@ -533,14 +534,14 @@ add_action( 'customize_controls_print_footer_scripts', function () {
 						window.location.href = <?php echo $home_url; ?>;
 					} else {
 						btn.disabled    = false;
-						btn.textContent = 'Reset All Site Colors';
-						window.alert( 'Reset failed. Please try again.' );
+						btn.textContent = i18n.resetBtn;
+						window.alert( i18n.resetFailed );
 					}
 				}
 			).fail( function () {
 				btn.disabled    = false;
-				btn.textContent = 'Reset All Site Colors';
-				window.alert( 'Reset failed. Please try again.' );
+				btn.textContent = i18n.resetBtn;
+				window.alert( i18n.resetFailed );
 			} );
 		} );
 	} )();

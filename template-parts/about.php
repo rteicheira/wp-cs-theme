@@ -3,20 +3,14 @@
  * About section — content managed via WP Admin → Sections.
  *
  * Fields: Eyebrow, Heading, Body (HTML), Skills (comma-separated).
- * Falls back to Lorem Ipsum placeholders until saved.
+ * Falls back to neutral placeholders until saved.
  */
 
-$eyebrow = rt_section_opt( 'about', 'eyebrow', '// lorem me' );
-$heading = rt_section_opt( 'about', 'heading', 'Lorem ipsum dolor, ex aliquam honestatis' );
+$eyebrow = rt_section_opt( 'about', 'eyebrow', '// about me' );
+$heading = rt_section_opt( 'about', 'heading', 'About Me' );
 
 $body_raw = rt_section_opt( 'about', 'body', '' );
-if ( $body_raw ) {
-	$content = wpautop( wp_kses_post( $body_raw ) );
-} else {
-	$content = '<p>Lorem ipsum <strong>consectetur adipiscing</strong> elit, sed do eiusmod — ut labore et dolore magna aliqua, enim ad minim veniam quis nostrud exercitation ullamco et consequat.</p>'
-	         . '<p>Duis aute irure dolor in <strong>reprehenderit voluptate</strong>, velit esse cillum dolore eu fugiat nulla pariatur, excepteur sint occaecat cupidatat non proident, culpa qui officia deserunt mollit.</p>'
-	         . '<p>Ut labore et dolore magnam quaerat voluptatem — nemo enim ipsam laudantium totam aperiam eaque ipsa quae ab illo inventore veritatis.</p>';
-}
+$content  = $body_raw ? wpautop( wp_kses_post( $body_raw ) ) : '';
 
 $skills_raw = rt_section_opt( 'about', 'skills', '' );
 if ( $skills_raw ) {
@@ -29,7 +23,7 @@ if ( $skills_raw ) {
 		}
 	}
 } else {
-	$skills = array( 'Labore', 'Consectetur Elit', 'Ipsum', 'Adipiscing', 'Duis', 'Reprehenderit', 'Voluptate', 'Velit' );
+	$skills = array( 'Network Security', 'Risk Assessment', 'PCI DSS', 'Cloud Security', 'Python', 'Automation', 'Compliance', 'Incident Response' );
 }
 ?>
 
@@ -86,10 +80,10 @@ if ( $skills_raw ) {
 				else :
 					// Fallback until capabilities are created in WP Admin
 					$fallback = array(
-						array( '📄', 'Lorem Ipsum Amet Labore',   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, incididunt ut labore et dolore magna.' ),
-						array( '📄', 'Dolor Sit Amet Elit',       'Ipsum & dolor lorem scripts that labore, consectetur amet, et dolore incididunt magna aliqua.' ),
-						array( '📄', 'Lorem & Ipsum Dolor Sit',   'Consectetur adipiscing, dolor ipsum, sed do eiusmod tempor labore et dolore magna aliqua.' ),
-						array( '📄', 'Tempor & Consectetura',     'Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim.' ),
+						array( '🔐', 'Security Architecture',   'Designing and implementing security controls across enterprise environments.' ),
+						array( '📋', 'Compliance & Governance',  'PCI DSS, HIPAA, and SOC 2 compliance program management and gap assessments.' ),
+						array( '⚙️', 'Security Automation',      'Building automated workflows and tooling to accelerate detection and response.' ),
+						array( '🌐', 'Network Security',         'Firewall management, segmentation strategy, and perimeter defense.' ),
 					);
 					foreach ( $fallback as $item ) : ?>
 						<div class="highlight-item">

@@ -1,18 +1,13 @@
 <?php
 /**
- * Blog preview section header.
+ * Blog preview section.
  *
- * Create once in WP Admin → Pages → Add New:
- *   Slug:    blog-content
- *   Status:  Draft
- *   Excerpt: eyebrow  (e.g. "// writing")
- *   Title:   heading  (e.g. "From the Blog")
- *   Content: sub-description (one sentence)
+ * Section header — managed via WP Admin → Sections → Blog.
  */
 $blog_header = rt_get_section_header( 'blog-content', array(
-	'eyebrow' => '// lorem sit',
-	'heading' => 'Lorem the Ipsum',
-	'sub'     => 'Lorem on consectetur, dolor, adipiscing elit, sed do eiusmod.',
+	'eyebrow' => '// writing',
+	'heading' => 'From the Blog',
+	'sub'     => 'Thoughts on security, compliance, and automation.',
 ) );
 ?>
 <section class="blog-preview" id="blog">
@@ -31,6 +26,7 @@ $blog_header = rt_get_section_header( 'blog-content', array(
 			'post_status'    => 'publish',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
+			'no_found_rows'  => true,
 		] );
 		?>
 

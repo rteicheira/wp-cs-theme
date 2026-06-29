@@ -2,12 +2,7 @@
 /**
  * Core Expertise section.
  *
- * Section header — create once in WP Admin → Pages → Add New:
- *   Slug:    expertise-content
- *   Status:  Draft
- *   Excerpt: eyebrow  (e.g. "// what I do")
- *   Title:   heading  (e.g. "Core Expertise")
- *   Content: sub-description (one sentence)
+ * Section header — managed via WP Admin → Sections → Expertise.
  *
  * Cards — WP Admin → Expertise → Add New:
  *   Title:   card heading
@@ -18,9 +13,9 @@
  */
 
 $header = rt_get_section_header( 'expertise-content', array(
-	'eyebrow' => '// lorem sit',
-	'heading' => 'Lorem Expertum',
-	'sub'     => 'A lorem of ipsum dolor sit amet and consectetur adipiscing elit.',
+	'eyebrow' => '// what I do',
+	'heading' => 'Core Expertise',
+	'sub'     => 'A selection of the skills and disciplines I apply day-to-day.',
 ) );
 
 $expertise_query = new WP_Query( array(
@@ -69,12 +64,12 @@ $expertise_query = new WP_Query( array(
 			else :
 				// Fallback cards shown until expertise posts are created in WP Admin
 				$fallback = array(
-					array( '📄', 'Lorem Ipsum Dolor',               'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt labore, dolore magna aliqua, et elit readiness.',                   array( 'Lorem v1.0', 'Amet', 'Sit', 'Ipsum' ) ),
-					array( '📄', 'Lorem & Consectetur Management',  'Lorem ipsum, consectetur, sed do eiusmod tempor incididunt ut labore dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco.',        array( 'Ipsum Lorem', 'Amet Dolor', 'Elit Register' ) ),
-					array( '📄', 'Lorem Sit & Consecutum',          'Lorem ipsum dolor amet consectetur tasks with adipiscing and labore. Duis aute irure, plus dolor magna aliqua signal.',                                       array( 'Lorem Ipsum', 'Duis', 'Elit', 'Amet Labore' ) ),
-					array( '📄', 'Lorem & Consectetur Dolor',       'Lorem ipsum dolor sit amet, consectetur adipiscing, sed do eiusmod tempor. Duis aute irure stacks on magna aliqua et ipsum.',                                 array( 'Lorem', 'Ipsum', 'Dolor', 'Amet Sit' ) ),
-					array( '📄', 'Lorem-Ipsum Consecteturs',        'Lorem ipsum dolor sit amet, consectetur elit sed do labore. Ut enim ad minim, from the magna, ex the adipiscing application layer.',                          array( 'Lorem', 'Ipsum', 'Dolor', 'Amet' ) ),
-					array( '📄', 'Tempor & Consectetura',           'Lorem ipsum labore consectetur, sed do eiusmod packages that magna aliqua cillum and actually duis amet day-to-day.',                                         array( 'Lorem Ipsum', 'Dolor Amet', 'Elit Duis' ) ),
+					array( '🔐', 'Security Engineering',       'Designing layered security controls, hardening systems, and reducing attack surface across on-prem and cloud environments.',  array( 'Architecture', 'Hardening', 'Zero Trust' ) ),
+					array( '📋', 'Compliance & Audit',          'Leading PCI DSS, SOC 2, and HIPAA assessments, managing remediation backlogs, and preparing for external audits.',                 array( 'PCI DSS', 'SOC 2', 'HIPAA' ) ),
+					array( '⚙️', 'Automation & Tooling',        'Building Python-based automation for security workflows, log analysis, alerting, and evidence collection.',                       array( 'Python', 'APIs', 'Scripting' ) ),
+					array( '🌐', 'Network Security',            'Firewall policy management, network segmentation, IDS/IPS tuning, and traffic analysis.',                                        array( 'Firewalls', 'IDS/IPS', 'Segmentation' ) ),
+					array( '☁️', 'Cloud Security',              'Securing AWS and Azure environments — IAM policies, security group hygiene, cloud-native logging, and CSPM tooling.',             array( 'AWS', 'Azure', 'IAM', 'CSPM' ) ),
+					array( '🛡️', 'Incident Response',           'Developing IR playbooks, leading tabletop exercises, and managing containment and forensics for security incidents.',              array( 'IR', 'Forensics', 'Playbooks' ) ),
 				);
 				foreach ( $fallback as $card ) : ?>
 					<article class="expertise-card">

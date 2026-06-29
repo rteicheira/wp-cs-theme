@@ -1,4 +1,4 @@
-</div><!-- #main-content -->
+</main><!-- #main-content -->
 
 <footer class="site-footer" role="contentinfo">
 	<div class="footer-inner">
@@ -61,7 +61,7 @@
 	<div class="footer-bottom">
 		<p>
 			<span class="footer-copy">
-				&copy; <?php echo date( 'Y' ); ?>
+				&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?>
 				<?php
 				$copyright_name = rt_get( 'footer_copyright_name', '' );
 				echo esc_html( $copyright_name ?: get_bloginfo( 'name' ) );

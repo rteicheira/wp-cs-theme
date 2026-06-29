@@ -33,6 +33,8 @@ function rt_theme_setup() {
 	add_theme_support( 'customize-selective-refresh-widgets' );
 	add_theme_support( 'wp-block-styles' );
 	add_theme_support( 'responsive-embeds' );
+	add_theme_support( 'align-wide' );
+	add_editor_style( 'css/main.css' );
 
 	register_nav_menus( array(
 		'primary' => __( 'Primary Navigation', 'russteicheira' ),
@@ -51,21 +53,21 @@ function rt_enqueue_assets() {
 		'rt-fonts',
 		RT_URI . '/css/fonts.css',
 		array(),
-		RT_VERSION
+		filemtime( RT_DIR . '/css/fonts.css' )
 	);
 
 	wp_enqueue_style(
 		'rt-main',
 		RT_URI . '/css/main.css',
 		array( 'rt-fonts' ),
-		RT_VERSION
+		filemtime( RT_DIR . '/css/main.css' )
 	);
 
 	wp_enqueue_script(
 		'rt-main',
 		RT_URI . '/js/main.js',
 		array(),
-		RT_VERSION,
+		filemtime( RT_DIR . '/js/main.js' ),
 		true
 	);
 
@@ -93,6 +95,7 @@ function rt_enqueue_assets() {
 		'nonce'         => wp_create_nonce( 'rt_nonce' ),
 		'themeUri'      => RT_URI,
 		'typingPhrases' => $typing_phrases,
+		'contactError'  => __( 'Something went wrong. Please try again or email me directly.', 'russteicheira' ),
 	) );
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
@@ -114,8 +117,9 @@ function rt_register_post_types() {
 			'new_item'      => __( 'New Capability',         'russteicheira' ),
 			'view_item'     => __( 'View Capability',        'russteicheira' ),
 			'search_items'  => __( 'Search Capabilities',   'russteicheira' ),
-			'not_found'     => __( 'No capabilities found', 'russteicheira' ),
-			'menu_name'     => __( 'Capabilities',           'russteicheira' ),
+			'not_found'          => __( 'No capabilities found',          'russteicheira' ),
+			'not_found_in_trash' => __( 'No capabilities found in Trash', 'russteicheira' ),
+			'menu_name'          => __( 'Capabilities',                   'russteicheira' ),
 		),
 		'public'             => false,
 		'publicly_queryable' => false,
@@ -142,8 +146,10 @@ function rt_register_post_types() {
 			'edit_item'     => __( 'Edit Expertise',     'russteicheira' ),
 			'new_item'      => __( 'New Expertise',      'russteicheira' ),
 			'search_items'  => __( 'Search Expertise',   'russteicheira' ),
-			'not_found'     => __( 'No expertise found', 'russteicheira' ),
-			'menu_name'     => __( 'Expertise',          'russteicheira' ),
+			'not_found'          => __( 'No expertise found',          'russteicheira' ),
+			'not_found_in_trash' => __( 'No expertise found in Trash', 'russteicheira' ),
+			'view_item'          => __( 'View Expertise',               'russteicheira' ),
+			'menu_name'          => __( 'Expertise',                    'russteicheira' ),
 		),
 		'public'             => false,
 		'publicly_queryable' => false,
@@ -172,14 +178,16 @@ function rt_register_post_types() {
 			'new_item'      => __( 'New Project',     'russteicheira' ),
 			'view_item'     => __( 'View Project',    'russteicheira' ),
 			'search_items'  => __( 'Search Projects', 'russteicheira' ),
-			'not_found'     => __( 'No projects found', 'russteicheira' ),
-			'menu_name'     => __( 'Projects',        'russteicheira' ),
+			'not_found'          => __( 'No projects found',          'russteicheira' ),
+			'not_found_in_trash' => __( 'No projects found in Trash', 'russteicheira' ),
+			'menu_name'          => __( 'Projects',                   'russteicheira' ),
 		),
 		'public'             => true,
 		'publicly_queryable' => true,
 		'show_ui'            => true,
 		'show_in_menu'       => true,
 		'show_in_rest'       => true,
+		'rest_base'          => 'projects',
 		'query_var'          => true,
 		'rewrite'            => array( 'slug' => 'projects' ),
 		'capability_type'    => array( 'rt_project', 'rt_projects' ),
@@ -199,8 +207,9 @@ function rt_register_post_types() {
 			'edit_item'     => __( 'Edit Certification',     'russteicheira' ),
 			'new_item'      => __( 'New Certification',      'russteicheira' ),
 			'search_items'  => __( 'Search Certifications',  'russteicheira' ),
-			'not_found'     => __( 'No certifications found', 'russteicheira' ),
-			'menu_name'     => __( 'Certifications',         'russteicheira' ),
+			'not_found'          => __( 'No certifications found',          'russteicheira' ),
+			'not_found_in_trash' => __( 'No certifications found in Trash', 'russteicheira' ),
+			'menu_name'          => __( 'Certifications',                   'russteicheira' ),
 		),
 		'public'             => false,
 		'publicly_queryable' => false,
@@ -274,8 +283,8 @@ if ( ! function_exists( 'rt_grant_cpt_caps' ) ) {
 			}
 		}
 	}
+	add_action( 'after_switch_theme', 'rt_grant_cpt_caps' );
 }
-add_action( 'after_switch_theme', 'rt_grant_cpt_caps' );
 
 if ( ! function_exists( 'rt_maybe_grant_cpt_caps' ) ) {
 	function rt_maybe_grant_cpt_caps() {
@@ -372,9 +381,9 @@ function rt_save_project_meta( $post_id ) {
 		return;
 	}
 
-	$url      = isset( $_POST['project_url'] )      ? esc_url_raw( $_POST['project_url'] )            : '';
-	$github   = isset( $_POST['project_github'] )   ? esc_url_raw( $_POST['project_github'] )         : '';
-	$featured = isset( $_POST['project_featured'] ) ? sanitize_text_field( $_POST['project_featured'] ) : '';
+	$url      = isset( $_POST['project_url'] )      ? esc_url_raw( wp_unslash( $_POST['project_url'] ) )            : '';
+	$github   = isset( $_POST['project_github'] )   ? esc_url_raw( wp_unslash( $_POST['project_github'] ) )         : '';
+	$featured = isset( $_POST['project_featured'] ) ? sanitize_text_field( wp_unslash( $_POST['project_featured'] ) ) : '';
 	$allowed_schemes = array( 'http', 'https' );
 	if ( $url    && ! in_array( wp_parse_url( $url,    PHP_URL_SCHEME ), $allowed_schemes, true ) ) { $url    = ''; }
 	if ( $github && ! in_array( wp_parse_url( $github, PHP_URL_SCHEME ), $allowed_schemes, true ) ) { $github = ''; }
@@ -411,7 +420,7 @@ function rt_capability_meta_box_cb( $post ) {
 			style="width:60px;font-size:1.5em;text-align:center;margin-top:4px;" />
 	</p>
 	<p class="description"><?php _e( 'Default: 📄. Title: 40 chars max. Excerpt (description): 50 chars per line, 100 max.', 'russteicheira' ); ?></p>
-	<p class="description" style="margin-top:8px;color:#b00;"><?php _e( '<strong>Limit: 5 published.</strong> A 6th reverts to Draft. Use Order (Page Attributes) to control sequence.', 'russteicheira' ); ?></p>
+	<p class="description" style="margin-top:8px;color:#b00;"><strong><?php esc_html_e( 'Limit: 5 published.', 'russteicheira' ); ?></strong> <?php esc_html_e( 'A 6th reverts to Draft. Use Order (Page Attributes) to control sequence.', 'russteicheira' ); ?></p>
 	<?php
 }
 
@@ -450,7 +459,7 @@ function rt_save_capability_meta( $post_id ) {
 		}
 	}
 
-	$icon = isset( $_POST['capability_icon'] ) ? sanitize_text_field( $_POST['capability_icon'] ) : '';
+	$icon = isset( $_POST['capability_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['capability_icon'] ) ) : '';
 	if ( ! $icon ) {
 		$icon = '📄';
 	}
@@ -460,6 +469,9 @@ add_action( 'save_post_capability', 'rt_save_capability_meta' );
 
 function rt_capability_limit_fields( $data ) {
 	if ( 'capability' !== $data['post_type'] ) {
+		return $data;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 		return $data;
 	}
 	$uid = get_current_user_id();
@@ -629,7 +641,7 @@ function rt_save_expertise_meta( $post_id ) {
 		return;
 	}
 
-	$icon = isset( $_POST['expertise_icon'] ) ? sanitize_text_field( $_POST['expertise_icon'] ) : '';
+	$icon = isset( $_POST['expertise_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['expertise_icon'] ) ) : '';
 	if ( ! $icon ) {
 		$icon = '📄';
 	}
@@ -764,6 +776,9 @@ function rt_expertise_limit_fields( $data ) {
 	if ( 'expertise' !== $data['post_type'] ) {
 		return $data;
 	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return $data;
+	}
 	$uid = get_current_user_id();
 
 	if ( mb_strlen( $data['post_title'] ) > 32 ) {
@@ -895,14 +910,15 @@ function rt_handle_contact() {
 		return;
 	}
 
-	$name    = isset( $_POST['name'] )    ? sanitize_text_field( $_POST['name'] )        : '';
-	$email   = isset( $_POST['email'] )   ? sanitize_email( $_POST['email'] )            : '';
-	$subject = isset( $_POST['subject'] ) ? sanitize_text_field( $_POST['subject'] )     : '';
-	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( $_POST['message'] ) : '';
+	$name    = isset( $_POST['name'] )    ? sanitize_text_field( wp_unslash( $_POST['name'] ) )        : '';
+	$email   = isset( $_POST['email'] )   ? sanitize_email( wp_unslash( $_POST['email'] ) )            : '';
+	$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) )     : '';
+	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
 
 	// Strip CRLF sequences to prevent header injection via $name or $subject.
 	$name    = str_replace( array( "\r", "\n" ), '', $name );
 	$subject = str_replace( array( "\r", "\n" ), '', $subject );
+	$subject = $subject ?: 'Contact Form Submission';
 
 	if ( ! $name || ! is_email( $email ) || ! $message ) {
 		wp_send_json_error( array( 'message' => __( 'Please fill in all required fields.', 'russteicheira' ) ) );
@@ -919,7 +935,8 @@ function rt_handle_contact() {
 		$name, $email, $subject, $message
 	);
 
-	// Increment only on a valid, mail-bound submission so malformed requests don't burn quota.
+	// Count every attempt regardless of delivery outcome — counting only on success
+	// would let a broken SMTP connection bypass the rate limit entirely.
 	set_transient( $ip_key, $attempts + 1, HOUR_IN_SECONDS );
 
 	$sent = wp_mail( $to, '[russteicheira.net] ' . $subject, $body, $headers );
@@ -975,12 +992,6 @@ function rt_body_classes( $classes ) {
 add_filter( 'body_class', 'rt_body_classes' );
 
 
-// ── WP_BODY_OPEN SHIM (WP < 5.2) ─────────────────────────────
-if ( ! function_exists( 'wp_body_open' ) ) {
-	function wp_body_open() {
-		do_action( 'wp_body_open' );
-	}
-}
 
 
 // ── SECURITY ──────────────────────────────────────────────────
@@ -1000,7 +1011,7 @@ add_action( 'send_headers', 'rt_send_security_headers' );
 
 // ── TAXONOMY: Skills (for the About page badges) ─────────────
 function rt_register_skill_taxonomy() {
-	register_taxonomy( 'skill', array( 'page', 'expertise' ), array(
+	register_taxonomy( 'skill', array( 'expertise' ), array(
 		'labels' => array(
 			'name'                       => __( 'Skills',            'russteicheira' ),
 			'singular_name'              => __( 'Skill',             'russteicheira' ),
@@ -1026,23 +1037,11 @@ function rt_register_skill_taxonomy() {
 		'query_var'             => false,
 		'rewrite'               => false,   // no public archive needed
 	) );
+	// Explicit association ensures the admin meta box appears even if the CPT
+	// registered before this taxonomy on the same init priority.
+	register_taxonomy_for_object_type( 'skill', 'expertise' );
 }
 add_action( 'init', 'rt_register_skill_taxonomy' );
-
-
-// ── HELPER: fetch the about-content page ─────────────────────
-if ( ! function_exists( 'rt_get_about_page' ) ) {
-	function rt_get_about_page() {
-		$pages = get_posts( array(
-			'post_type'      => 'page',
-			'name'           => 'about-content',
-			'post_status'    => array( 'publish', 'draft', 'private' ),
-			'posts_per_page' => 1,
-			'no_found_rows'  => true,
-		) );
-		return ! empty( $pages ) ? $pages[0] : null;
-	}
-}
 
 
 // ── HELPER: section header (eyebrow / heading / sub) ─────────

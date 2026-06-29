@@ -7,7 +7,7 @@
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
-<?php if ( function_exists( 'wp_body_open' ) ) { wp_body_open(); } ?>
+<?php wp_body_open(); ?>
 
 <a class="skip-link screen-reader-text" href="#main-content">
 	<?php _e( 'Skip to content', 'russteicheira' ); ?>
@@ -53,4 +53,4 @@
 	</div><!-- .nav-inner -->
 </nav><!-- .site-nav -->
 
-<div id="main-content">
+<main id="main-content">
