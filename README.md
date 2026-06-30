@@ -1,6 +1,6 @@
 # Cybersecurity & Compliance Portfolio WordPress Theme
 
-[![PHPMD](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml)
+[![CodeQL](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql) [![PHPMD](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml)
 
 **Minimum:** ![Static Badge](https://img.shields.io/badge/WordPress-v._6.2%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._7.4-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._5.7_/_10.3_-blue)
 
