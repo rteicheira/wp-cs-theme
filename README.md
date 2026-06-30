@@ -2,14 +2,16 @@
 
 [![CodeQL](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql) [![PHPMD](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml)
 
-**Minimum:** ![Static Badge](https://img.shields.io/badge/WordPress-v._6.2%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._7.4-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._5.7_/_10.3_-blue)
+A custom WordPress theme for [russteicheira.net](https://russteicheira.net). While I designed this for my own use, I did try to add enough flexibility for others to use it as well.
 
-**Recommended:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
+The theme is built for a cybersecurity and compliance professional. The theme combines a personal blog with a structured portfolio using three custom post types for: Projects, Expertise, and Certifications, with a shared Skill taxonomy that links related content across the entire site.
 
-A custom WordPress theme for russteicheira.net.
+The homepage is assembled from independently controlled sections, each with configurable visibility, color schemes, and background images managed through a dedicated admin page.
 
 > [!important]
 > This is a work in progress - use at your own risk.
+> **Minimum Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._6.2%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._7.4-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._5.7_/_10.3_-blue)
+> **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
 
 ![Screenshot](screenshot.png)
 
@@ -157,3 +159,11 @@ The nav and footer display a text logo derived from the first letter of each of 
 | ≤ 900px | About/Contact stack to 1 col, blog sidebar hides |
 | ≤ 768px | Hamburger nav activates |
 | ≤ 640px | All grids → 1 col |
+
+## Limitations
+
+There are a few known limitations:
+
+1. The title structure is geared around one first name and one last name. Additional names should work just fine, but it might look off.
+2. I did not program anything around WooCommerce.
+3. Currently no way to easily change color overlays (like the grid in the hero section).
