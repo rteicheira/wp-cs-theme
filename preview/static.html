@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Russ Teicheira — Cybersecurity & Compliance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --navy:    #0D1B2A;
+      --navy-mid:#122336;
+      --teal:    #1A7A6E;
+      --teal-lt: #22A090;
+      --charcoal:#2C3E50;
+      --gold:    #C9A84C;
+      --gold-lt: #E0BF6B;
+      --offwhite:#F0F4F8;
+      --gray:    #8899AA;
+      --white:   #FFFFFF;
+
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+
+      --radius: 6px;
+      --transition: 0.25s ease;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--offwhite);
+      color: var(--charcoal);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    ul { list-style: none; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13, 27, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray);
+      letter-spacing: 0.02em;
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--teal-lt); }
+    .nav-cta {
+      background: var(--teal);
+      color: var(--white) !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: var(--radius);
+      transition: background var(--transition) !important;
+    }
+    .nav-cta:hover { background: var(--teal-lt) !important; color: var(--white) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding-top: 64px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 70% 40%, rgba(26,122,110,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(201,168,76,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    /* Grid texture */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26,122,110,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,122,110,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--teal-lt);
+      letter-spacing: 0.08em;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--teal-lt);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .hero h1 .accent { color: var(--gold); }
+    .hero-terminal {
+      font-family: var(--font-mono);
+      font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+      color: var(--teal-lt);
+      margin-bottom: 2rem;
+      min-height: 1.6em;
+    }
+    .cursor {
+      display: inline-block;
+      width: 0.6em;
+      height: 1.1em;
+      background: var(--gold);
+      vertical-align: text-bottom;
+      animation: blink 1.1s step-end infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .hero-desc {
+      font-size: 1.1rem;
+      color: #99AABB;
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--teal);
+      color: var(--white);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: var(--radius);
+      transition: background var(--transition), transform var(--transition);
+    }
+    .btn-primary:hover { background: var(--teal-lt); transform: translateY(-2px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(201,168,76,0.4);
+      color: var(--gold);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: var(--radius);
+      transition: border-color var(--transition), color var(--transition), transform var(--transition);
+    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold-lt); transform: translateY(-2px); }
+
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+    }
+    .stat-item { }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-num span { color: var(--gold); }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--gray);
+      letter-spacing: 0.04em;
+      margin-top: 0.3rem;
+    }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 5rem 0; }
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--teal);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .section-title.light { color: var(--white); }
+    .section-sub {
+      font-size: 1rem;
+      color: #5A6A7A;
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+    }
+    .section-sub.light { color: #99AABB; }
+
+    /* ── ABOUT ── */
+    #about { background: var(--white); }
+    .about-portrait-wrap { margin-bottom: 2rem; }
+    .about-portrait {
+      width: 148px;
+      height: 148px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 0 6px rgba(201,168,76,0.12), 0 8px 32px rgba(13,27,42,0.18);
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .about-text p {
+      font-size: 1rem;
+      color: #4A5A6A;
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+    }
+    .about-text p strong { color: var(--navy); font-weight: 600; }
+    .about-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 3px;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold);
+      background: rgba(201,168,76,0.07);
+    }
+    .about-highlight {
+      background: var(--navy);
+      border-radius: 10px;
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .about-highlight::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+    }
+    .highlight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .highlight-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .highlight-item:first-child { padding-top: 0; }
+    .highlight-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: rgba(26,122,110,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+    .highlight-text strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.2rem;
+    }
+    .highlight-text span {
+      font-size: 0.8rem;
+      color: var(--gray);
+      line-height: 1.4;
+    }
+
+    /* ── EXPERTISE ── */
+    #expertise { background: var(--navy); }
+    .expertise-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .expertise-card {
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 2rem;
+      transition: border-color var(--transition), transform var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .expertise-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .expertise-card:hover { border-color: rgba(26,122,110,0.35); transform: translateY(-4px); }
+    .expertise-card:hover::after { opacity: 1; }
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.6rem;
+    }
+    .card-desc {
+      font-size: 0.875rem;
+      color: #7A8EA0;
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .card-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+    }
+
+    /* ── PROJECTS ── */
+    #projects { background: var(--offwhite); }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    .project-card {
+      background: var(--white);
+      border: 1px solid #DDE3EA;
+      border-radius: 8px;
+      padding: 2rem;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    }
+    .project-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 8px 30px rgba(26,122,110,0.1);
+      transform: translateY(-3px);
+    }
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.8rem;
+    }
+    .project-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .project-link {
+      font-size: 1rem;
+      color: var(--teal);
+      opacity: 0.6;
+      transition: opacity var(--transition);
+    }
+    .project-card:hover .project-link { opacity: 1; }
+    .project-desc {
+      font-size: 0.875rem;
+      color: #5A6A7A;
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+    .project-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .stack-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+    }
+
+    /* ── BLOG ── */
+    #blog { background: var(--white); }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .blog-card {
+      border: 1px solid #DDE3EA;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .blog-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+    .blog-card-top {
+      background: var(--navy);
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .blog-card-top::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(26,122,110,0.25) 0%, transparent 70%);
+    }
+    .blog-card-body { padding: 1.5rem; }
+    .blog-meta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--teal);
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.04em;
+    }
+    .blog-card-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.35;
+      margin-bottom: 0.6rem;
+    }
+    .blog-card-excerpt {
+      font-size: 0.825rem;
+      color: #6A7A8A;
+      line-height: 1.65;
+    }
+    .blog-placeholder {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: rgba(26,122,110,0.03);
+      border: 1px dashed rgba(26,122,110,0.2);
+      border-radius: 8px;
+    }
+    .blog-placeholder p {
+      color: #7A8A9A;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--navy); position: relative; overflow: hidden; }
+    #contact::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(26,122,110,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .contact-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--gray);
+      letter-spacing: 0.04em;
+    }
+    .form-group input,
+    .form-group textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #4A5A6A; }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--teal-lt); }
+    .form-group textarea { resize: vertical; min-height: 130px; }
+    .contact-links { margin-top: 2rem; }
+    .contact-link-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: color var(--transition);
+    }
+    .contact-link-item:last-child { border-bottom: none; }
+    .contact-link-item:hover { color: var(--teal-lt); }
+    .link-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(26,122,110,0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .link-label {
+      font-size: 0.8rem;
+      color: var(--gray);
+      margin-bottom: 0.1rem;
+    }
+    .link-value {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--white);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #08111C;
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    footer p {
+      font-size: 0.8rem;
+      color: #4A5A6A;
+      font-family: var(--font-mono);
+    }
+    footer span { color: var(--teal); }
+
+    /* ── DIVIDER ── */
+    .gold-line {
+      width: 48px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin-bottom: 2rem;
+    }
+
+    /* ── CERTIFICATIONS ── */
+    #certifications { background: var(--offwhite); padding: 3.5rem 0; border-top: 1px solid #DDE3EA; }
+    .certs-header { margin-bottom: 2.5rem; }
+    .certs-strip {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .cert-tile {
+      background: var(--navy-mid);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      text-align: center;
+      flex: 1;
+      min-width: 150px;
+      max-width: 200px;
+      position: relative;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .cert-tile::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+      border-radius: 8px 8px 0 0;
+    }
+    .cert-tile:hover { border-color: rgba(201,168,76,0.5); transform: translateY(-3px); }
+    .cert-acronym {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      margin-bottom: 0.35rem;
+    }
+    .cert-name {
+      font-size: 0.775rem;
+      color: var(--white);
+      font-weight: 500;
+      line-height: 1.3;
+      margin-bottom: 0.4rem;
+    }
+    .cert-issuer {
+      font-family: var(--font-mono);
+      font-size: 0.67rem;
+      color: var(--gray);
+      letter-spacing: 0.03em;
+    }
+    .cert-status {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      color: var(--teal-lt);
+      background: rgba(26,122,110,0.15);
+      border: 1px solid rgba(26,122,110,0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      margin-top: 0.55rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .expertise-grid { grid-template-columns: 1fr 1fr; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .contact-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+    @media (max-width: 680px) {
+      .expertise-grid { grid-template-columns: 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .hero-stats { gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">RT<span>.</span></div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#certifications">Certs</a></li>
+      <li><a href="#expertise">Expertise</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Cybersecurity &amp; Compliance Professional</p>
+    <h1>Russ<br /><span class="accent">Teicheira</span></h1>
+    <p class="hero-terminal" id="terminal-text"><span class="cursor"></span></p>
+    <p class="hero-desc">
+      PCI compliance specialist, automation builder, and self-hosted infrastructure enthusiast.
+      Helping organizations navigate complex security landscapes and build resilient systems.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">View My Work ↓</a>
+      <a href="#contact" class="btn-secondary">Let's Connect</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">PCI<span> DSS</span></div>
+        <div class="stat-label">Compliance Focus</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">10<span>+</span></div>
+        <div class="stat-label">Years in Security</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Scripts Automated</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="about-portrait-wrap">
+          <img src="portrait.jpg" alt="Russ Teicheira" class="about-portrait" />
+        </div>
+        <p class="section-eyebrow">// about me</p>
+        <h2 class="section-title">Security-first thinking,<br/>from the stack up</h2>
+        <div class="gold-line"></div>
+        <p>
+          I specialize in <strong>PCI DSS compliance</strong> and cybersecurity governance — helping
+          organizations understand their risk posture, close compliance gaps, and build programs that
+          actually hold up under scrutiny.
+        </p>
+        <p>
+          Outside the compliance world, I spend time building out <strong>self-hosted infrastructure</strong>,
+          writing automation with PowerShell and Bash, containerizing workloads with Docker, and exploring
+          what modern security looks like in a homelab environment.
+        </p>
+        <p>
+          I believe good security isn't just policy — it's culture, tooling, and the unglamorous work of
+          keeping systems honest over time.
+        </p>
+        <div class="about-badges">
+          <span class="badge">PCI DSS</span>
+          <span class="badge">Risk Assessment</span>
+          <span class="badge">Docker</span>
+          <span class="badge">PowerShell</span>
+          <span class="badge">Bash</span>
+          <span class="badge">Self-Hosting</span>
+          <span class="badge">Automation</span>
+          <span class="badge">Linux</span>
+        </div>
+      </div>
+      <div class="about-highlight">
+        <div class="highlight-item">
+          <div class="highlight-icon">🔐</div>
+          <div class="highlight-text">
+            <strong>PCI DSS Compliance</strong>
+            <span>Gap analysis, scoping, remediation planning, and QSA prep for cardholder data environments.</span>
+          </div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-icon">⚙️</div>
+          <div class="highlight-text">
+            <strong>Security Automation</strong>
+            <span>PowerShell &amp; Bash scripts that reduce toil, enforce controls, and surface anomalies faster.</span>
+          </div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-icon">🐋</div>
+          <div class="highlight-text">
+            <strong>Container &amp; Self-Hosted Infra</strong>
+            <span>Docker deployments, homelab architecture, and getting more from commodity hardware.</span>
+          </div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-icon">📋</div>
+          <div class="highlight-text">
+            <strong>Policy &amp; Governance</strong>
+            <span>Translating technical controls into documentation that satisfies auditors and makes sense to teams.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section id="certifications">
+  <div class="section-inner">
+    <div class="certs-header">
+      <p class="section-eyebrow">// credentials</p>
+      <h2 class="section-title">Professional Certifications</h2>
+    </div>
+    <div class="certs-strip">
+
+      <div class="cert-tile">
+        <div class="cert-acronym">Security+</div>
+        <div class="cert-name">CompTIA Security+</div>
+        <div class="cert-issuer">CompTIA</div>
+        <div class="cert-status">Active</div>
+      </div>
+
+      <div class="cert-tile">
+        <div class="cert-acronym">PCIP</div>
+        <div class="cert-name">PCI Professional</div>
+        <div class="cert-issuer">PCI Security Standards Council</div>
+        <div class="cert-status">Active</div>
+      </div>
+
+      <div class="cert-tile">
+        <div class="cert-acronym">CySA+</div>
+        <div class="cert-name">Cybersecurity Analyst</div>
+        <div class="cert-issuer">CompTIA</div>
+        <div class="cert-status">Active</div>
+      </div>
+
+      <div class="cert-tile">
+        <div class="cert-acronym">CISM</div>
+        <div class="cert-name">Certified Information Security Manager</div>
+        <div class="cert-issuer">ISACA</div>
+        <div class="cert-status">Active</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXPERTISE -->
+<section id="expertise">
+  <div class="section-inner">
+    <p class="section-eyebrow">// what I do</p>
+    <h2 class="section-title light">Core Expertise</h2>
+    <p class="section-sub light">A mix of compliance depth and hands-on technical capability.</p>
+    <div class="expertise-grid">
+
+      <div class="expertise-card">
+        <div class="card-icon">🛡️</div>
+        <div class="card-title">PCI DSS Compliance</div>
+        <div class="card-desc">End-to-end compliance programs for cardholder data environments. Scoping, gap assessments, remediation roadmaps, and audit readiness.</div>
+        <div class="card-tags">
+          <span class="card-tag">PCI DSS v4.0</span>
+          <span class="card-tag">SAQ</span>
+          <span class="card-tag">ROC</span>
+          <span class="card-tag">AOC</span>
+        </div>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">Risk &amp; Vulnerability Management</div>
+        <div class="card-desc">Identifying, prioritizing, and tracking vulnerabilities through their lifecycle. Making risk legible to leadership without losing technical accuracy.</div>
+        <div class="card-tags">
+          <span class="card-tag">CVE Analysis</span>
+          <span class="card-tag">Patch Mgmt</span>
+          <span class="card-tag">Risk Register</span>
+        </div>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Scripting &amp; Automation</div>
+        <div class="card-desc">Automating repetitive compliance and security tasks with PowerShell and Bash. Less toil, more signal.</div>
+        <div class="card-tags">
+          <span class="card-tag">PowerShell</span>
+          <span class="card-tag">Bash</span>
+          <span class="card-tag">Cron</span>
+          <span class="card-tag">Task Scheduling</span>
+        </div>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-icon">🐋</div>
+        <div class="card-title">Docker &amp; Containerization</div>
+        <div class="card-desc">Containerizing services for portability, isolation, and easier management. Self-hosted stacks on bare metal and VMs.</div>
+        <div class="card-tags">
+          <span class="card-tag">Docker</span>
+          <span class="card-tag">Compose</span>
+          <span class="card-tag">Traefik</span>
+          <span class="card-tag">Portainer</span>
+        </div>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-icon">🖥️</div>
+        <div class="card-title">Self-Hosted Infrastructure</div>
+        <div class="card-desc">Designing and running home and lab infrastructure on Linux. Full control over the stack, from the OS to the application layer.</div>
+        <div class="card-tags">
+          <span class="card-tag">Linux</span>
+          <span class="card-tag">Apache</span>
+          <span class="card-tag">MySQL</span>
+          <span class="card-tag">Proxmox</span>
+        </div>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-icon">📄</div>
+        <div class="card-title">Policy &amp; Documentation</div>
+        <div class="card-desc">Writing security policies, procedures, and evidence packages that satisfy auditors and actually guide teams day-to-day.</div>
+        <div class="card-tags">
+          <span class="card-tag">Policy Writing</span>
+          <span class="card-tag">Evidence Mgmt</span>
+          <span class="card-tag">Audit Prep</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-inner">
+    <p class="section-eyebrow">// portfolio</p>
+    <h2 class="section-title">Projects &amp; Work</h2>
+    <p class="section-sub">A selection of things I've built, automated, or documented.</p>
+    <div class="projects-grid">
+
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">PCI Compliance Gap Tracker</div>
+          <span class="project-link">↗</span>
+        </div>
+        <div class="project-desc">A spreadsheet-driven tool for mapping PCI DSS v4.0 requirements against current controls, tracking remediation owners, and generating a status dashboard for leadership.</div>
+        <div class="project-stack">
+          <span class="stack-tag">PCI DSS v4.0</span>
+          <span class="stack-tag">Excel</span>
+          <span class="stack-tag">PowerShell</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">Homelab Docker Stack</div>
+          <span class="project-link">↗</span>
+        </div>
+        <div class="project-desc">Self-hosted suite of services running on bare metal Linux — reverse proxy, monitoring, media, and more. All managed via Docker Compose with automated backup scripts.</div>
+        <div class="project-stack">
+          <span class="stack-tag">Docker</span>
+          <span class="stack-tag">Traefik</span>
+          <span class="stack-tag">Bash</span>
+          <span class="stack-tag">Linux</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">Windows Audit Automation</div>
+          <span class="project-link">↗</span>
+        </div>
+        <div class="project-desc">PowerShell scripts that collect, format, and export system audit evidence — user accounts, group memberships, patch levels — into structured reports for QSA review.</div>
+        <div class="project-stack">
+          <span class="stack-tag">PowerShell</span>
+          <span class="stack-tag">WinRM</span>
+          <span class="stack-tag">Active Directory</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">Security Policy Library</div>
+          <span class="project-link">↗</span>
+        </div>
+        <div class="project-desc">A modular library of PCI-aligned security policies and procedures, templated for small-to-mid-sized merchants to customize and implement without starting from scratch.</div>
+        <div class="project-stack">
+          <span class="stack-tag">Policy Authoring</span>
+          <span class="stack-tag">PCI DSS</span>
+          <span class="stack-tag">Documentation</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section id="blog">
+  <div class="section-inner">
+    <p class="section-eyebrow">// writing</p>
+    <h2 class="section-title">From the Blog</h2>
+    <p class="section-sub">Notes on compliance, security, self-hosting, and automation. Coming soon.</p>
+
+    <div class="blog-placeholder">
+      <div style="font-size:2rem;">📝</div>
+      <p>Blog posts are on their way. Check back soon for writing on PCI compliance, Docker, PowerShell automation, and self-hosted infrastructure.</p>
+    </div>
+
+    <!-- Uncomment and populate when posts are ready:
+    <div class="blog-grid">
+      <div class="blog-card">
+        <div class="blog-card-top">🔐</div>
+        <div class="blog-card-body">
+          <div class="blog-meta">Jun 2025 · PCI DSS</div>
+          <div class="blog-card-title">What Changed in PCI DSS v4.0 and Why It Matters</div>
+          <div class="blog-card-excerpt">A practical breakdown of the most impactful changes in version 4.0 for small and mid-size merchants.</div>
+        </div>
+      </div>
+    </div>
+    -->
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-inner">
+    <div class="contact-inner">
+      <div>
+        <p class="section-eyebrow">// get in touch</p>
+        <h2 class="section-title light">Let's work<br/>together</h2>
+        <div class="gold-line"></div>
+        <p class="section-sub light" style="margin-bottom:0">Whether you need help with a PCI assessment, want to talk automation, or just want to connect — my inbox is open.</p>
+        <div class="contact-links">
+          <a href="mailto:russ@russteicheira.net" class="contact-link-item">
+            <div class="link-icon">✉️</div>
+            <div>
+              <div class="link-label">Email</div>
+              <div class="link-value">russ@russteicheira.net</div>
+            </div>
+          </a>
+          <a href="https://linkedin.com/in/russteicheira" class="contact-link-item" target="_blank">
+            <div class="link-icon">💼</div>
+            <div>
+              <div class="link-label">LinkedIn</div>
+              <div class="link-value">linkedin.com/in/russteicheira</div>
+            </div>
+          </a>
+          <a href="https://github.com/russteicheira" class="contact-link-item" target="_blank">
+            <div class="link-icon">🐙</div>
+            <div>
+              <div class="link-label">GitHub</div>
+              <div class="link-value">github.com/russteicheira</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="contact-form">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" placeholder="Jane Smith" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="jane@company.com" />
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" placeholder="PCI compliance consultation" />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="Tell me a bit about your project or what you're working on..."></textarea>
+        </div>
+        <button class="btn-primary" type="button" style="border:none;cursor:pointer;width:fit-content;">Send Message →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Russ Teicheira · Built on <span>Linux</span> · russteicheira.net</p>
+</footer>
+
+<script>
+  // Terminal typing effect
+  const phrases = [
+    '> securing cardholder data environments',
+    '> automating the boring stuff',
+    '> docker run --rm compliance-check',
+    '> grep -r "risk" /etc/security/',
+    '> building things that hold up under audit',
+  ];
+  let phraseIdx = 0, charIdx = 0, deleting = false;
+  const el = document.getElementById('terminal-text');
+
+  function type() {
+    const phrase = phrases[phraseIdx];
+    if (!deleting) {
+      charIdx++;
+      el.innerHTML = phrase.slice(0, charIdx) + '<span class="cursor"></span>';
+      if (charIdx === phrase.length) {
+        deleting = true;
+        setTimeout(type, 2200);
+        return;
+      }
+    } else {
+      charIdx--;
+      el.innerHTML = phrase.slice(0, charIdx) + '<span class="cursor"></span>';
+      if (charIdx === 0) {
+        deleting = false;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
+      }
+    }
+    setTimeout(type, deleting ? 35 : 65);
+  }
+  setTimeout(type, 800);
+
+  // Smooth active nav highlight
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.style.color = '');
+        const active = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if (active && !active.classList.contains('nav-cta')) active.style.color = '#22A090';
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

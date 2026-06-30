@@ -9,6 +9,9 @@
 $eyebrow = rt_section_opt( 'about', 'eyebrow', '// about me' );
 $heading = rt_section_opt( 'about', 'heading', 'About Me' );
 
+$portrait_id  = absint( rt_section_opt( 'about', 'portrait_id', 0 ) );
+$portrait_url = $portrait_id ? wp_get_attachment_image_url( $portrait_id, 'large' ) : '';
+
 $body_raw = rt_section_opt( 'about', 'body', '' );
 $content  = $body_raw ? wpautop( wp_kses_post( $body_raw ) ) : '';
 
@@ -32,6 +35,15 @@ if ( $skills_raw ) {
 		<div class="about__grid">
 
 			<div class="about__text">
+				<?php if ( $portrait_url ) : ?>
+				<div class="about__portrait-wrap">
+					<img class="about__portrait"
+						src="<?php echo esc_url( $portrait_url ); ?>"
+						alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+						width="148" height="148">
+				</div>
+				<?php endif; ?>
+
 				<p class="section-eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
 
 				<h2 class="section-title"><?php echo esc_html( $heading ); ?></h2>

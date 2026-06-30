@@ -15,7 +15,7 @@ The homepage is assembled from independently controlled sections, each with conf
 >
 > **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
 
-![Screenshot](screenshot.png)
+![Preview Screenshot](preview/screenshot.png)
 
 ## Structure
 
@@ -34,7 +34,6 @@ russteicheira/
 ├── 404.php                    ← Not found
 ├── header.php                 ← <head>, nav
 ├── footer.php                 ← footer, wp_footer()
-├── screenshot.png             ← WP admin theme preview (1200×900)
 ├── css/
 │   ├── main.css               ← All styles (tokens → responsive)
 │   ├── admin-sections.css     ← Sections admin page styles
@@ -49,6 +48,10 @@ russteicheira/
 │   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
 │   ├── admin-field-counters.js ← Capability/expertise title+excerpt character counters
 │   └── customizer-preview.js  ← Customizer live preview bindings
+├── preview/
+│   ├── static.html            ← Provides a full preview of the entire homepage
+│   ├── screenshot.png         ← WP theme preview (1200×900)
+│   └── portrait.jpg           ← Used to show the portait location in the about me section
 ├── template-parts/
 │   ├── hero.php               ← Hero / above-the-fold section
 │   ├── about.php              ← About Me + capabilities panel
@@ -136,14 +139,14 @@ The **Blog** section has additional card meta toggles:
 
 ## Footer Settings
 
-Footer content is configurable in **WP Admin → Sections → (bottom of page)**:
+Footer content is configurable in **Appearance → Customize → Footer**:
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| Site tagline | `Cybersecurity & Compliance Professional` | Shown under the logo |
-| Copyright name | Site title | Name shown in the copyright line |
-| Credit text | _(blank)_ | Optional "Built by …" line |
-| Legal links | _(blank)_ | HTML links rendered above the copyright bar |
+| Site Tagline | `Cybersecurity & Compliance Professional` | Shown under the logo |
+| Copyright Name | Site title | Name shown in the copyright line |
+| Credit Line | _(blank)_ | Optional "Built by …" line |
+| Document Links | _(blank)_ | HTML links rendered above the copyright bar |
 
 Social/contact icons in the footer are pulled from the **Contact** section link list.
 

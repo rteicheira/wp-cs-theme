@@ -51,17 +51,13 @@ function rt_sections_admin_enqueue( $hook ) {
 	wp_enqueue_script( 'wp-dom-ready' );
 	wp_enqueue_media();
 
-	wp_enqueue_style( 'rt-admin-sections', RT_URI . '/css/admin-sections.css', array( 'wp-components' ), RT_VERSION );
-	wp_enqueue_script( 'rt-admin-sections', RT_URI . '/js/admin-sections.js', array( 'wp-dom-ready', 'wp-components', 'wp-element', 'jquery' ), RT_VERSION, true );
-	wp_enqueue_script( 'rt-admin-sections-skills', RT_URI . '/js/admin-sections-skills.js', array( 'wp-dom-ready' ), RT_VERSION, true );
-
-	wp_localize_script( 'rt-admin-sections', 'rtSectionsL10n', array(
-		'selectBgImage'             => __( 'Select Background Image',                                                  'russteicheira' ),
-		'useAsBg'                   => __( 'Use as Background',                                                        'russteicheira' ),
-		'changeImage'               => __( 'Change Image',                                                             'russteicheira' ),
-		'uploadSelectImage'         => __( 'Upload / Select Image',                                                    'russteicheira' ),
-		'openColorPicker'           => __( 'Open color picker',                                                        'russteicheira' ),
-		'resetToDefault'            => __( 'Reset to default',                                                         'russteicheira' ),
+	wp_localize_script( 'wp-dom-ready', 'rtSectionsL10n', array(
+		'selectBgImage'            => __( 'Select Background Image',                                                  'russteicheira' ),
+		'useAsBg'                  => __( 'Use as Background',                                                        'russteicheira' ),
+		'changeImage'              => __( 'Change Image',                                                             'russteicheira' ),
+		'uploadSelectImage'        => __( 'Upload / Select Image',                                                    'russteicheira' ),
+		'openColorPicker'          => __( 'Open color picker',                                                        'russteicheira' ),
+		'resetToDefault'           => __( 'Reset to default',                                                         'russteicheira' ),
 		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.', 'russteicheira' ),
 	) );
 }
@@ -167,17 +163,17 @@ function rt_sections_sanitize_about( array $raw ) {
 		'skills'           => rt_sections_sanitize_skills(
 			isset( $raw['skills'] ) && is_array( $raw['skills'] ) ? $raw['skills'] : array()
 		),
-		'bg_color'         => isset( $raw['bg_color'] )         ? rt_sanitize_color( $raw['bg_color'] )           : '',
-		'accent_color'     => isset( $raw['accent_color'] )     ? rt_sanitize_color( $raw['accent_color'] )       : '',
-		'bg_image_id'      => isset( $raw['bg_image_id'] )      ? absint( $raw['bg_image_id'] )                   : 0,
-		'bg_fixed'         => isset( $raw['bg_fixed'] ) && '1' === $raw['bg_fixed'] ? '1' : '0',
-		'badge_bg'         => isset( $raw['badge_bg'] )         ? rt_sanitize_color( $raw['badge_bg'] )           : '',
-		'badge_color'      => isset( $raw['badge_color'] )      ? rt_sanitize_color( $raw['badge_color'] )        : '',
-		'eyebrow_color'    => isset( $raw['eyebrow_color'] )    ? rt_sanitize_color( $raw['eyebrow_color'] )      : '',
-		'heading_color'    => isset( $raw['heading_color'] )    ? rt_sanitize_color( $raw['heading_color'] )      : '',
-		'body_color'       => isset( $raw['body_color'] )       ? rt_sanitize_color( $raw['body_color'] )         : '',
-		'card_title_color' => isset( $raw['card_title_color'] ) ? rt_sanitize_color( $raw['card_title_color'] )   : '',
-		'card_body_color'  => isset( $raw['card_body_color'] )  ? rt_sanitize_color( $raw['card_body_color'] )    : '',
+		'bg_color'     => isset( $input['about']['bg_color'] )     ? rt_sanitize_color( $input['about']['bg_color'] )     : '',
+		'accent_color' => isset( $input['about']['accent_color'] ) ? rt_sanitize_color( $input['about']['accent_color'] ) : '',
+		'bg_image_id'  => isset( $input['about']['bg_image_id'] )  ? absint( $input['about']['bg_image_id'] )              : 0,
+		'bg_fixed'     => isset( $input['about']['bg_fixed'] ) && '1' === $input['about']['bg_fixed'] ? '1' : '0',
+		'badge_bg'      => isset( $input['about']['badge_bg'] )      ? rt_sanitize_color( $input['about']['badge_bg'] )      : '',
+		'badge_color'   => isset( $input['about']['badge_color'] )   ? rt_sanitize_color( $input['about']['badge_color'] )   : '',
+		'eyebrow_color'   => isset( $input['about']['eyebrow_color'] )   ? rt_sanitize_color( $input['about']['eyebrow_color'] )   : '',
+		'heading_color'   => isset( $input['about']['heading_color'] )   ? rt_sanitize_color( $input['about']['heading_color'] )   : '',
+		'body_color'      => isset( $input['about']['body_color'] )      ? rt_sanitize_color( $input['about']['body_color'] )      : '',
+		'card_title_color' => isset( $input['about']['card_title_color'] ) ? rt_sanitize_color( $input['about']['card_title_color'] ) : '',
+		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
 	);
 }
 
@@ -463,516 +459,332 @@ function rt_render_about_fields( $v ) {
 				$skill_terms = array();
 			}
 
-			// Build JS data arrays
-			$selected_data = array();
-			foreach ( $selected_ids as $sid ) {
-				$st = get_term( $sid, 'skill' );
-				if ( $st && ! is_wp_error( $st ) ) {
-					$selected_data[] = array( 'id' => $st->term_id, 'name' => $st->name );
-				}
-			}
-			$all_terms_data = array();
-			foreach ( $skill_terms as $st ) {
-				$all_terms_data[] = array( 'id' => $st->term_id, 'name' => $st->name );
-			}
-			?>
-			<div class="rt-tag-wrap" id="rt-skills-wrap"
-				data-all="<?php echo esc_attr( wp_json_encode( $all_terms_data ) ); ?>"
-				data-selected="<?php echo esc_attr( wp_json_encode( $selected_data ) ); ?>">
-				<div id="rt-skills-pills"></div>
-				<input type="text" id="rt-skills-input" autocomplete="off"
-					placeholder="<?php esc_attr_e( 'Type to search or add a skill…', 'russteicheira' ); ?>">
-				<ul class="rt-tag-dropdown" id="rt-skills-dropdown"></ul>
-				<div id="rt-skills-hidden"></div>
-			</div>
-			<p class="description" style="max-width:600px;">
-				<?php _e( 'Select existing skills or type a new one and press Enter to create it. Backspace removes the last tag.', 'russteicheira' ); ?>
-			</p>
-		</td>
-	</tr>
-	<?php
-}
+							// Build JS data arrays
+							$selected_data = array();
+							foreach ( $selected_ids as $sid ) {
+								$st = get_term( $sid, 'skill' );
+								if ( $st && ! is_wp_error( $st ) ) {
+									$selected_data[] = array( 'id' => $st->term_id, 'name' => $st->name );
+								}
+							}
+							$all_terms_data = array();
+							foreach ( $skill_terms as $st ) {
+								$all_terms_data[] = array( 'id' => $st->term_id, 'name' => $st->name );
+							}
+							?>
+							<div class="rt-tag-wrap" id="rt-skills-wrap">
+								<div id="rt-skills-pills"></div>
+								<input type="text" id="rt-skills-input" autocomplete="off"
+									placeholder="<?php esc_attr_e( 'Type to search or add a skill…', 'russteicheira' ); ?>">
+								<ul class="rt-tag-dropdown" id="rt-skills-dropdown"></ul>
+								<div id="rt-skills-hidden"></div>
+							</div>
+							<p class="description" style="max-width:600px;">
+								<?php _e( 'Select existing skills or type a new one and press Enter to create it. Backspace removes the last tag.', 'russteicheira' ); ?>
+							</p>
+							<script>
+							(function() {
+								var ALL      = <?php echo wp_json_encode( $all_terms_data ); ?>;
+								var selected = <?php echo wp_json_encode( $selected_data ); ?>;
+								var wrap     = document.getElementById('rt-skills-wrap');
+								var input    = document.getElementById('rt-skills-input');
+								var dropdown = document.getElementById('rt-skills-dropdown');
+								var pillsEl  = document.getElementById('rt-skills-pills');
+								var hiddenEl = document.getElementById('rt-skills-hidden');
 
-/**
- * Render the Contact section's Subtext + Links table fields.
- */
-function rt_render_contact_fields( $v, array $opts ) {
-	?>
-	<tr>
-		<th>
-			<label for="contact_sub"><?php _e( 'Subtext', 'russteicheira' ); ?></label>
-		</th>
-		<td>
-			<textarea id="contact_sub" name="rt_sections[contact][sub]"
-				class="large-text" rows="3"><?php echo esc_textarea( $v( 'contact', 'sub' ) ); ?></textarea>
-			<p class="description"><?php _e( 'Paragraph shown beneath the heading.', 'russteicheira' ); ?></p>
-		</td>
-	</tr>
-	<tr>
-		<th style="padding-top:14px;">
-			<label><?php _e( 'Links', 'russteicheira' ); ?></label>
-		</th>
-		<td>
-			<?php
-			$saved_links = isset( $opts['contact']['links'] ) && is_array( $opts['contact']['links'] )
-			              ? $opts['contact']['links'] : array();
-			?>
-			<table style="border-collapse:collapse;width:100%;max-width:680px;">
-				<thead>
+								function focusedIndex() {
+									var items = dropdown.querySelectorAll('li');
+									for (var i = 0; i < items.length; i++) {
+										if (items[i].classList.contains('rt-focused')) return i;
+									}
+									return -1;
+								}
+
+								function render() {
+									pillsEl.innerHTML = '';
+									hiddenEl.innerHTML = '';
+									selected.forEach(function(t) {
+										var pill = document.createElement('span');
+										pill.className = 'rt-tag-pill';
+										var label = document.createTextNode(t.name);
+										var btn = document.createElement('button');
+										btn.type = 'button';
+										btn.className = 'rt-tag-pill__remove';
+										btn.setAttribute('aria-label', 'Remove ' + t.name);
+										btn.textContent = '×';
+										(function(term) {
+											btn.addEventListener('click', function() {
+												selected = selected.filter(function(s) { return s.id !== term.id; });
+												render();
+											});
+										})(t);
+										pill.appendChild(label);
+										pill.appendChild(btn);
+										pillsEl.appendChild(pill);
+										var inp = document.createElement('input');
+										inp.type  = 'hidden';
+										inp.name  = 'rt_sections[about][skills][]';
+										inp.value = t.id;
+										hiddenEl.appendChild(inp);
+									});
+								}
+
+								function buildDropdown(q) {
+									dropdown.innerHTML = '';
+									var lcq = q.toLowerCase();
+									var usedIds = selected.map(function(s) { return s.id; });
+									var matches = ALL.filter(function(t) {
+										return t.name.toLowerCase().indexOf(lcq) !== -1
+											&& usedIds.indexOf(t.id) === -1;
+									}).slice(0, 8);
+									var exactMatch = ALL.some(function(t) {
+										return t.name.toLowerCase() === lcq;
+									});
+									if (q && !exactMatch) {
+										var li = document.createElement('li');
+										li.className = 'rt-add-new';
+										li.textContent = 'Add “' + q + '”';
+										(function(name) {
+											li.addEventListener('mousedown', function(e) {
+												e.preventDefault(); addNew(name);
+											});
+										})(q);
+										dropdown.appendChild(li);
+									}
+									matches.forEach(function(t) {
+										var li = document.createElement('li');
+										li.textContent = t.name;
+										(function(term) {
+											li.addEventListener('mousedown', function(e) {
+												e.preventDefault(); addExisting(term);
+											});
+										})(t);
+										dropdown.appendChild(li);
+									});
+									dropdown.style.display = dropdown.children.length > 0 ? 'block' : 'none';
+								}
+
+								function hideDropdown() {
+									dropdown.style.display = 'none';
+									dropdown.innerHTML = '';
+								}
+
+								function addExisting(term) {
+									if (!selected.some(function(s) { return s.id === term.id; })) {
+										selected.push(term);
+									}
+									input.value = '';
+									hideDropdown();
+									render();
+								}
+
+								function addNew(name) {
+									name = name.trim();
+									if (!name) return;
+									var id = 'new:' + name;
+									if (!selected.some(function(s) { return s.id === id || s.name.toLowerCase() === name.toLowerCase(); })) {
+										selected.push({ id: id, name: name });
+									}
+									input.value = '';
+									hideDropdown();
+									render();
+								}
+
+								input.addEventListener('input', function() {
+									var q = this.value.trim();
+									if (q.length > 0) { buildDropdown(q); } else { hideDropdown(); }
+								});
+
+								input.addEventListener('keydown', function(e) {
+									var items = dropdown.querySelectorAll('li');
+									var idx   = focusedIndex();
+									if (e.key === 'ArrowDown') {
+										e.preventDefault();
+										if (dropdown.style.display === 'none' && input.value.trim()) {
+											buildDropdown(input.value.trim()); return;
+										}
+										items.forEach(function(i) { i.classList.remove('rt-focused'); });
+										var next = idx < items.length - 1 ? idx + 1 : 0;
+										if (items[next]) items[next].classList.add('rt-focused');
+									} else if (e.key === 'ArrowUp') {
+										e.preventDefault();
+										items.forEach(function(i) { i.classList.remove('rt-focused'); });
+										var prev = idx > 0 ? idx - 1 : items.length - 1;
+										if (items[prev]) items[prev].classList.add('rt-focused');
+									} else if (e.key === 'Enter') {
+										e.preventDefault();
+										if (idx >= 0 && items[idx]) {
+											items[idx].dispatchEvent(new MouseEvent('mousedown'));
+										} else {
+											var q = input.value.trim().replace(/,\s*$/, '');
+											if (q) {
+												var exact = null;
+												for (var i = 0; i < ALL.length; i++) {
+													if (ALL[i].name.toLowerCase() === q.toLowerCase()) { exact = ALL[i]; break; }
+												}
+												if (exact) { addExisting(exact); } else { addNew(q); }
+											}
+										}
+									} else if (e.key === 'Backspace' && !input.value && selected.length) {
+										selected = selected.slice(0, -1);
+										render();
+									} else if (e.key === 'Escape') {
+										hideDropdown();
+									}
+								});
+
+								input.addEventListener('blur', function() {
+									setTimeout(hideDropdown, 150);
+								});
+
+								wrap.addEventListener('click', function(e) {
+									if (e.target !== input) input.focus();
+								});
+
+								render();
+							})();
+							</script>
+						</td>
+					</tr>
+
+					<?php elseif ( 'contact' === $key ) : ?>
 					<tr>
-						<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;width:52px;"><?php _e( 'Icon', 'russteicheira' ); ?></th>
-						<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;width:120px;"><?php _e( 'Label', 'russteicheira' ); ?></th>
-						<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;"><?php _e( 'URL', 'russteicheira' ); ?></th>
-						<th style="text-align:left;padding:0 0 6px 0;font-size:12px;font-weight:600;color:#646970;width:150px;"><?php _e( 'Display Text', 'russteicheira' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php for ( $i = 0; $i < 5; $i++ ) :
-						$lnk         = isset( $saved_links[ $i ] ) ? $saved_links[ $i ] : array();
-						$lnk_icon    = isset( $lnk['icon'] )    ? $lnk['icon']    : '';
-						$lnk_label   = isset( $lnk['label'] )   ? $lnk['label']   : '';
-						$lnk_url     = isset( $lnk['url'] )     ? $lnk['url']     : '';
-						$lnk_display = isset( $lnk['display'] ) ? $lnk['display'] : '';
-					?>
-					<tr style="<?php echo $i > 0 ? 'border-top:1px solid #f0f0f1;' : ''; ?>">
-						<td style="padding:5px 10px 5px 0;">
-							<input type="text"
-								name="rt_sections[contact][links][<?php echo (int) $i; ?>][icon]"
-								value="<?php echo esc_attr( $lnk_icon ); ?>"
-								placeholder="📄"
-								style="width:46px;text-align:center;font-size:16px;" />
-						</td>
-						<td style="padding:5px 10px 5px 0;">
-							<input type="text"
-								name="rt_sections[contact][links][<?php echo (int) $i; ?>][label]"
-								value="<?php echo esc_attr( $lnk_label ); ?>"
-								placeholder="<?php esc_attr_e( 'Label', 'russteicheira' ); ?>"
-								style="width:110px;" />
-						</td>
-						<td style="padding:5px 10px 5px 0;">
-							<input type="text"
-								name="rt_sections[contact][links][<?php echo (int) $i; ?>][url]"
-								value="<?php echo esc_attr( $lnk_url ); ?>"
-								placeholder="https://"
-								class="regular-text" />
-						</td>
-						<td style="padding:5px 0;">
-							<input type="text"
-								name="rt_sections[contact][links][<?php echo (int) $i; ?>][display]"
-								value="<?php echo esc_attr( $lnk_display ); ?>"
-								placeholder="<?php esc_attr_e( 'Optional', 'russteicheira' ); ?>"
-								style="width:140px;" />
+						<th>
+							<label for="contact_sub"><?php _e( 'Subtext', 'russteicheira' ); ?></label>
+						</th>
+						<td>
+							<textarea id="contact_sub" name="rt_sections[contact][sub]"
+								class="large-text" rows="3"><?php echo esc_textarea( $v( 'contact', 'sub' ) ); ?></textarea>
+							<p class="description"><?php _e( 'Paragraph shown beneath the heading.', 'russteicheira' ); ?></p>
 						</td>
 					</tr>
-					<?php endfor; ?>
-				</tbody>
-			</table>
-			<p class="description" style="margin-top:8px;max-width:680px;">
-				<?php _e( 'Rows with a URL appear in the contact section. Use emoji for icons (e.g. ✉️ 💼 🐙). For email, use <code>mailto:you@example.com</code> as the URL. Display text falls back to the URL if left blank.', 'russteicheira' ); ?>
-			</p>
-		</td>
-	</tr>
-	<?php
-}
+					<tr>
+						<th style="padding-top:14px;">
+							<label><?php _e( 'Links', 'russteicheira' ); ?></label>
+						</th>
+						<td>
+							<?php
+							$saved_links = isset( $opts['contact']['links'] ) && is_array( $opts['contact']['links'] )
+							              ? $opts['contact']['links'] : array();
+							?>
+							<table style="border-collapse:collapse;width:100%;max-width:680px;">
+								<thead>
+									<tr>
+										<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;width:52px;"><?php _e( 'Icon', 'russteicheira' ); ?></th>
+										<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;width:120px;"><?php _e( 'Label', 'russteicheira' ); ?></th>
+										<th style="text-align:left;padding:0 10px 6px 0;font-size:12px;font-weight:600;color:#646970;"><?php _e( 'URL', 'russteicheira' ); ?></th>
+										<th style="text-align:left;padding:0 0 6px 0;font-size:12px;font-weight:600;color:#646970;width:150px;"><?php _e( 'Display Text', 'russteicheira' ); ?></th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php for ( $i = 0; $i < 5; $i++ ) :
+										$lnk         = isset( $saved_links[ $i ] ) ? $saved_links[ $i ] : array();
+										$lnk_icon    = isset( $lnk['icon'] )    ? $lnk['icon']    : '';
+										$lnk_label   = isset( $lnk['label'] )   ? $lnk['label']   : '';
+										$lnk_url     = isset( $lnk['url'] )     ? $lnk['url']     : '';
+										$lnk_display = isset( $lnk['display'] ) ? $lnk['display'] : '';
+									?>
+									<tr style="<?php echo $i > 0 ? 'border-top:1px solid #f0f0f1;' : ''; ?>">
+										<td style="padding:5px 10px 5px 0;">
+											<input type="text"
+												name="rt_sections[contact][links][<?php echo (int) $i; ?>][icon]"
+												value="<?php echo esc_attr( $lnk_icon ); ?>"
+												placeholder="📄"
+												style="width:46px;text-align:center;font-size:16px;" />
+										</td>
+										<td style="padding:5px 10px 5px 0;">
+											<input type="text"
+												name="rt_sections[contact][links][<?php echo (int) $i; ?>][label]"
+												value="<?php echo esc_attr( $lnk_label ); ?>"
+												placeholder="<?php esc_attr_e( 'Label', 'russteicheira' ); ?>"
+												style="width:110px;" />
+										</td>
+										<td style="padding:5px 10px 5px 0;">
+											<input type="text"
+												name="rt_sections[contact][links][<?php echo (int) $i; ?>][url]"
+												value="<?php echo esc_attr( $lnk_url ); ?>"
+												placeholder="https://"
+												class="regular-text" />
+										</td>
+										<td style="padding:5px 0;">
+											<input type="text"
+												name="rt_sections[contact][links][<?php echo (int) $i; ?>][display]"
+												value="<?php echo esc_attr( $lnk_display ); ?>"
+												placeholder="<?php esc_attr_e( 'Optional', 'russteicheira' ); ?>"
+												style="width:140px;" />
+										</td>
+									</tr>
+									<?php endfor; ?>
+								</tbody>
+							</table>
+							<p class="description" style="margin-top:8px;max-width:680px;">
+								<?php _e( 'Rows with a URL appear in the contact section. Use emoji for icons (e.g. ✉️ 💼 🐙). For email, use <code>mailto:you@example.com</code> as the URL. Display text falls back to the URL if left blank.', 'russteicheira' ); ?>
+							</p>
+						</td>
+					</tr>
 
-/**
- * Render the Blog section's Sub-description + Card Meta checkbox fields.
- */
-function rt_render_blog_fields( $v ) {
-	?>
-	<tr>
-		<th>
-			<label for="blog_sub">
-				<?php _e( 'Sub-description', 'russteicheira' ); ?>
-			</label>
-		</th>
-		<td>
-			<input type="text"
-				id="blog_sub"
-				name="rt_sections[blog][sub]"
-				value="<?php echo esc_attr( $v( 'blog', 'sub' ) ); ?>"
-				class="large-text" />
-			<p class="description"><?php _e( 'One-sentence description shown below the heading.', 'russteicheira' ); ?></p>
-		</td>
-	</tr>
-	<tr>
-		<th style="padding-top:14px;">
-			<?php _e( 'Card Meta', 'russteicheira' ); ?>
-		</th>
-		<td style="padding-top:14px;">
-			<?php
-			$blog_meta_items = array(
-				'show_date'     => __( 'Post date',  'russteicheira' ),
-				'show_author'   => __( 'Author',     'russteicheira' ),
-				'show_category' => __( 'Category',   'russteicheira' ),
-				'show_skills'   => __( 'Skills',     'russteicheira' ),
-			);
-			foreach ( $blog_meta_items as $bfield => $blabel ) :
-				$bval     = $v( 'blog', $bfield );
-				$bchecked = ( '' === $bval || '1' === $bval );
-			?>
-				<label style="display:block;margin-bottom:6px;">
-					<input type="checkbox"
-						name="rt_sections[blog][<?php echo esc_attr( $bfield ); ?>]"
-						value="1"
-						<?php checked( $bchecked ); ?> />
-					<?php echo esc_html( $blabel ); ?>
-				</label>
-			<?php endforeach; ?>
-			<p class="description"><?php _e( 'Choose which meta elements appear on blog preview cards and skill archive cards.', 'russteicheira' ); ?></p>
-		</td>
-	</tr>
-	<?php
-}
+					<?php elseif ( 'blog' === $key ) : ?>
+					<tr>
+						<th>
+							<label for="blog_sub">
+								<?php _e( 'Sub-description', 'russteicheira' ); ?>
+							</label>
+						</th>
+						<td>
+							<input type="text"
+								id="blog_sub"
+								name="rt_sections[blog][sub]"
+								value="<?php echo esc_attr( $v( 'blog', 'sub' ) ); ?>"
+								class="large-text" />
+							<p class="description"><?php _e( 'One-sentence description shown below the heading.', 'russteicheira' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th style="padding-top:14px;">
+							<?php _e( 'Card Meta', 'russteicheira' ); ?>
+						</th>
+						<td style="padding-top:14px;">
+							<?php
+							$blog_meta_items = array(
+								'show_date'     => __( 'Post date',  'russteicheira' ),
+								'show_author'   => __( 'Author',     'russteicheira' ),
+								'show_category' => __( 'Category',   'russteicheira' ),
+								'show_skills'   => __( 'Skills',     'russteicheira' ),
+							);
+							foreach ( $blog_meta_items as $bfield => $blabel ) :
+								$bval     = $v( 'blog', $bfield );
+								$bchecked = ( '' === $bval || '1' === $bval );
+							?>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="checkbox"
+										name="rt_sections[blog][<?php echo esc_attr( $bfield ); ?>]"
+										value="1"
+										<?php checked( $bchecked ); ?> />
+									<?php echo esc_html( $blabel ); ?>
+								</label>
+							<?php endforeach; ?>
+							<p class="description"><?php _e( 'Choose which meta elements appear on blog preview cards and skill archive cards.', 'russteicheira' ); ?></p>
+						</td>
+					</tr>
 
-/**
- * Render the generic single Sub-description field used by certs/expertise/portfolio.
- */
-function rt_render_section_sub_field( $key, $v ) {
-	?>
-	<tr>
-		<th>
-			<label for="<?php echo esc_attr( $key ); ?>_sub">
-				<?php _e( 'Sub-description', 'russteicheira' ); ?>
-			</label>
-		</th>
-		<td>
-			<input type="text"
-				id="<?php echo esc_attr( $key ); ?>_sub"
-				name="rt_sections[<?php echo esc_attr( $key ); ?>][sub]"
-				value="<?php echo esc_attr( $v( $key, 'sub' ) ); ?>"
-				class="large-text" />
-			<p class="description"><?php _e( 'One-sentence description shown below the heading.', 'russteicheira' ); ?></p>
-		</td>
-	</tr>
-	<?php
-}
-
-/**
- * Render the "Section Colors" tab panel content (background color, body text color,
- * background image uploader, image behavior toggle).
- */
-function rt_render_section_colors_tab( $key, array $ctx ) {
-	?>
-	<table class="form-table" style="margin-top:0;">
-		<tr>
-			<th style="width:160px; padding-top:12px;">
-				<?php _e( 'Background Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_bg'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['bg_color'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Overrides the section\'s default background. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Body Text Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_body_color'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['body_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Color for body/description text within this section. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;"><?php _e( 'Background Image', 'russteicheira' ); ?></th>
-			<td>
-				<div class="rt-bg-image">
-					<div class="rt-bg-preview" style="<?php echo $ctx['img_thumb'] ? '' : 'display:none;'; ?>margin-bottom:8px;">
-						<img src="<?php echo esc_url( $ctx['img_thumb'] ); ?>" />
-					</div>
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_image_id]"
-						class="rt-bg-id"
-						value="<?php echo esc_attr( (int) $ctx['img_id'] ?: '' ); ?>" />
-					<button type="button" class="button rt-bg-upload">
-						<?php echo $ctx['img_id'] ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
-					</button>
-					<button type="button" class="button rt-bg-remove" style="<?php echo $ctx['img_id'] ? '' : 'display:none;'; ?>margin-left:6px;">
-						<?php _e( 'Remove', 'russteicheira' ); ?>
-					</button>
-				</div>
-				<p class="description" style="margin-top:6px;">
-					<?php _e( 'Optional. Gradient overlays and grid patterns remain on top of the image.', 'russteicheira' ); ?>
-				</p>
-			</td>
-		</tr>
-		<tr class="rt-bg-fixed-row" <?php echo $ctx['img_id'] ? '' : 'style="display:none;"'; ?>>
-			<th><?php _e( 'Image Behavior', 'russteicheira' ); ?></th>
-			<td>
-				<label style="margin-right:1.5rem;">
-					<input type="radio"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
-						value="0"
-						<?php checked( '1' !== $ctx['bg_fixed'] ); ?> />
-					<?php _e( 'Scroll with page', 'russteicheira' ); ?>
-				</label>
-				<label>
-					<input type="radio"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
-						value="1"
-						<?php checked( $ctx['bg_fixed'], '1' ); ?> />
-					<?php _e( 'Fixed (parallax)', 'russteicheira' ); ?>
-				</label>
-				<p class="description"><?php _e( 'Fixed: the image stays in place as the page scrolls through the section. Not supported on iOS Safari.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
-}
-
-/**
- * Render the "Card Colors" tab panel content (card/object, title, body, tag, and
- * (About only) skill badge colors).
- */
-function rt_render_card_colors_tab( $key, $v, array $ctx ) {
-	?>
-	<table class="form-table" style="margin-top:0;">
-		<tr>
-			<th style="width:160px; padding-top:12px;">
-				<?php _e( 'Card / Object Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_accent'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['accent_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php echo 'about' === $key ? esc_html__( 'Background color for the capabilities panel on the right side of the About section.', 'russteicheira' ) : esc_html__( 'Background color for the primary cards or info boxes within this section.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Card Title Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_card_title_color'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['card_title_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Color for the primary heading/title text inside cards.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Card Body Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_card_body_color'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['card_body_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Color for the description/body text inside cards.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<?php if ( in_array( $key, array( 'certs', 'expertise', 'portfolio' ) ) ) : ?>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Card Tag Background', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_card_tag_bg'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['card_tag_bg_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Background fill for skill tag badges on cards.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Card Tag Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="<?php echo esc_attr( $ctx['def_card_tag_color'] ); ?>"
-					data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]">
-					<input type="hidden"
-						name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $ctx['card_tag_col'] ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Text and border color for skill tag badges on cards.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<?php endif; ?>
-		<?php if ( 'about' === $key ) :
-			$badge_bg_val    = $v( 'about', 'badge_bg' );
-			$badge_color_val = $v( 'about', 'badge_color' );
-		?>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Skill Tag Background', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="rgba(26, 122, 110, 0.05)"
-					data-input-name="rt_sections[about][badge_bg]">
-					<input type="hidden"
-						name="rt_sections[about][badge_bg]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $badge_bg_val ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Background fill for the skill/badge tags.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th style="padding-top:12px;">
-				<?php _e( 'Skill Tag Color', 'russteicheira' ); ?>
-			</th>
-			<td>
-				<div class="rt-color-field"
-					data-default-color="#1A7A6E"
-					data-input-name="rt_sections[about][badge_color]">
-					<input type="hidden"
-						name="rt_sections[about][badge_color]"
-						class="rt-color-input"
-						value="<?php echo esc_attr( $badge_color_val ); ?>" />
-					<div class="rt-color-picker-mount"></div>
-				</div>
-				<p class="description"><?php _e( 'Text and border color for the skill/badge tags.', 'russteicheira' ); ?></p>
-			</td>
-		</tr>
-		<?php endif; ?>
-	</table>
-	<?php
-}
-
-function rt_sections_page() {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-
-	$opts = get_option( 'rt_sections', array() );
-
-	$v = function ( $section, $key ) use ( $opts ) {
-		return isset( $opts[ $section ][ $key ] ) ? $opts[ $section ][ $key ] : '';
-	};
-
-	$is_enabled = function ( $section ) use ( $opts ) {
-		if ( ! isset( $opts[ $section ]['enabled'] ) ) {
-			return true; // default on
-		}
-		return '1' === $opts[ $section ]['enabled'];
-	};
-
-	$sections = array(
-		'about' => array(
-			'label'  => __( 'About', 'russteicheira' ),
-			'toggle' => false,
-			'extra'  => 'about',
-		),
-		'certs' => array(
-			'label'  => __( 'Certifications', 'russteicheira' ),
-			'toggle' => true,
-			'extra'  => 'sub',
-		),
-		'expertise' => array(
-			'label'  => __( 'Core Expertise', 'russteicheira' ),
-			'toggle' => true,
-			'extra'  => 'sub',
-		),
-		'portfolio' => array(
-			'label'  => __( 'Portfolio / Projects', 'russteicheira' ),
-			'toggle' => true,
-			'extra'  => 'sub',
-		),
-		'blog' => array(
-			'label'  => __( 'Blog', 'russteicheira' ),
-			'toggle' => true,
-			'extra'  => 'sub',
-		),
-		'contact' => array(
-			'label'  => __( 'Get in Touch', 'russteicheira' ),
-			'toggle' => false,
-			'extra'  => 'contact',
-		),
-	);
-	?>
-	<div class="wrap">
-		<h1><?php _e( 'Homepage Sections', 'russteicheira' ); ?></h1>
-		<p class="description" style="margin-bottom:24px;">
-			<?php _e( 'Edit section header text and toggle sections on or off. Individual cards (Capabilities, Expertise items) are managed through their own post-type screens.', 'russteicheira' ); ?>
-		</p>
-
-		<?php settings_errors( 'rt_sections_group' ); ?>
-
-		<form id="rt-sections-form" method="post" action="options.php">
-			<?php settings_fields( 'rt_sections_group' ); ?>
-
-			<?php foreach ( $sections as $key => $meta ) :
-				$enabled = $is_enabled( $key );
-				$ctx     = rt_sections_color_context( $key, $opts );
-			?>
-			<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px 24px;margin-bottom:20px;">
-
-				<div style="display:flex;align-items:center;gap:16px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #f0f0f1;">
-					<h2 style="margin:0;font-size:1.05rem;"><?php echo esc_html( $meta['label'] ); ?></h2>
-
-					<?php if ( $meta['toggle'] ) : ?>
-						<label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;margin:0;">
-							<input type="checkbox"
-								name="rt_sections[<?php echo esc_attr( $key ); ?>][enabled]"
-								value="1"
-								<?php checked( $enabled ); ?> />
-							<?php _e( 'Enabled', 'russteicheira' ); ?>
-						</label>
 					<?php else : ?>
-						<span style="color:#646970;font-size:0.825rem;font-style:italic;">
-							<?php _e( 'Always visible', 'russteicheira' ); ?>
-						</span>
+					<tr>
+						<th>
+							<label for="<?php echo esc_attr( $key ); ?>_sub">
+								<?php _e( 'Sub-description', 'russteicheira' ); ?>
+							</label>
+						</th>
+						<td>
+							<input type="text"
+								id="<?php echo esc_attr( $key ); ?>_sub"
+								name="rt_sections[<?php echo esc_attr( $key ); ?>][sub]"
+								value="<?php echo esc_attr( $v( $key, 'sub' ) ); ?>"
+								class="large-text" />
+							<p class="description"><?php _e( 'One-sentence description shown below the heading.', 'russteicheira' ); ?></p>
+						</td>
+					</tr>
 					<?php endif; ?>
-				</div>
 
-				<table class="form-table" style="margin-top:0;">
-					<?php
-					rt_render_eyebrow_heading_fields( $key, $meta, $v, $ctx );
-
-					if ( 'about' === $key ) {
-						rt_render_about_fields( $v );
-					} elseif ( 'contact' === $key ) {
-						rt_render_contact_fields( $v, $opts );
-					} elseif ( 'blog' === $key ) {
-						rt_render_blog_fields( $v );
-					} else {
-						rt_render_section_sub_field( $key, $v );
-					}
-					?>
 				</table>
 
 				<div class="rt-tab-wrapper" style="margin-top:16px;border-top:1px solid #f0f0f1;">
@@ -988,11 +800,216 @@ function rt_sections_page() {
 					</nav>
 
 					<div id="rt-tab-section-<?php echo esc_attr( $key ); ?>" class="rt-tab-panel">
-						<?php rt_render_section_colors_tab( $key, $ctx ); ?>
+						<table class="form-table" style="margin-top:0;">
+							<tr>
+								<th style="width:160px; padding-top:12px;">
+									<?php _e( 'Background Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_bg ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $bg_color ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Overrides the section\'s default background. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Body Text Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_body_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $body_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for body/description text within this section. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;"><?php _e( 'Background Image', 'russteicheira' ); ?></th>
+								<td>
+									<div class="rt-bg-image">
+										<div class="rt-bg-preview" style="<?php echo $img_thumb ? '' : 'display:none;'; ?>margin-bottom:8px;">
+											<img src="<?php echo esc_url( $img_thumb ); ?>" />
+										</div>
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_image_id]"
+											class="rt-bg-id"
+											value="<?php echo esc_attr( (int) $img_id ?: '' ); ?>" />
+										<button type="button" class="button rt-bg-upload">
+											<?php echo $img_id ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
+										</button>
+										<button type="button" class="button rt-bg-remove" style="<?php echo $img_id ? '' : 'display:none;'; ?>margin-left:6px;">
+											<?php _e( 'Remove', 'russteicheira' ); ?>
+										</button>
+									</div>
+									<p class="description" style="margin-top:6px;">
+										<?php _e( 'Optional. Gradient overlays and grid patterns remain on top of the image.', 'russteicheira' ); ?>
+									</p>
+								</td>
+							</tr>
+							<tr class="rt-bg-fixed-row" <?php echo $img_id ? '' : 'style="display:none;"'; ?>>
+								<th><?php _e( 'Image Behavior', 'russteicheira' ); ?></th>
+								<td>
+									<label style="margin-right:1.5rem;">
+										<input type="radio"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
+											value="0"
+											<?php checked( '1' !== $bg_fixed ); ?> />
+										<?php _e( 'Scroll with page', 'russteicheira' ); ?>
+									</label>
+									<label>
+										<input type="radio"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
+											value="1"
+											<?php checked( $bg_fixed, '1' ); ?> />
+										<?php _e( 'Fixed (parallax)', 'russteicheira' ); ?>
+									</label>
+									<p class="description"><?php _e( 'Fixed: the image stays in place as the page scrolls through the section. Not supported on iOS Safari.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+						</table>
 					</div>
 
 					<div id="rt-tab-cards-<?php echo esc_attr( $key ); ?>" class="rt-tab-panel" style="display:none;">
-						<?php rt_render_card_colors_tab( $key, $v, $ctx ); ?>
+						<table class="form-table" style="margin-top:0;">
+							<tr>
+								<th style="width:160px; padding-top:12px;">
+									<?php _e( 'Card / Object Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_accent ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $accent_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php echo 'about' === $key ? esc_html__( 'Background color for the capabilities panel on the right side of the About section.', 'russteicheira' ) : esc_html__( 'Background color for the primary cards or info boxes within this section.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Title Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_title_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_title_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for the primary heading/title text inside cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Body Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_body_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_body_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Color for the description/body text inside cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php if ( in_array( $key, array( 'certs', 'expertise', 'portfolio' ) ) ) : ?>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Tag Background', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_tag_bg ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_tag_bg_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Background fill for skill tag badges on cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Card Tag Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="<?php echo esc_attr( $def_card_tag_color ); ?>"
+										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]">
+										<input type="hidden"
+											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $card_tag_col ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Text and border color for skill tag badges on cards.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php endif; ?>
+							<?php if ( 'about' === $key ) :
+								$badge_bg_val    = $v( 'about', 'badge_bg' );
+								$badge_color_val = $v( 'about', 'badge_color' );
+							?>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Skill Tag Background', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="rgba(26, 122, 110, 0.05)"
+										data-input-name="rt_sections[about][badge_bg]">
+										<input type="hidden"
+											name="rt_sections[about][badge_bg]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $badge_bg_val ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Background fill for the skill/badge tags.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th style="padding-top:12px;">
+									<?php _e( 'Skill Tag Color', 'russteicheira' ); ?>
+								</th>
+								<td>
+									<div class="rt-color-field"
+										data-default-color="#1A7A6E"
+										data-input-name="rt_sections[about][badge_color]">
+										<input type="hidden"
+											name="rt_sections[about][badge_color]"
+											class="rt-color-input"
+											value="<?php echo esc_attr( $badge_color_val ); ?>" />
+										<div class="rt-color-picker-mount"></div>
+									</div>
+									<p class="description"><?php _e( 'Text and border color for the skill/badge tags.', 'russteicheira' ); ?></p>
+								</td>
+							</tr>
+							<?php endif; ?>
+						</table>
 					</div>
 				</div>
 			</div>

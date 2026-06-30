@@ -334,7 +334,7 @@ function rt_project_meta_box_cb( $post ) {
 			<td><input type="url" id="project_github" name="project_github" value="<?php echo esc_attr( $github ); ?>" class="widefat" placeholder="https://github.com/…" /></td>
 		</tr>
 		<tr>
-			<th><label for="project_featured"><?php _e( 'Featured?', 'russteicheira' ); ?></label></th>
+			<th><label for="project_featured"><?php _e( 'Featured', 'russteicheira' ); ?></label></th>
 			<td>
 				<input type="checkbox" id="project_featured" name="project_featured" value="1" <?php checked( $featured, '1' ); ?> />
 				<label for="project_featured"><?php _e( 'Show on homepage', 'russteicheira' ); ?></label>
@@ -617,7 +617,7 @@ function rt_cert_meta_box_cb( $post ) {
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_date"><?php _e( 'Date Obtained', 'russteicheira' ); ?></label>
+				<label for="cert_date"><?php _e( 'Issue Date', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_date" name="cert_date"
@@ -628,7 +628,7 @@ function rt_cert_meta_box_cb( $post ) {
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_expires"><?php _e( 'Expiration Date', 'russteicheira' ); ?></label>
+				<label for="cert_expires"><?php _e( 'Expiry Date', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_expires" name="cert_expires"
@@ -640,7 +640,7 @@ function rt_cert_meta_box_cb( $post ) {
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_id"><?php _e( 'Certification ID', 'russteicheira' ); ?></label>
+				<label for="cert_id"><?php _e( 'Credential ID', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_id" name="cert_id"
