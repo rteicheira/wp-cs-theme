@@ -51,238 +51,18 @@ function rt_sections_admin_enqueue( $hook ) {
 	wp_enqueue_script( 'wp-dom-ready' );
 	wp_enqueue_media();
 
-	wp_localize_script( 'wp-dom-ready', 'rtSectionsL10n', array(
-		'selectBgImage'            => __( 'Select Background Image',                                                  'russteicheira' ),
-		'useAsBg'                  => __( 'Use as Background',                                                        'russteicheira' ),
-		'changeImage'              => __( 'Change Image',                                                             'russteicheira' ),
-		'uploadSelectImage'        => __( 'Upload / Select Image',                                                    'russteicheira' ),
-		'openColorPicker'          => __( 'Open color picker',                                                        'russteicheira' ),
-		'resetToDefault'           => __( 'Reset to default',                                                         'russteicheira' ),
+	wp_enqueue_style( 'rt-admin-sections', RT_URI . '/css/admin-sections.css', array( 'wp-components' ), RT_VERSION );
+	wp_enqueue_script( 'rt-admin-sections', RT_URI . '/js/admin-sections.js', array( 'wp-dom-ready', 'wp-components', 'wp-element', 'jquery' ), RT_VERSION, true );
+
+	wp_localize_script( 'rt-admin-sections', 'rtSectionsL10n', array(
+		'selectBgImage'             => __( 'Select Background Image',                                                  'russteicheira' ),
+		'useAsBg'                   => __( 'Use as Background',                                                        'russteicheira' ),
+		'changeImage'               => __( 'Change Image',                                                             'russteicheira' ),
+		'uploadSelectImage'         => __( 'Upload / Select Image',                                                    'russteicheira' ),
+		'openColorPicker'           => __( 'Open color picker',                                                        'russteicheira' ),
+		'resetToDefault'            => __( 'Reset to default',                                                         'russteicheira' ),
 		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.', 'russteicheira' ),
 	) );
-
-	$admin_js = <<<'ENDJS'
-wp.domReady( function () {
-    var el       = wp.element.createElement;
-    var useState = wp.element.useState;
-    var Popover  = wp.components.Popover;
-    var Picker   = wp.components.ColorPicker;
-
-    function ColorField( props ) {
-        var s1 = useState( false );
-        var isOpen = s1[0], setOpen = s1[1];
-        var s2 = useState( props.value || props.defaultColor || '' );
-        var color = s2[0], setColor = s2[1];
-
-        var swatchBg = color || props.defaultColor || 'repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/8px 8px';
-
-        return el( 'span', { style: { display: 'inline-flex', alignItems: 'center', gap: '8px', position: 'relative' } },
-            el( 'button', {
-                type: 'button',
-                onClick: function() { setOpen( !isOpen ); },
-                style: {
-                    width: '28px', height: '28px',
-                    background:   swatchBg,
-                    border:       '1px solid #8c8f94',
-                    borderRadius: '3px',
-                    cursor:       'pointer',
-                    padding:      0,
-                    flexShrink:   0,
-                },
-                'aria-label': rtSectionsL10n.openColorPicker,
-            } ),
-            el( 'span', { style: { fontFamily: 'monospace', fontSize: '12px', color: '#50575e' } },
-                color || '— theme default'
-            ),
-            isOpen && el( Popover, {
-                onClose:      function() { setOpen( false ); },
-                placement:    'bottom-start',
-                focusOnMount: false,
-            },
-                el( 'div', { style: { padding: '8px 8px 0' } },
-                    el( Picker, {
-                        color:       color || props.defaultColor || '#000000',
-                        onChange:    function( c ) { setColor( c ); props.onChange( c ); },
-                        enableAlpha: true,
-                        copyFormat:  'hex',
-                    } )
-                ),
-                el( 'div', { style: { padding: '4px 8px 8px', borderTop: '1px solid #e2e4e7', marginTop: '4px', textAlign: 'right' } },
-                    el( 'button', {
-                        type: 'button',
-                        className: 'button button-small',
-                        onClick: function() { setColor( '' ); props.onChange( '' ); setOpen( false ); },
-                    }, rtSectionsL10n.resetToDefault )
-                )
-            )
-        );
-    }
-
-    document.querySelectorAll( '.rt-color-field' ).forEach( function ( wrap ) {
-        var input    = wrap.querySelector( '.rt-color-input' );
-        var mount    = wrap.querySelector( '.rt-color-picker-mount' );
-        var defColor = wrap.dataset.defaultColor || '';
-        var comp     = el( ColorField, {
-            value:        input.value,
-            defaultColor: defColor,
-            onChange:     function( c ) { input.value = ( typeof c === 'string' ) ? c : ( c && c.hex ? c.hex : '' ); },
-        } );
-        if ( wp.element.createRoot ) {
-            wp.element.createRoot( mount ).render( comp );
-        } else {
-            wp.element.render( comp, mount );
-        }
-    } );
-
-    ( function ( $ ) {
-        $( document ).on( 'click', '.rt-bg-upload', function ( e ) {
-            e.preventDefault();
-            var $wrap  = $( this ).closest( '.rt-bg-image' );
-            var $table = $( this ).closest( 'table' );
-            var frame  = wp.media( {
-                title:    rtSectionsL10n.selectBgImage,
-                button:   { text: rtSectionsL10n.useAsBg },
-                multiple: false,
-                library:  { type: 'image' }
-            } );
-            frame.on( 'select', function () {
-                var att   = frame.state().get( 'selection' ).first().toJSON();
-                var thumb = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
-                $wrap.find( '.rt-bg-id' ).val( att.id );
-                $wrap.find( '.rt-bg-preview img' ).attr( 'src', thumb );
-                $wrap.find( '.rt-bg-preview' ).show();
-                $wrap.find( '.rt-bg-upload' ).text( rtSectionsL10n.changeImage );
-                $wrap.find( '.rt-bg-remove' ).show();
-                $table.find( '.rt-bg-fixed-row' ).show();
-            } );
-            frame.open();
-        } );
-
-        $( document ).on( 'click', '.rt-bg-remove', function () {
-            var $wrap  = $( this ).closest( '.rt-bg-image' );
-            var $table = $( this ).closest( 'table' );
-            $wrap.find( '.rt-bg-id' ).val( '' );
-            $wrap.find( '.rt-bg-preview' ).hide();
-            $wrap.find( '.rt-bg-upload' ).text( rtSectionsL10n.uploadSelectImage );
-            $( this ).hide();
-            $table.find( '.rt-bg-fixed-row' ).hide();
-        } );
-    } )( jQuery );
-
-    document.querySelectorAll( '.rt-tab-nav .nav-tab' ).forEach( function ( tab ) {
-        tab.addEventListener( 'click', function ( e ) {
-            e.preventDefault();
-            var nav     = tab.closest( '.rt-tab-nav' );
-            var wrapper = tab.closest( '.rt-tab-wrapper' );
-            nav.querySelectorAll( '.nav-tab' ).forEach( function ( t ) {
-                t.classList.remove( 'nav-tab-active' );
-            } );
-            tab.classList.add( 'nav-tab-active' );
-            wrapper.querySelectorAll( '.rt-tab-panel' ).forEach( function ( panel ) {
-                panel.style.display = 'none';
-            } );
-            var target = document.getElementById( tab.dataset.tab );
-            if ( target ) { target.style.display = 'block'; }
-        } );
-    } );
-
-    var resetBtn = document.getElementById( 'rt-reset-colors' );
-    if ( resetBtn ) {
-        resetBtn.addEventListener( 'click', function () {
-            if ( ! confirm( rtSectionsL10n.resetSectionColorsConfirm ) ) { return; }
-            document.querySelectorAll( '.rt-color-input' ).forEach( function ( input ) {
-                input.value = '';
-            } );
-            document.getElementById( 'submit' ).click();
-        } );
-    }
-} );
-ENDJS;
-	wp_add_inline_script( 'wp-components', $admin_js );
-
-	wp_add_inline_style( 'wp-admin', '
-.rt-tag-wrap {
-    border: 1px solid #8c8f94;
-    border-radius: 4px;
-    padding: 5px 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    align-items: center;
-    cursor: text;
-    background: #fff;
-    min-height: 38px;
-    max-width: 600px;
-    position: relative;
-}
-.rt-tag-wrap:focus-within {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
-}
-.rt-tag-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: #2271b1;
-    color: #fff;
-    font-size: 12px;
-    line-height: 1;
-    padding: 4px 10px 4px 11px;
-    border-radius: 12px;
-    white-space: nowrap;
-}
-.rt-tag-pill__remove {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 0 0 0 2px;
-    font-size: 15px;
-    line-height: 1;
-    opacity: .75;
-}
-.rt-tag-pill__remove:hover { opacity: 1; }
-#rt-skills-input {
-    border: none;
-    outline: none;
-    padding: 3px 4px;
-    min-width: 160px;
-    flex: 1;
-    font-size: 13px;
-    background: transparent;
-}
-.rt-tag-dropdown {
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #8c8f94;
-    border-radius: 0 0 4px 4px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    z-index: 9999;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
-.rt-tag-dropdown li {
-    padding: 7px 12px;
-    cursor: pointer;
-    font-size: 13px;
-    color: #1d2327;
-}
-.rt-tag-dropdown li:hover,
-.rt-tag-dropdown li.rt-focused { background: #f0f6fc; color: #2271b1; }
-.rt-tag-dropdown li.rt-add-new { color: #2271b1; font-style: italic; }
-.rt-bg-preview img { max-width: 120px; height: 80px; object-fit: cover; border-radius: 4px; display: block; border: 1px solid #ddd; }
-.rt-color-picker-mount { display: inline-block; }
-.rt-tab-wrapper .nav-tab-wrapper { border-bottom: 1px solid #c3c4c7; }
-.rt-tab-panel { padding-top: 2px; }
-#rt-reset-colors:hover { background: #b32929 !important; border-color: #b32929 !important; }
-' );
 }
 add_action( 'admin_enqueue_scripts', 'rt_sections_admin_enqueue' );
 
@@ -378,93 +158,95 @@ function rt_sections_sanitize_skills( array $raw ) {
 	return implode( ',', $ids );
 }
 
-function rt_sections_sanitize( $input ) {
-	if ( ! is_array( $input ) ) {
-		return array();
-	}
-
-	$out = array();
-
-	// About — always enabled, has body + skills
-	$out['about'] = array(
-		'eyebrow'      => isset( $input['about']['eyebrow'] )      ? sanitize_text_field( $input['about']['eyebrow'] )      : '',
-		'heading'      => isset( $input['about']['heading'] )      ? sanitize_text_field( $input['about']['heading'] )      : '',
-		'body'         => isset( $input['about']['body'] )         ? wp_kses_post( $input['about']['body'] )                : '',
-		'skills'       => rt_sections_sanitize_skills(
-			isset( $input['about']['skills'] ) && is_array( $input['about']['skills'] )
-				? $input['about']['skills'] : array()
+function rt_sections_sanitize_about( array $raw ) {
+	return array(
+		'eyebrow'          => isset( $raw['eyebrow'] )          ? sanitize_text_field( $raw['eyebrow'] )          : '',
+		'heading'          => isset( $raw['heading'] )          ? sanitize_text_field( $raw['heading'] )          : '',
+		'body'             => isset( $raw['body'] )             ? wp_kses_post( $raw['body'] )                    : '',
+		'skills'           => rt_sections_sanitize_skills(
+			isset( $raw['skills'] ) && is_array( $raw['skills'] ) ? $raw['skills'] : array()
 		),
-		'bg_color'     => isset( $input['about']['bg_color'] )     ? rt_sanitize_color( $input['about']['bg_color'] )     : '',
-		'accent_color' => isset( $input['about']['accent_color'] ) ? rt_sanitize_color( $input['about']['accent_color'] ) : '',
-		'bg_image_id'  => isset( $input['about']['bg_image_id'] )  ? absint( $input['about']['bg_image_id'] )              : 0,
-		'bg_fixed'     => isset( $input['about']['bg_fixed'] ) && '1' === $input['about']['bg_fixed'] ? '1' : '0',
-		'badge_bg'      => isset( $input['about']['badge_bg'] )      ? rt_sanitize_color( $input['about']['badge_bg'] )      : '',
-		'badge_color'   => isset( $input['about']['badge_color'] )   ? rt_sanitize_color( $input['about']['badge_color'] )   : '',
-		'eyebrow_color'   => isset( $input['about']['eyebrow_color'] )   ? rt_sanitize_color( $input['about']['eyebrow_color'] )   : '',
-		'heading_color'   => isset( $input['about']['heading_color'] )   ? rt_sanitize_color( $input['about']['heading_color'] )   : '',
-		'body_color'      => isset( $input['about']['body_color'] )      ? rt_sanitize_color( $input['about']['body_color'] )      : '',
-		'card_title_color' => isset( $input['about']['card_title_color'] ) ? rt_sanitize_color( $input['about']['card_title_color'] ) : '',
-		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
+		'bg_color'         => isset( $raw['bg_color'] )         ? rt_sanitize_color( $raw['bg_color'] )           : '',
+		'accent_color'     => isset( $raw['accent_color'] )     ? rt_sanitize_color( $raw['accent_color'] )       : '',
+		'bg_image_id'      => isset( $raw['bg_image_id'] )      ? absint( $raw['bg_image_id'] )                   : 0,
+		'bg_fixed'         => isset( $raw['bg_fixed'] ) && '1' === $raw['bg_fixed'] ? '1' : '0',
+		'badge_bg'         => isset( $raw['badge_bg'] )         ? rt_sanitize_color( $raw['badge_bg'] )           : '',
+		'badge_color'      => isset( $raw['badge_color'] )      ? rt_sanitize_color( $raw['badge_color'] )        : '',
+		'eyebrow_color'    => isset( $raw['eyebrow_color'] )    ? rt_sanitize_color( $raw['eyebrow_color'] )      : '',
+		'heading_color'    => isset( $raw['heading_color'] )    ? rt_sanitize_color( $raw['heading_color'] )      : '',
+		'body_color'       => isset( $raw['body_color'] )       ? rt_sanitize_color( $raw['body_color'] )         : '',
+		'card_title_color' => isset( $raw['card_title_color'] ) ? rt_sanitize_color( $raw['card_title_color'] )   : '',
+		'card_body_color'  => isset( $raw['card_body_color'] )  ? rt_sanitize_color( $raw['card_body_color'] )    : '',
 	);
+}
 
-	// Certs, Expertise, Portfolio, Blog — enabled toggle + header text
-	foreach ( array( 'certs', 'expertise', 'portfolio', 'blog' ) as $s ) {
-		$out[ $s ] = array(
-			'enabled'      => ! empty( $input[ $s ]['enabled'] ) ? '1' : '0',
-			'eyebrow'      => isset( $input[ $s ]['eyebrow'] )      ? sanitize_text_field( $input[ $s ]['eyebrow'] )     : '',
-			'heading'      => isset( $input[ $s ]['heading'] )      ? sanitize_text_field( $input[ $s ]['heading'] )     : '',
-			'sub'          => isset( $input[ $s ]['sub'] )          ? sanitize_text_field( $input[ $s ]['sub'] )         : '',
-			'bg_color'     => isset( $input[ $s ]['bg_color'] )     ? rt_sanitize_color( $input[ $s ]['bg_color'] )     : '',
-			'accent_color' => isset( $input[ $s ]['accent_color'] ) ? rt_sanitize_color( $input[ $s ]['accent_color'] ) : '',
-			'bg_image_id'  => isset( $input[ $s ]['bg_image_id'] )  ? absint( $input[ $s ]['bg_image_id'] )              : 0,
-			'bg_fixed'      => isset( $input[ $s ]['bg_fixed'] ) && '1' === $input[ $s ]['bg_fixed'] ? '1' : '0',
-			'eyebrow_color'   => isset( $input[ $s ]['eyebrow_color'] )   ? rt_sanitize_color( $input[ $s ]['eyebrow_color'] )   : '',
-			'heading_color'   => isset( $input[ $s ]['heading_color'] )   ? rt_sanitize_color( $input[ $s ]['heading_color'] )   : '',
-			'body_color'      => isset( $input[ $s ]['body_color'] )      ? rt_sanitize_color( $input[ $s ]['body_color'] )      : '',
-			'card_title_color' => isset( $input[ $s ]['card_title_color'] ) ? rt_sanitize_color( $input[ $s ]['card_title_color'] ) : '',
-			'card_body_color'  => isset( $input[ $s ]['card_body_color'] )  ? rt_sanitize_color( $input[ $s ]['card_body_color'] )  : '',
-		);
-		if ( 'blog' !== $s ) {
-			$out[ $s ]['card_tag_bg']    = isset( $input[ $s ]['card_tag_bg'] )    ? rt_sanitize_color( $input[ $s ]['card_tag_bg'] )    : '';
-			$out[ $s ]['card_tag_color'] = isset( $input[ $s ]['card_tag_color'] ) ? rt_sanitize_color( $input[ $s ]['card_tag_color'] ) : '';
-		}
-		if ( 'blog' === $s ) {
-			$out['blog']['show_date']     = ! empty( $input['blog']['show_date'] )     ? '1' : '0';
-			$out['blog']['show_author']   = ! empty( $input['blog']['show_author'] )   ? '1' : '0';
-			$out['blog']['show_category'] = ! empty( $input['blog']['show_category'] ) ? '1' : '0';
-			$out['blog']['show_skills']   = ! empty( $input['blog']['show_skills'] )   ? '1' : '0';
-		}
+function rt_sections_sanitize_section( $key, array $raw ) {
+	$out = array(
+		'enabled'          => ! empty( $raw['enabled'] ) ? '1' : '0',
+		'eyebrow'          => isset( $raw['eyebrow'] )          ? sanitize_text_field( $raw['eyebrow'] )        : '',
+		'heading'          => isset( $raw['heading'] )          ? sanitize_text_field( $raw['heading'] )        : '',
+		'sub'              => isset( $raw['sub'] )              ? sanitize_text_field( $raw['sub'] )            : '',
+		'bg_color'         => isset( $raw['bg_color'] )         ? rt_sanitize_color( $raw['bg_color'] )         : '',
+		'accent_color'     => isset( $raw['accent_color'] )     ? rt_sanitize_color( $raw['accent_color'] )     : '',
+		'bg_image_id'      => isset( $raw['bg_image_id'] )      ? absint( $raw['bg_image_id'] )                 : 0,
+		'bg_fixed'         => isset( $raw['bg_fixed'] ) && '1' === $raw['bg_fixed'] ? '1' : '0',
+		'eyebrow_color'    => isset( $raw['eyebrow_color'] )    ? rt_sanitize_color( $raw['eyebrow_color'] )    : '',
+		'heading_color'    => isset( $raw['heading_color'] )    ? rt_sanitize_color( $raw['heading_color'] )    : '',
+		'body_color'       => isset( $raw['body_color'] )       ? rt_sanitize_color( $raw['body_color'] )       : '',
+		'card_title_color' => isset( $raw['card_title_color'] ) ? rt_sanitize_color( $raw['card_title_color'] ) : '',
+		'card_body_color'  => isset( $raw['card_body_color'] )  ? rt_sanitize_color( $raw['card_body_color'] )  : '',
+	);
+	if ( 'blog' !== $key ) {
+		$out['card_tag_bg']    = isset( $raw['card_tag_bg'] )    ? rt_sanitize_color( $raw['card_tag_bg'] )    : '';
+		$out['card_tag_color'] = isset( $raw['card_tag_color'] ) ? rt_sanitize_color( $raw['card_tag_color'] ) : '';
+	} else {
+		$out['show_date']     = ! empty( $raw['show_date'] )     ? '1' : '0';
+		$out['show_author']   = ! empty( $raw['show_author'] )   ? '1' : '0';
+		$out['show_category'] = ! empty( $raw['show_category'] ) ? '1' : '0';
+		$out['show_skills']   = ! empty( $raw['show_skills'] )   ? '1' : '0';
 	}
+	return $out;
+}
 
-	// Contact — always visible, heading + subtext + 5 configurable link rows
-	$raw_links = ( isset( $input['contact']['links'] ) && is_array( $input['contact']['links'] ) )
-	             ? $input['contact']['links'] : array();
-	$contact_links = array();
+function rt_sections_sanitize_contact( array $raw ) {
+	$raw_links = ( isset( $raw['links'] ) && is_array( $raw['links'] ) ) ? $raw['links'] : array();
+	$links     = array();
 	for ( $i = 0; $i < 5; $i++ ) {
-		$l = isset( $raw_links[ $i ] ) ? (array) $raw_links[ $i ] : array();
-		$contact_links[] = array(
+		$l       = isset( $raw_links[ $i ] ) ? (array) $raw_links[ $i ] : array();
+		$links[] = array(
 			'icon'    => isset( $l['icon'] )    ? sanitize_text_field( $l['icon'] )    : '',
 			'label'   => isset( $l['label'] )   ? sanitize_text_field( $l['label'] )   : '',
 			'url'     => isset( $l['url'] )     ? esc_url_raw( $l['url'] )             : '',
 			'display' => isset( $l['display'] ) ? sanitize_text_field( $l['display'] ) : '',
 		);
 	}
-	$out['contact'] = array(
-		'eyebrow'      => isset( $input['contact']['eyebrow'] )      ? sanitize_text_field( $input['contact']['eyebrow'] )      : '',
-		'heading'      => isset( $input['contact']['heading'] )      ? sanitize_text_field( $input['contact']['heading'] )      : '',
-		'sub'          => isset( $input['contact']['sub'] )          ? sanitize_textarea_field( $input['contact']['sub'] )      : '',
-		'links'        => $contact_links,
-		'bg_color'     => isset( $input['contact']['bg_color'] )     ? rt_sanitize_color( $input['contact']['bg_color'] )     : '',
-		'accent_color' => isset( $input['contact']['accent_color'] ) ? rt_sanitize_color( $input['contact']['accent_color'] ) : '',
-		'bg_image_id'  => isset( $input['contact']['bg_image_id'] )  ? absint( $input['contact']['bg_image_id'] )              : 0,
-		'bg_fixed'      => isset( $input['contact']['bg_fixed'] ) && '1' === $input['contact']['bg_fixed'] ? '1' : '0',
-		'eyebrow_color'   => isset( $input['contact']['eyebrow_color'] )   ? rt_sanitize_color( $input['contact']['eyebrow_color'] )   : '',
-		'heading_color'   => isset( $input['contact']['heading_color'] )   ? rt_sanitize_color( $input['contact']['heading_color'] )   : '',
-		'body_color'      => isset( $input['contact']['body_color'] )      ? rt_sanitize_color( $input['contact']['body_color'] )      : '',
-		'card_title_color' => isset( $input['contact']['card_title_color'] ) ? rt_sanitize_color( $input['contact']['card_title_color'] ) : '',
-		'card_body_color'  => isset( $input['contact']['card_body_color'] )  ? rt_sanitize_color( $input['contact']['card_body_color'] )  : '',
+	return array(
+		'eyebrow'          => isset( $raw['eyebrow'] )          ? sanitize_text_field( $raw['eyebrow'] )        : '',
+		'heading'          => isset( $raw['heading'] )          ? sanitize_text_field( $raw['heading'] )        : '',
+		'sub'              => isset( $raw['sub'] )              ? sanitize_textarea_field( $raw['sub'] )        : '',
+		'links'            => $links,
+		'bg_color'         => isset( $raw['bg_color'] )         ? rt_sanitize_color( $raw['bg_color'] )         : '',
+		'accent_color'     => isset( $raw['accent_color'] )     ? rt_sanitize_color( $raw['accent_color'] )     : '',
+		'bg_image_id'      => isset( $raw['bg_image_id'] )      ? absint( $raw['bg_image_id'] )                 : 0,
+		'bg_fixed'         => isset( $raw['bg_fixed'] ) && '1' === $raw['bg_fixed'] ? '1' : '0',
+		'eyebrow_color'    => isset( $raw['eyebrow_color'] )    ? rt_sanitize_color( $raw['eyebrow_color'] )    : '',
+		'heading_color'    => isset( $raw['heading_color'] )    ? rt_sanitize_color( $raw['heading_color'] )    : '',
+		'body_color'       => isset( $raw['body_color'] )       ? rt_sanitize_color( $raw['body_color'] )       : '',
+		'card_title_color' => isset( $raw['card_title_color'] ) ? rt_sanitize_color( $raw['card_title_color'] ) : '',
+		'card_body_color'  => isset( $raw['card_body_color'] )  ? rt_sanitize_color( $raw['card_body_color'] )  : '',
 	);
+}
 
+function rt_sections_sanitize( $input ) {
+	if ( ! is_array( $input ) ) {
+		return array();
+	}
+	$out            = array();
+	$out['about']   = rt_sections_sanitize_about(   isset( $input['about'] )   ? (array) $input['about']   : array() );
+	$out['contact'] = rt_sections_sanitize_contact( isset( $input['contact'] ) ? (array) $input['contact'] : array() );
+	foreach ( array( 'certs', 'expertise', 'portfolio', 'blog' ) as $s ) {
+		$out[ $s ] = rt_sections_sanitize_section( $s, isset( $input[ $s ] ) ? (array) $input[ $s ] : array() );
+	}
 	return $out;
 }
 

@@ -506,80 +506,23 @@ function rt_capability_admin_notices() {
 add_action( 'admin_notices', 'rt_capability_admin_notices' );
 
 // Live counters for title and excerpt on the capability edit screen.
+// Note: shares handle + object name with rt_expertise_field_counters below.
+// The post_type guards are mutually exclusive, so only one ever runs per page.
 function rt_capability_excerpt_counter() {
 	$screen = get_current_screen();
 	if ( ! $screen || 'capability' !== $screen->post_type || 'post' !== $screen->base ) {
 		return;
 	}
-	?>
-	<script>
-	document.addEventListener('DOMContentLoaded', function () {
-
-		// ── Title (40 chars) ──────────────────────────────────────
-		var title = document.getElementById('title');
-		if ( title ) {
-			title.setAttribute( 'maxlength', '40' );
-			var titleCounter = document.createElement('p');
-			titleCounter.className = 'description';
-			titleCounter.style.marginTop = '4px';
-			title.parentNode.insertBefore( titleCounter, title.nextSibling );
-
-			function updateTitle() {
-				var len  = title.value.length;
-				var left = 40 - len;
-				if ( len === 0 ) {
-					titleCounter.style.color = '';
-					titleCounter.textContent = '0 / 40 characters';
-				} else if ( len <= 30 ) {
-					titleCounter.style.color = '#1e7e34';
-					titleCounter.textContent = len + ' / 40';
-				} else if ( len <= 40 ) {
-					titleCounter.style.color = '#856404';
-					titleCounter.textContent = len + ' / 40 — ' + left + ' remaining';
-				} else {
-					titleCounter.style.color = '#cc1818';
-					titleCounter.textContent = len + ' / 40 — ' + Math.abs( left ) + ' over limit';
-				}
-			}
-			title.addEventListener( 'input', updateTitle );
-			updateTitle();
-		}
-
-		// ── Excerpt (50 per line, 100 max) ────────────────────────
-		var excerpt = document.getElementById('excerpt');
-		if ( ! excerpt ) { return; }
-
-		var counter = document.createElement('p');
-		counter.className = 'description';
-		counter.style.marginTop = '4px';
-		excerpt.parentNode.insertBefore( counter, excerpt.nextSibling );
-		excerpt.setAttribute( 'maxlength', '100' );
-
-		function update() {
-			var len  = excerpt.value.length;
-			var left = 100 - len;
-			if ( len === 0 ) {
-				counter.style.color = '';
-				counter.textContent = '0 / 100 — 50 chars = one comfortable line';
-			} else if ( len <= 50 ) {
-				counter.style.color = '#1e7e34';
-				counter.textContent = len + ' / 100';
-			} else if ( len <= 100 ) {
-				counter.style.color = '#856404';
-				counter.textContent = len + ' / 100 — ' + left + ' remaining';
-			} else {
-				counter.style.color = '#cc1818';
-				counter.textContent = len + ' / 100 — ' + Math.abs( left ) + ' over limit';
-			}
-		}
-
-		excerpt.addEventListener( 'input', update );
-		update();
-	});
-	</script>
-	<?php
+	wp_enqueue_script( 'rt-admin-field-counters', RT_URI . '/js/admin-field-counters.js', array(), RT_VERSION, true );
+	wp_localize_script( 'rt-admin-field-counters', 'rtFieldCounters', array(
+		'titleMax'    => 40,
+		'titleWarn'   => 30,
+		'excerptMax'  => 100,
+		'excerptWarn' => 50,
+		'excerptHint' => '50 chars = one comfortable line',
+	) );
 }
-add_action( 'admin_footer', 'rt_capability_excerpt_counter' );
+add_action( 'admin_enqueue_scripts', 'rt_capability_excerpt_counter' );
 
 
 // ── EXPERTISE META BOX ───────────────────────────────────────
@@ -807,75 +750,16 @@ function rt_expertise_field_counters() {
 	if ( ! $screen || 'expertise' !== $screen->post_type || 'post' !== $screen->base ) {
 		return;
 	}
-	?>
-	<script>
-	document.addEventListener('DOMContentLoaded', function () {
-
-		// ── Title (32 chars) ──────────────────────────────────────
-		var title = document.getElementById('title');
-		if ( title ) {
-			title.setAttribute( 'maxlength', '32' );
-			var titleCounter = document.createElement('p');
-			titleCounter.className = 'description';
-			titleCounter.style.marginTop = '4px';
-			title.parentNode.insertBefore( titleCounter, title.nextSibling );
-
-			function updateTitle() {
-				var len  = title.value.length;
-				var left = 32 - len;
-				if ( len === 0 ) {
-					titleCounter.style.color = '';
-					titleCounter.textContent = '0 / 32 characters';
-				} else if ( len <= 24 ) {
-					titleCounter.style.color = '#1e7e34';
-					titleCounter.textContent = len + ' / 32';
-				} else if ( len <= 32 ) {
-					titleCounter.style.color = '#856404';
-					titleCounter.textContent = len + ' / 32 — ' + left + ' remaining';
-				} else {
-					titleCounter.style.color = '#cc1818';
-					titleCounter.textContent = len + ' / 32 — ' + Math.abs( left ) + ' over limit';
-				}
-			}
-			title.addEventListener( 'input', updateTitle );
-			updateTitle();
-		}
-
-		// ── Excerpt (76 per line, 200 max) ────────────────────────
-		var excerpt = document.getElementById('excerpt');
-		if ( excerpt ) {
-			excerpt.setAttribute( 'maxlength', '200' );
-			var excerptCounter = document.createElement('p');
-			excerptCounter.className = 'description';
-			excerptCounter.style.marginTop = '4px';
-			excerpt.parentNode.insertBefore( excerptCounter, excerpt.nextSibling );
-
-			function updateExcerpt() {
-				var len  = excerpt.value.length;
-				var left = 200 - len;
-				if ( len === 0 ) {
-					excerptCounter.style.color = '';
-					excerptCounter.textContent = '0 / 200 — 42 chars = one comfortable line';
-				} else if ( len <= 42 ) {
-					excerptCounter.style.color = '#1e7e34';
-					excerptCounter.textContent = len + ' / 200';
-				} else if ( len <= 200 ) {
-					excerptCounter.style.color = '#856404';
-					excerptCounter.textContent = len + ' / 200 — ' + left + ' remaining';
-				} else {
-					excerptCounter.style.color = '#cc1818';
-					excerptCounter.textContent = len + ' / 200 — ' + Math.abs( left ) + ' over limit';
-				}
-			}
-			excerpt.addEventListener( 'input', updateExcerpt );
-			updateExcerpt();
-		}
-
-	});
-	</script>
-	<?php
+	wp_enqueue_script( 'rt-admin-field-counters', RT_URI . '/js/admin-field-counters.js', array(), RT_VERSION, true );
+	wp_localize_script( 'rt-admin-field-counters', 'rtFieldCounters', array(
+		'titleMax'    => 32,
+		'titleWarn'   => 24,
+		'excerptMax'  => 200,
+		'excerptWarn' => 42,
+		'excerptHint' => '42 chars = one comfortable line',
+	) );
 }
-add_action( 'admin_footer', 'rt_expertise_field_counters' );
+add_action( 'admin_enqueue_scripts', 'rt_expertise_field_counters' );
 
 
 // ── CONTACT FORM AJAX ─────────────────────────────────────────
