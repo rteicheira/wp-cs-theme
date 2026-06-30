@@ -48,6 +48,19 @@ add_action( 'after_setup_theme', 'rt_theme_setup' );
 
 
 // ── ENQUEUE ASSETS ───────────────────────────────────────────
+function rt_get_typing_phrases() {
+	$default = implode( "\n", array(
+		'> securing cardholder data environments',
+		'> automating the boring stuff',
+		'> docker run --rm compliance-check',
+		'> grep -r "risk" /etc/security/',
+		'> building things that hold up under audit',
+	) );
+	$raw     = get_theme_mod( 'hero_typing_lines', $default );
+	$phrases = array_values( array_filter( array_map( 'trim', explode( "\n", $raw ) ) ) );
+	return $phrases ?: explode( "\n", $default );
+}
+
 function rt_enqueue_assets() {
 	wp_enqueue_style(
 		'rt-fonts',
@@ -71,30 +84,11 @@ function rt_enqueue_assets() {
 		true
 	);
 
-	$typing_default = implode( "\n", array(
-		'> securing cardholder data environments',
-		'> automating the boring stuff',
-		'> docker run --rm compliance-check',
-		'> grep -r "risk" /etc/security/',
-		'> building things that hold up under audit',
-	) );
-	$typing_raw     = get_theme_mod( 'hero_typing_lines', $typing_default );
-	$typing_phrases = array();
-	foreach ( explode( "\n", $typing_raw ) as $line ) {
-		$line = trim( $line );
-		if ( '' !== $line ) {
-			$typing_phrases[] = $line;
-		}
-	}
-	if ( empty( $typing_phrases ) ) {
-		$typing_phrases = explode( "\n", $typing_default );
-	}
-
 	wp_localize_script( 'rt-main', 'RT', array(
 		'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
 		'nonce'         => wp_create_nonce( 'rt_nonce' ),
 		'themeUri'      => RT_URI,
-		'typingPhrases' => $typing_phrases,
+		'typingPhrases' => rt_get_typing_phrases(),
 		'contactError'  => __( 'Something went wrong. Please try again or email me directly.', 'russteicheira' ),
 	) );
 
@@ -763,14 +757,19 @@ add_action( 'admin_enqueue_scripts', 'rt_expertise_field_counters' );
 
 
 // ── CONTACT FORM AJAX ─────────────────────────────────────────
+function rt_get_visitor_ip() {
+	$cf = isset( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : '';
+	if ( $cf && filter_var( $cf, FILTER_VALIDATE_IP ) ) {
+		return sanitize_text_field( wp_unslash( $cf ) );
+	}
+	return sanitize_text_field( wp_unslash( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' ) );
+}
+
 function rt_handle_contact() {
 	check_ajax_referer( 'rt_nonce', 'nonce' );
 
 	// Rate limit: 5 submissions per IP per hour.
-	// Behind Cloudflare, CF-Connecting-IP carries the real visitor IP; fall back to REMOTE_ADDR for local dev.
-	$cf_ip     = isset( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : '';
-	$remote_ip = ( $cf_ip && filter_var( $cf_ip, FILTER_VALIDATE_IP ) ) ? $cf_ip : $_SERVER['REMOTE_ADDR'];
-	$ip_key    = 'rt_contact_rate_' . md5( $remote_ip );
+	$ip_key    = 'rt_contact_rate_' . md5( rt_get_visitor_ip() );
 	$attempts = (int) get_transient( $ip_key );
 	if ( $attempts >= 5 ) {
 		wp_send_json_error( array( 'message' => __( 'Too many messages sent. Please try again later.', 'russteicheira' ) ) );

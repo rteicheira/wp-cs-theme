@@ -224,71 +224,33 @@ function rt_customizer_register( $wp_customize ) {
 	) ) );
 
 	// ── Stats ─────────────────────────────────────────────────
-	// Stat 1
-	$wp_customize->add_setting( 'hero_stat1_num', array(
-		'default'           => 'PCI DSS',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat1_num', array(
-		'label'   => __( 'Stat 1 — Number/Label', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
-	$wp_customize->add_setting( 'hero_stat1_label', array(
-		'default'           => 'Compliance Focus',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat1_label', array(
-		'label'   => __( 'Stat 1 — Description', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
-
-	// Stat 2
-	$wp_customize->add_setting( 'hero_stat2_num', array(
-		'default'           => '10+',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat2_num', array(
-		'label'   => __( 'Stat 2 — Number', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
-	$wp_customize->add_setting( 'hero_stat2_label', array(
-		'default'           => 'Years in Security',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat2_label', array(
-		'label'   => __( 'Stat 2 — Description', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
-
-	// Stat 3
-	$wp_customize->add_setting( 'hero_stat3_num', array(
-		'default'           => '∞',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat3_num', array(
-		'label'   => __( 'Stat 3 — Number/Symbol', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
-	$wp_customize->add_setting( 'hero_stat3_label', array(
-		'default'           => 'Scripts Automated',
-		'sanitize_callback' => 'sanitize_text_field',
-		'transport'         => 'postMessage',
-	) );
-	$wp_customize->add_control( 'hero_stat3_label', array(
-		'label'   => __( 'Stat 3 — Description', 'russteicheira' ),
-		'section' => 'rt_hero',
-		'type'    => 'text',
-	) );
+	$hero_stats = array(
+		1 => array( 'num_default' => 'PCI DSS', 'num_label' => 'Stat 1 — Number/Label', 'label_default' => 'Compliance Focus',  'label_label' => 'Stat 1 — Description' ),
+		2 => array( 'num_default' => '10+',     'num_label' => 'Stat 2 — Number',        'label_default' => 'Years in Security', 'label_label' => 'Stat 2 — Description' ),
+		3 => array( 'num_default' => '∞',       'num_label' => 'Stat 3 — Number/Symbol', 'label_default' => 'Scripts Automated', 'label_label' => 'Stat 3 — Description' ),
+	);
+	foreach ( $hero_stats as $n => $stat ) {
+		$wp_customize->add_setting( "hero_stat{$n}_num", array(
+			'default'           => $stat['num_default'],
+			'sanitize_callback' => 'sanitize_text_field',
+			'transport'         => 'postMessage',
+		) );
+		$wp_customize->add_control( "hero_stat{$n}_num", array(
+			'label'   => __( $stat['num_label'], 'russteicheira' ),
+			'section' => 'rt_hero',
+			'type'    => 'text',
+		) );
+		$wp_customize->add_setting( "hero_stat{$n}_label", array(
+			'default'           => $stat['label_default'],
+			'sanitize_callback' => 'sanitize_text_field',
+			'transport'         => 'postMessage',
+		) );
+		$wp_customize->add_control( "hero_stat{$n}_label", array(
+			'label'   => __( $stat['label_label'], 'russteicheira' ),
+			'section' => 'rt_hero',
+			'type'    => 'text',
+		) );
+	}
 
 	// ── Hero Colors ───────────────────────────────────────────
 	$wp_customize->add_setting( 'hero_stat_num_color', array(
