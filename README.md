@@ -82,7 +82,7 @@ Each project supports:
 - **Featured thumbnail** — optional
 - **Live URL** — meta field; shown as "↗ Live Site" link on cards and in single page meta
 - **GitHub URL** — meta field; shown as "🐙 GitHub" link on cards and in single page meta
-- **Featured checkbox** — controls visibility on the homepage projects section
+- **Featured** — controls visibility on the homepage projects section
 
 Project cards link to the WordPress project page. Live Site and GitHub links appear as a separate row at the bottom of each card.
 
@@ -109,7 +109,8 @@ Displayed in the Certifications section. Admin-only — no public archive or sin
 
 - **Title** — certification name
 - **Excerpt** — issuing body or short description
-- **Expiry date** — displayed on the card; leave blank for non-expiring certs
+- **Issue Date** — shown on the card
+- **Expiry Date** — shown on the card; leave blank for non-expiring certs
 - **Credential ID** — badge/certificate ID number; leave blank to hide
 - **Credential URL** — links the cert card to a verification page
 - **Order** — controls display order via page-attributes
@@ -127,6 +128,14 @@ A shared taxonomy registered on **Posts**, **Projects**, and **Expertise**.
 ## Sections Admin Page
 
 **WP Admin → Sections** controls per-section visibility, colors, and background images. Saving this page automatically clears Jetpack Boost and W3 Total Cache page caches.
+
+The **About** section has additional content fields:
+
+| Field | Notes |
+| --- | --- |
+| Body | Rich-text editor for the About Me body copy |
+| Skills | Tag-style picker; selected skills appear as gold badges below the body |
+| Portrait Photo | Optional circular photo displayed above the eyebrow label; leave blank to hide |
 
 The **Blog** section has additional card meta toggles:
 
