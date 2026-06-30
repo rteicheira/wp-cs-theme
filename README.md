@@ -15,7 +15,7 @@ The homepage is assembled from independently controlled sections, each with conf
 >
 > **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
 
-![Screenshot](screenshot.png)
+![Preview Screenshot](preview/screenshot.png)
 
 ## Structure
 
@@ -34,7 +34,6 @@ russteicheira/
 ├── 404.php                    ← Not found
 ├── header.php                 ← <head>, nav
 ├── footer.php                 ← footer, wp_footer()
-├── screenshot.png             ← WP admin theme preview (1200×900)
 ├── css/
 │   ├── main.css               ← All styles (tokens → responsive)
 │   ├── fonts.css              ← @font-face declarations
@@ -45,6 +44,10 @@ russteicheira/
 ├── js/
 │   ├── main.js                ← Nav, typewriter, smooth scroll, contact AJAX
 │   └── customizer-preview.js  ← Customizer live preview bindings
+├── preview/
+│   ├── static.html            ← Provides a full preview of the entire homepage
+│   ├── screenshot.png         ← WP theme preview (1200×900)
+│   └── portrait.jpg           ← Used to show the portait location in the about me section
 ├── template-parts/
 │   ├── hero.php               ← Hero / above-the-fold section
 │   ├── about.php              ← About Me + capabilities panel
