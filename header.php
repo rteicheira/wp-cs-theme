@@ -22,7 +22,10 @@
 			if ( $site_icon_url ) {
 				echo '<img src="' . esc_url( $site_icon_url ) . '" alt="' . esc_attr( get_bloginfo( 'name' ) ) . '" width="40" height="40">';
 			} else {
-				echo 'RT<span aria-hidden="true">.</span>';
+				$_parts = explode( ' ', trim( get_bloginfo( 'name' ) ) );
+				$_ini   = strtoupper( substr( $_parts[0], 0, 1 ) );
+				$_ini  .= isset( $_parts[1] ) ? strtoupper( substr( $_parts[1], 0, 1 ) ) : '';
+				echo esc_html( $_ini ) . '<span aria-hidden="true">.</span>';
 			}
 			?>
 		</a>

@@ -428,6 +428,12 @@ function rt_sections_sanitize( $input ) {
 			$out[ $s ]['card_tag_bg']    = isset( $input[ $s ]['card_tag_bg'] )    ? rt_sanitize_color( $input[ $s ]['card_tag_bg'] )    : '';
 			$out[ $s ]['card_tag_color'] = isset( $input[ $s ]['card_tag_color'] ) ? rt_sanitize_color( $input[ $s ]['card_tag_color'] ) : '';
 		}
+		if ( 'blog' === $s ) {
+			$out['blog']['show_date']     = ! empty( $input['blog']['show_date'] )     ? '1' : '0';
+			$out['blog']['show_author']   = ! empty( $input['blog']['show_author'] )   ? '1' : '0';
+			$out['blog']['show_category'] = ! empty( $input['blog']['show_category'] ) ? '1' : '0';
+			$out['blog']['show_skills']   = ! empty( $input['blog']['show_skills'] )   ? '1' : '0';
+		}
 	}
 
 	// Contact — always visible, heading + subtext + 5 configurable link rows
@@ -996,6 +1002,50 @@ function rt_sections_page() {
 						</td>
 					</tr>
 
+					<?php elseif ( 'blog' === $key ) : ?>
+					<tr>
+						<th>
+							<label for="blog_sub">
+								<?php _e( 'Sub-description', 'russteicheira' ); ?>
+							</label>
+						</th>
+						<td>
+							<input type="text"
+								id="blog_sub"
+								name="rt_sections[blog][sub]"
+								value="<?php echo esc_attr( $v( 'blog', 'sub' ) ); ?>"
+								class="large-text" />
+							<p class="description"><?php _e( 'One-sentence description shown below the heading.', 'russteicheira' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th style="padding-top:14px;">
+							<?php _e( 'Card Meta', 'russteicheira' ); ?>
+						</th>
+						<td style="padding-top:14px;">
+							<?php
+							$blog_meta_items = array(
+								'show_date'     => __( 'Post date',  'russteicheira' ),
+								'show_author'   => __( 'Author',     'russteicheira' ),
+								'show_category' => __( 'Category',   'russteicheira' ),
+								'show_skills'   => __( 'Skills',     'russteicheira' ),
+							);
+							foreach ( $blog_meta_items as $bfield => $blabel ) :
+								$bval     = $v( 'blog', $bfield );
+								$bchecked = ( '' === $bval || '1' === $bval );
+							?>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="checkbox"
+										name="rt_sections[blog][<?php echo esc_attr( $bfield ); ?>]"
+										value="1"
+										<?php checked( $bchecked ); ?> />
+									<?php echo esc_html( $blabel ); ?>
+								</label>
+							<?php endforeach; ?>
+							<p class="description"><?php _e( 'Choose which meta elements appear on blog preview cards and skill archive cards.', 'russteicheira' ); ?></p>
+						</td>
+					</tr>
+
 					<?php else : ?>
 					<tr>
 						<th>
@@ -1178,7 +1228,7 @@ function rt_sections_page() {
 											value="<?php echo esc_attr( $card_tag_bg_col ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
-									<p class="description"><?php _e( 'Background fill for skill/stack tag badges on cards.', 'russteicheira' ); ?></p>
+									<p class="description"><?php _e( 'Background fill for skill tag badges on cards.', 'russteicheira' ); ?></p>
 								</td>
 							</tr>
 							<tr>
@@ -1195,7 +1245,7 @@ function rt_sections_page() {
 											value="<?php echo esc_attr( $card_tag_col ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
-									<p class="description"><?php _e( 'Text and border color for skill/stack tag badges on cards.', 'russteicheira' ); ?></p>
+									<p class="description"><?php _e( 'Text and border color for skill tag badges on cards.', 'russteicheira' ); ?></p>
 								</td>
 							</tr>
 							<?php endif; ?>
@@ -1245,12 +1295,12 @@ function rt_sections_page() {
 			<?php endforeach; ?>
 
 			<p class="submit" style="display:flex;align-items:center;justify-content:space-between;">
-				<input type="submit" name="submit" id="submit" class="button button-primary"
-					value="<?php esc_attr_e( 'Save Section Settings', 'russteicheira' ); ?>" />
 				<button type="button" id="rt-reset-colors" class="button"
 					style="color:#fff;border-color:#dc3232;background:#dc3232;box-shadow:0 0 0 1px #dc3232;">
 					<?php _e( 'Reset All Section Colors', 'russteicheira' ); ?>
 				</button>
+				<input type="submit" name="submit" id="submit" class="button button-primary"
+					value="<?php esc_attr_e( 'Save Section Settings', 'russteicheira' ); ?>" />
 			</p>
 		</form>
 
@@ -1292,7 +1342,7 @@ function rt_output_section_css() {
 			'card'       => '.project-card',
 			'card_title' => '.project-card__title',
 			'card_body'  => '.project-card__desc',
-			'card_tag'   => '.stack-tag',
+			'card_tag'   => '.card-tag',
 			'body'       => '.section-sub',
 		),
 		'blog'      => array(

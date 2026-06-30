@@ -12,25 +12,38 @@
 				<?php
 				$live_url = get_post_meta( get_the_ID(), '_project_url',    true );
 				$gh_url   = get_post_meta( get_the_ID(), '_project_github', true );
-				$stack    = rt_get_stack_tags();
-				$link     = $live_url ?: $gh_url ?: get_permalink();
+				$skills   = get_the_terms( get_the_ID(), 'skill' );
 				?>
 				<article class="project-card">
 					<div class="project-card__header">
 						<h2 class="project-card__title">
-							<a href="<?php echo esc_url( $link ); ?>"
-							   <?php echo ( $live_url || $gh_url ) ? 'target="_blank" rel="noopener noreferrer"' : ''; ?>>
+							<a href="<?php echo esc_url( get_permalink() ); ?>">
 								<?php echo esc_html( get_the_title() ); ?>
 							</a>
 						</h2>
-						<span class="project-card__link" aria-hidden="true">↗</span>
 					</div>
 					<p class="project-card__desc"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
-					<?php if ( $stack ) : ?>
-						<div class="project-card__stack">
-							<?php foreach ( $stack as $term ) : ?>
-								<span class="stack-tag"><?php echo esc_html( $term->name ); ?></span>
+					<?php if ( $skills && ! is_wp_error( $skills ) ) : ?>
+						<div class="project-card__skills">
+							<?php foreach ( $skills as $skill ) :
+								$slink = get_term_link( $skill );
+							?>
+								<?php if ( ! is_wp_error( $slink ) ) : ?>
+									<a class="card-tag" href="<?php echo esc_url( $slink ); ?>"><?php echo esc_html( $skill->name ); ?></a>
+								<?php else : ?>
+									<span class="card-tag"><?php echo esc_html( $skill->name ); ?></span>
+								<?php endif; ?>
 							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+					<?php if ( $live_url || $gh_url ) : ?>
+						<div class="project-card__links">
+							<?php if ( $live_url ) : ?>
+								<a href="<?php echo esc_url( $live_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php _e( 'Live Site', 'russteicheira' ); ?></a>
+							<?php endif; ?>
+							<?php if ( $gh_url ) : ?>
+								<a href="<?php echo esc_url( $gh_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php _e( 'GitHub', 'russteicheira' ); ?></a>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 				</article>

@@ -52,8 +52,14 @@ $expertise_query = new WP_Query( array(
 						<p class="expertise-card__desc"><?php echo esc_html( get_the_excerpt() ); ?></p>
 						<?php if ( $tags && ! is_wp_error( $tags ) ) : ?>
 							<div class="expertise-card__tags" aria-label="<?php esc_attr_e( 'Related skills', 'russteicheira' ); ?>">
-								<?php foreach ( $tags as $tag ) : ?>
-									<span class="card-tag"><?php echo esc_html( $tag->name ); ?></span>
+								<?php foreach ( $tags as $tag ) :
+									$link = get_term_link( $tag );
+								?>
+									<?php if ( ! is_wp_error( $link ) ) : ?>
+										<a class="card-tag" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $tag->name ); ?></a>
+									<?php else : ?>
+										<span class="card-tag"><?php echo esc_html( $tag->name ); ?></span>
+									<?php endif; ?>
 								<?php endforeach; ?>
 							</div>
 						<?php endif; ?>

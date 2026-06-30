@@ -3,16 +3,16 @@
 <div class="blog-layout">
 
 	<div class="post-list">
+
+		<p class="section-eyebrow"><?php esc_html_e( '// skill', 'russteicheira' ); ?></p>
 		<h1 class="section-title">
-			<?php
-			if ( is_category() )      single_cat_title( '', true );
-			elseif ( is_tag() )       single_tag_title( '', true );
-			elseif ( is_author() )    echo esc_html( get_the_author() );
-			elseif ( is_search() )    printf( esc_html__( 'Search: %s', 'russteicheira' ), esc_html( get_search_query() ) );
-			elseif ( is_archive() )   the_archive_title( '', true );
-			else                      esc_html_e( 'Latest Posts', 'russteicheira' );
-			?>
+			<?php echo esc_html( single_term_title( '', false ) ); ?>
 		</h1>
+		<?php
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term && $term->description ) : ?>
+			<p class="section-sub"><?php echo esc_html( $term->description ); ?></p>
+		<?php endif; ?>
 
 		<?php
 		$_show_date     = rt_section_opt( 'blog', 'show_date',     '1' );
@@ -22,11 +22,55 @@
 		?>
 
 		<?php if ( have_posts() ) : ?>
-			<?php while ( have_posts() ) : the_post(); ?>
+
+			<?php while ( have_posts() ) : the_post();
+				$_pt = get_post_type();
+			?>
+
+				<?php if ( 'project' === $_pt ) :
+					$_live  = get_post_meta( get_the_ID(), '_project_url',    true );
+					$_gh    = get_post_meta( get_the_ID(), '_project_github', true );
+					$_ptags = get_the_terms( get_the_ID(), 'skill' );
+				?>
+				<article id="post-<?php the_ID(); ?>" class="project-card">
+					<div class="project-card__header">
+						<h2 class="project-card__title">
+							<a href="<?php echo esc_url( get_permalink() ); ?>">
+								<?php echo esc_html( get_the_title() ); ?>
+							</a>
+						</h2>
+					</div>
+					<p class="project-card__desc"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 30, '…' ) ); ?></p>
+					<?php if ( $_ptags && ! is_wp_error( $_ptags ) ) : ?>
+						<div class="project-card__skills">
+							<?php foreach ( $_ptags as $_pt_tag ) :
+								$_ptl = get_term_link( $_pt_tag );
+							?>
+								<?php if ( ! is_wp_error( $_ptl ) ) : ?>
+									<a class="card-tag" href="<?php echo esc_url( $_ptl ); ?>"><?php echo esc_html( $_pt_tag->name ); ?></a>
+								<?php else : ?>
+									<span class="card-tag"><?php echo esc_html( $_pt_tag->name ); ?></span>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+					<?php if ( $_live || $_gh ) : ?>
+						<div class="project-card__links">
+							<?php if ( $_live ) : ?>
+								<a href="<?php echo esc_url( $_live ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php _e( 'Live Site', 'russteicheira' ); ?></a>
+							<?php endif; ?>
+							<?php if ( $_gh ) : ?>
+								<a href="<?php echo esc_url( $_gh ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php _e( 'GitHub', 'russteicheira' ); ?></a>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+				</article>
+
+				<?php else : ?>
 				<article id="post-<?php the_ID(); ?>" class="post-entry">
 					<?php if ( has_post_thumbnail() ) : ?>
 						<div class="post-entry__thumb">
-							<a href="<?php echo esc_url( get_permalink() ); ?>"><?php the_post_thumbnail( 'blog-card', [ 'alt' => '' ] ); ?></a>
+							<a href="<?php echo esc_url( get_permalink() ); ?>"><?php the_post_thumbnail( 'blog-card', array( 'alt' => '' ) ); ?></a>
 						</div>
 					<?php endif; ?>
 					<div class="post-entry__body">
@@ -76,20 +120,23 @@
 						</a>
 					</div>
 				</article>
+				<?php endif; ?>
+
 			<?php endwhile; ?>
 
 			<div class="pagination">
 				<?php
-				echo paginate_links( [
+				echo paginate_links( array(
 					'prev_text' => '← ' . __( 'Newer', 'russteicheira' ),
 					'next_text' => __( 'Older', 'russteicheira' ) . ' →',
-				] );
+				) );
 				?>
 			</div>
 
 		<?php else : ?>
-			<p><?php _e( 'No posts found.', 'russteicheira' ); ?></p>
+			<p><?php esc_html_e( 'No content found for this skill yet.', 'russteicheira' ); ?></p>
 		<?php endif; ?>
+
 	</div>
 
 	<aside class="blog-sidebar" role="complementary" aria-label="<?php esc_attr_e( 'Blog Sidebar', 'russteicheira' ); ?>">

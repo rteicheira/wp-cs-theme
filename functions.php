@@ -228,23 +228,6 @@ function rt_register_post_types() {
 		'supports'           => array( 'title', 'excerpt', 'page-attributes' ),
 	) );
 
-	register_taxonomy( 'stack', 'project', array(
-		'labels' => array(
-			'name'          => __( 'Stack Tags',  'russteicheira' ),
-			'singular_name' => __( 'Stack Tag',   'russteicheira' ),
-			'search_items'  => __( 'Search Tags', 'russteicheira' ),
-			'all_items'     => __( 'All Tags',    'russteicheira' ),
-			'edit_item'     => __( 'Edit Tag',    'russteicheira' ),
-			'add_new_item'  => __( 'Add New Tag', 'russteicheira' ),
-			'menu_name'     => __( 'Stack Tags',  'russteicheira' ),
-		),
-		'hierarchical'      => false,
-		'show_ui'           => true,
-		'show_in_rest'      => true,
-		'show_admin_column' => true,
-		'query_var'         => true,
-		'rewrite'           => array( 'slug' => 'stack' ),
-	) );
 }
 add_action( 'init', 'rt_register_post_types' );
 
@@ -1011,7 +994,7 @@ add_action( 'send_headers', 'rt_send_security_headers' );
 
 // ── TAXONOMY: Skills (for the About page badges) ─────────────
 function rt_register_skill_taxonomy() {
-	register_taxonomy( 'skill', array( 'expertise' ), array(
+	register_taxonomy( 'skill', array( 'expertise', 'post' ), array(
 		'labels' => array(
 			'name'                       => __( 'Skills',            'russteicheira' ),
 			'singular_name'              => __( 'Skill',             'russteicheira' ),
@@ -1034,14 +1017,51 @@ function rt_register_skill_taxonomy() {
 		'show_in_rest'          => true,    // enables the block editor tag panel
 		'show_admin_column'     => true,
 		'show_in_nav_menus'     => false,
-		'query_var'             => false,
-		'rewrite'               => false,   // no public archive needed
+		'publicly_queryable'    => true,
+		'query_var'             => true,
+		'rewrite'               => array( 'slug' => 'skill' ),
 	) );
-	// Explicit association ensures the admin meta box appears even if the CPT
-	// registered before this taxonomy on the same init priority.
-	register_taxonomy_for_object_type( 'skill', 'expertise' );
+	// Explicit association ensures the admin meta box appears regardless of init order.
+	register_taxonomy_for_object_type( 'skill',    'expertise' );
+	register_taxonomy_for_object_type( 'skill',    'post' );
+	register_taxonomy_for_object_type( 'skill',    'project' );
+	register_taxonomy_for_object_type( 'post_tag', 'project' );
 }
 add_action( 'init', 'rt_register_skill_taxonomy' );
+
+// Skill taxonomy archives show blog posts and projects, not expertise CPT entries.
+add_action( 'pre_get_posts', function ( $query ) {
+	if ( ! is_admin() && $query->is_main_query() && $query->is_tax( 'skill' ) ) {
+		$query->set( 'post_type', array( 'post', 'project' ) );
+	}
+} );
+
+
+// ── PAGE CACHE FLUSH ──────────────────────────────────────────
+// Clear Jetpack Boost and W3TC page caches when Section settings are saved,
+// so changes to meta toggles and header text appear immediately on the frontend.
+function rt_flush_page_cache() {
+	// W3 Total Cache
+	if ( function_exists( 'w3tc_flush_all' ) ) {
+		w3tc_flush_all();
+	}
+	// Jetpack Boost — action-based clear
+	do_action( 'jetpack_boost_clear_cache' );
+	// Jetpack Boost — filesystem fallback (runs as www-data, so has write access)
+	$cache_dir = WP_CONTENT_DIR . '/boost-cache/cache/';
+	if ( is_dir( $cache_dir ) ) {
+		$it = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $cache_dir, RecursiveDirectoryIterator::SKIP_DOTS )
+		);
+		foreach ( $it as $file ) {
+			if ( $file->isFile() && 'html' === $file->getExtension() && 'index.html' !== $file->getFilename() ) {
+				@unlink( $file->getPathname() );
+			}
+		}
+	}
+}
+add_action( 'update_option_rt_sections', 'rt_flush_page_cache' );
+add_action( 'add_option_rt_sections',    'rt_flush_page_cache' );
 
 
 // ── HELPER: section header (eyebrow / heading / sub) ─────────
@@ -1084,16 +1104,3 @@ if ( ! function_exists( 'rt_get_section_header' ) ) {
 }
 
 
-// ── HELPER: stack tags ────────────────────────────────────────
-if ( ! function_exists( 'rt_get_stack_tags' ) ) {
-	function rt_get_stack_tags( $post_id = null ) {
-		if ( null === $post_id ) {
-			$post_id = get_the_ID();
-		}
-		$terms = get_the_terms( $post_id, 'stack' );
-		if ( $terms && ! is_wp_error( $terms ) ) {
-			return $terms;
-		}
-		return array();
-	}
-}

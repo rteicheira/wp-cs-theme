@@ -2,29 +2,29 @@
 
 <?php while ( have_posts() ) : the_post(); ?>
 
+<?php
+$live_url = get_post_meta( get_the_ID(), '_project_url',    true );
+$gh_url   = get_post_meta( get_the_ID(), '_project_github', true );
+?>
+
 <article id="post-<?php the_ID(); ?>" <?php post_class( 'single-post' ); ?>>
 
 	<header class="single-post__header">
 		<div class="single-post__meta">
 			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
-			<?php
-			$cats = get_the_category();
-			if ( $cats ) {
-				echo ' &middot; ';
-				foreach ( $cats as $i => $cat ) {
-					echo '<a href="' . esc_url( get_category_link( $cat ) ) . '">' . esc_html( $cat->name ) . '</a>';
-					if ( $i < count( $cats ) - 1 ) echo ', ';
-				}
-			}
-			echo ' &middot; ' . esc_html( get_the_author() );
-			?>
+			<?php if ( $live_url ) : ?>
+				&middot; <a href="<?php echo esc_url( $live_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Live Site', 'russteicheira' ); ?></a>
+			<?php endif; ?>
+			<?php if ( $gh_url ) : ?>
+				&middot; <a href="<?php echo esc_url( $gh_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'GitHub', 'russteicheira' ); ?></a>
+			<?php endif; ?>
 		</div>
 		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
 		<?php
-		$post_skills = get_the_terms( get_the_ID(), 'skill' );
-		if ( $post_skills && ! is_wp_error( $post_skills ) ) : ?>
+		$project_skills = get_the_terms( get_the_ID(), 'skill' );
+		if ( $project_skills && ! is_wp_error( $project_skills ) ) : ?>
 			<div class="single-post__skills">
-				<?php foreach ( $post_skills as $ps ) :
+				<?php foreach ( $project_skills as $ps ) :
 					$ps_link = get_term_link( $ps );
 				?>
 					<?php if ( ! is_wp_error( $ps_link ) ) : ?>

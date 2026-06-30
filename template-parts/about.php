@@ -19,7 +19,7 @@ if ( $skills_raw ) {
 	foreach ( $skill_ids as $id ) {
 		$term = get_term( $id, 'skill' );
 		if ( $term && ! is_wp_error( $term ) ) {
-			$skills[] = $term->name;
+			$skills[] = $term; // store full object so we can link
 		}
 	}
 } else {
@@ -44,8 +44,18 @@ if ( $skills_raw ) {
 
 				<?php if ( ! empty( $skills ) ) : ?>
 					<div class="about__badges" aria-label="<?php esc_attr_e( 'Skills', 'russteicheira' ); ?>">
-						<?php foreach ( $skills as $skill ) : ?>
-							<span class="badge"><?php echo esc_html( $skill ); ?></span>
+						<?php foreach ( $skills as $skill ) :
+							if ( $skill instanceof WP_Term ) :
+								$skill_link = get_term_link( $skill );
+							?>
+								<?php if ( ! is_wp_error( $skill_link ) ) : ?>
+									<a class="badge" href="<?php echo esc_url( $skill_link ); ?>"><?php echo esc_html( $skill->name ); ?></a>
+								<?php else : ?>
+									<span class="badge"><?php echo esc_html( $skill->name ); ?></span>
+								<?php endif; ?>
+							<?php else : ?>
+								<span class="badge"><?php echo esc_html( $skill ); ?></span>
+							<?php endif; ?>
 						<?php endforeach; ?>
 					</div>
 				<?php endif; ?>
