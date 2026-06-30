@@ -405,6 +405,7 @@ function rt_sections_sanitize( $input ) {
 		'body_color'      => isset( $input['about']['body_color'] )      ? rt_sanitize_color( $input['about']['body_color'] )      : '',
 		'card_title_color' => isset( $input['about']['card_title_color'] ) ? rt_sanitize_color( $input['about']['card_title_color'] ) : '',
 		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
+		'portrait_id'      => isset( $input['about']['portrait_id'] )      ? absint( $input['about']['portrait_id'] )                 : 0,
 	);
 
 	// Certs, Expertise, Portfolio, Blog — enabled toggle + header text
@@ -923,6 +924,34 @@ function rt_sections_page() {
 								render();
 							})();
 							</script>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<label><?php _e( 'Portrait Photo', 'russteicheira' ); ?></label>
+						</th>
+						<td>
+							<?php
+							$portrait_id  = absint( $v( 'about', 'portrait_id' ) );
+							$portrait_url = $portrait_id ? wp_get_attachment_image_url( $portrait_id, 'large' ) : '';
+							?>
+							<div class="rt-bg-image">
+								<input type="hidden" class="rt-bg-id" name="rt_sections[about][portrait_id]"
+									value="<?php echo esc_attr( $portrait_id ?: '' ); ?>">
+								<div class="rt-bg-preview" style="<?php echo $portrait_url ? '' : 'display:none;'; ?>">
+									<img src="<?php echo esc_url( $portrait_url ); ?>" style="max-width:120px;max-height:120px;border-radius:50%;object-fit:cover;">
+								</div>
+								<p>
+									<button type="button" class="button rt-bg-upload">
+										<?php echo $portrait_url ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
+									</button>
+									<button type="button" class="button rt-bg-remove"
+										style="<?php echo $portrait_url ? '' : 'display:none;'; ?>">
+										<?php _e( 'Remove', 'russteicheira' ); ?>
+									</button>
+								</p>
+							</div>
+							<p class="description"><?php _e( 'Square or portrait crop works best. Displays as a circular photo above the heading.', 'russteicheira' ); ?></p>
 						</td>
 					</tr>
 

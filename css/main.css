@@ -493,6 +493,18 @@ section { padding: var(--section-pad) 0; }
   margin-bottom: 1.2rem;
 }
 .about__text p strong { color: var(--navy); font-weight: 600; }
+.about__portrait-wrap {
+  margin-bottom: 1.75rem;
+}
+.about__portrait {
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 0 6px rgba(201,168,76,0.12), 0 8px 32px rgba(13,27,42,0.18);
+  display: block;
+}
 /* About content from page editor */
 .about__content p {
   font-size: 1rem;
