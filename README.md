@@ -37,6 +37,7 @@ russteicheira/
 ├── screenshot.png             ← WP admin theme preview (1200×900)
 ├── css/
 │   ├── main.css               ← All styles (tokens → responsive)
+│   ├── admin-sections.css     ← Sections admin page styles
 │   ├── fonts.css              ← @font-face declarations
 │   └── fonts/                 ← Self-hosted woff2 files
 │       ├── inter-v20-latin.woff2
@@ -44,6 +45,9 @@ russteicheira/
 │       └── space-grotesk-v22-latin.woff2
 ├── js/
 │   ├── main.js                ← Nav, typewriter, smooth scroll, contact AJAX
+│   ├── admin-sections.js      ← Sections admin page: color picker, media uploader, tab nav
+│   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
+│   ├── admin-field-counters.js ← Capability/expertise title+excerpt character counters
 │   └── customizer-preview.js  ← Customizer live preview bindings
 ├── template-parts/
 │   ├── hero.php               ← Hero / above-the-fold section
@@ -59,7 +63,7 @@ russteicheira/
 │   └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 └── .audits/
     ├── todo.md                ← Development task tracker
-    └── theme-audit-*.md       ← Periodic theme audit reports
+    └── theme-*-audit-*.md     ← Periodic theme audit reports
 ```
 
 ## Custom Post Types
