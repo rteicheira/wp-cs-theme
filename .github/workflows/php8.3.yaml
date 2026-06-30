@@ -1,0 +1,30 @@
+name: PHP 8.3 compatibility
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Test for PHP 8.3 support
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+
+    - name: Install Composer dependencies
+      uses: php-actions/composer@v6
+      env:
+        COMPOSER: "composer.json"
+      with:
+        php_version: "8.3"
+        version: "2.3.7"
+        args: "--ignore-platform-reqs --optimize-autoloader"
+
+    - name: Run PHP_CodeSniffer
+      run: |
+        vendor/bin/phpcs -p . --extensions=php --ignore=vendor,node_modules,assets/dist --standard=PHPCompatibility --runtime-set testVersion 8.3
