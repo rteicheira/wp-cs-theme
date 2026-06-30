@@ -46,6 +46,7 @@ russteicheira/
 ├── js/
 │   ├── main.js                ← Nav, typewriter, smooth scroll, contact AJAX
 │   ├── admin-sections.js      ← Sections admin page: color picker, media uploader, tab nav
+│   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
 │   ├── admin-field-counters.js ← Capability/expertise title+excerpt character counters
 │   └── customizer-preview.js  ← Customizer live preview bindings
 ├── template-parts/
