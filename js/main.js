@@ -184,7 +184,7 @@
     var fallbackPhrase = ( typeof RT !== 'undefined' && Array.isArray( RT.typingPhrases ) && RT.typingPhrases.length )
       ? RT.typingPhrases[0]
       : '> securing cardholder data environments';
-    var cursorEl = termEl.querySelector( '.cursor' );
+    cursorEl = termEl.querySelector( '.cursor' );
     if ( ! cursorEl ) {
       cursorEl = document.createElement( 'span' );
       cursorEl.className = 'cursor';
