@@ -135,14 +135,14 @@ The **Blog** section has additional card meta toggles:
 
 ## Footer Settings
 
-Footer content is configurable in **WP Admin → Sections → (bottom of page)**:
+Footer content is configurable in **Appearance → Customize → Footer**:
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| Site tagline | `Cybersecurity & Compliance Professional` | Shown under the logo |
-| Copyright name | Site title | Name shown in the copyright line |
-| Credit text | _(blank)_ | Optional "Built by …" line |
-| Legal links | _(blank)_ | HTML links rendered above the copyright bar |
+| Site Tagline | `Cybersecurity & Compliance Professional` | Shown under the logo |
+| Copyright Name | Site title | Name shown in the copyright line |
+| Credit Line | _(blank)_ | Optional "Built by …" line |
+| Document Links | _(blank)_ | HTML links rendered above the copyright bar |
 
 Social/contact icons in the footer are pulled from the **Contact** section link list.
 

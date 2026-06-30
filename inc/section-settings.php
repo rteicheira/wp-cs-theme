@@ -56,8 +56,8 @@ function rt_sections_admin_enqueue( $hook ) {
 		'useAsBg'                  => __( 'Use as Background',                                                        'russteicheira' ),
 		'changeImage'              => __( 'Change Image',                                                             'russteicheira' ),
 		'uploadSelectImage'        => __( 'Upload / Select Image',                                                    'russteicheira' ),
-		'openColorPicker'          => __( 'Open color picker',                                                        'russteicheira' ),
-		'resetToDefault'           => __( 'Reset to default',                                                         'russteicheira' ),
+		'openColorPicker'          => __( 'Open Color Picker',                                                        'russteicheira' ),
+		'resetToDefault'           => __( 'Reset to Default',                                                         'russteicheira' ),
 		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.', 'russteicheira' ),
 	) );
 
@@ -958,12 +958,12 @@ function rt_sections_page() {
 					<?php elseif ( 'contact' === $key ) : ?>
 					<tr>
 						<th>
-							<label for="contact_sub"><?php _e( 'Subtext', 'russteicheira' ); ?></label>
+							<label for="contact_sub"><?php _e( 'Sub-description', 'russteicheira' ); ?></label>
 						</th>
 						<td>
 							<textarea id="contact_sub" name="rt_sections[contact][sub]"
 								class="large-text" rows="3"><?php echo esc_textarea( $v( 'contact', 'sub' ) ); ?></textarea>
-							<p class="description"><?php _e( 'Paragraph shown beneath the heading.', 'russteicheira' ); ?></p>
+							<p class="description"><?php _e( 'Short description shown beneath the heading.', 'russteicheira' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -1193,7 +1193,7 @@ function rt_sections_page() {
 						<table class="form-table" style="margin-top:0;">
 							<tr>
 								<th style="width:160px; padding-top:12px;">
-									<?php _e( 'Card / Object Color', 'russteicheira' ); ?>
+									<?php _e( 'Card / Panel Color', 'russteicheira' ); ?>
 								</th>
 								<td>
 									<div class="rt-color-field"
