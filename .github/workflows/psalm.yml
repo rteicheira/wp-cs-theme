@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4.2.0
 
       - name: Psalm Security Scan
-        uses: docker://ghcr.io/psalm/psalm-security-scan
+        uses: psalm/psalm-security-scan@5.25.0
 
       - name: Upload Security Analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3
