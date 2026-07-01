@@ -7,8 +7,6 @@
 >
 > Over the last week, I’ve poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
 >
-> My next steps are to implement it on my own site, so if you visit it before this statement is removed, it will probably still have the old layout.
->
 > Thank you for checking it out! If you decide to use it, I'd love to hear your feedback. **Please note that I do not currently plan to publish this to the official WordPress repository**. If you find this there, it wasn't published by me.
 >
 > ~Russ
