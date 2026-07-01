@@ -459,6 +459,11 @@ function rt_capability_limit_fields( $data, $postarr ) {
 		}
 	}
 
+	if ( 'publish' === $data['post_status'] && '' === trim( $data['post_title'] ) ) {
+		$data['post_status'] = 'draft';
+		set_transient( 'rt_cap_empty_' . $uid, true, 60 );
+	}
+
 	if ( mb_strlen( $data['post_title'] ) > 40 ) {
 		$data['post_title'] = mb_substr( $data['post_title'], 0, 40 );
 		set_transient( 'rt_cap_title_trimmed_' . $uid, true, 60 );
@@ -475,6 +480,15 @@ add_filter( 'wp_insert_post_data', 'rt_capability_limit_fields', 10, 2 );
 
 function rt_capability_admin_notices() {
 	$uid = get_current_user_id();
+
+	if ( get_transient( 'rt_cap_empty_' . $uid ) ) {
+		delete_transient( 'rt_cap_empty_' . $uid );
+		echo '<div class="notice notice-error is-dismissible"><p><strong>'
+			. esc_html__( 'Title required:', 'russteicheira' )
+			. '</strong> '
+			. esc_html__( 'A capability must have a title to be published. This item was saved as a Draft.', 'russteicheira' )
+			. '</p></div>';
+	}
 
 	if ( get_transient( 'rt_cap_limit_' . $uid ) ) {
 		delete_transient( 'rt_cap_limit_' . $uid );
@@ -697,6 +711,34 @@ function rt_save_cert_meta( $post_id ) {
 }
 add_action( 'save_post_certification', 'rt_save_cert_meta' );
 
+function rt_certification_limit_fields( $data ) {
+	if ( 'certification' !== $data['post_type'] ) {
+		return $data;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return $data;
+	}
+	if ( 'publish' === $data['post_status'] && '' === trim( $data['post_title'] ) ) {
+		$data['post_status'] = 'draft';
+		set_transient( 'rt_cert_empty_' . get_current_user_id(), true, 60 );
+	}
+	return $data;
+}
+add_filter( 'wp_insert_post_data', 'rt_certification_limit_fields' );
+
+function rt_certification_admin_notices() {
+	$uid = get_current_user_id();
+	if ( get_transient( 'rt_cert_empty_' . $uid ) ) {
+		delete_transient( 'rt_cert_empty_' . $uid );
+		echo '<div class="notice notice-error is-dismissible"><p><strong>'
+			. esc_html__( 'Title required:', 'russteicheira' )
+			. '</strong> '
+			. esc_html__( 'A certification must have a name (title) to be published. This item was saved as a Draft.', 'russteicheira' )
+			. '</p></div>';
+	}
+}
+add_action( 'admin_notices', 'rt_certification_admin_notices' );
+
 // Hard-limit title (32) and excerpt (200) before the row hits the database.
 function rt_expertise_limit_fields( $data ) {
 	if ( 'expertise' !== $data['post_type'] ) {
@@ -706,6 +748,11 @@ function rt_expertise_limit_fields( $data ) {
 		return $data;
 	}
 	$uid = get_current_user_id();
+
+	if ( 'publish' === $data['post_status'] && '' === trim( $data['post_title'] ) ) {
+		$data['post_status'] = 'draft';
+		set_transient( 'rt_exp_empty_' . $uid, true, 60 );
+	}
 
 	if ( mb_strlen( $data['post_title'] ) > 32 ) {
 		$data['post_title'] = mb_substr( $data['post_title'], 0, 32 );
@@ -723,6 +770,15 @@ add_filter( 'wp_insert_post_data', 'rt_expertise_limit_fields' );
 
 function rt_expertise_trim_notices() {
 	$uid = get_current_user_id();
+
+	if ( get_transient( 'rt_exp_empty_' . $uid ) ) {
+		delete_transient( 'rt_exp_empty_' . $uid );
+		echo '<div class="notice notice-error is-dismissible"><p><strong>'
+			. esc_html__( 'Title required:', 'russteicheira' )
+			. '</strong> '
+			. esc_html__( 'An expertise item must have a title to be published. This item was saved as a Draft.', 'russteicheira' )
+			. '</p></div>';
+	}
 
 	if ( get_transient( 'rt_exp_title_trimmed_' . $uid ) ) {
 		delete_transient( 'rt_exp_title_trimmed_' . $uid );
