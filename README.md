@@ -1,16 +1,27 @@
 # Cybersecurity & Compliance Portfolio WordPress Theme
 
+>[!IMPORTANT]
+> To be completely transparent up front: this theme was *developed with the assistance of Claude*. If AI-generated code isn't your thing, this might not be the project for you.
+>
+> While I highly respect and support developers who write everything from scratch, I had a highly specific vision in mind for this theme that I couldn't find anywhere else. Additionally, I wanted a hands-on project to level up my AI-assisted workflows, something that is increasingly relevant for my professional work. While I use AI for my daily analytics and scripting on the job, I hadn't yet built a project of this scale completely from the ground up.
+>
+> Over the last week, I’ve poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
+>
+> My next steps are to implement it on my own site, so if you visit it before this statement is removed, it will probably still have the old layout.
+>
+> Thank you for checking it out! If you decide to use it, I'd love to hear your feedback. **Please note that I do not currently plan to publish this to the official WordPress repository**. If you find this there, it wasn't published by me.
+>
+> ~Russ
+
 [![CodeQL](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/github-code-scanning/codeql) [![PHPMD](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml/badge.svg)](https://github.com/rteicheira/wp-cs-theme/actions/workflows/phpmd.yml)
 
-A custom WordPress theme for [russteicheira.net](https://russteicheira.net). While I designed this for my own use, I did try to add enough flexibility for others to use it as well.
+This is a custom WordPress theme for [russteicheira.net](https://russteicheira.net). While I designed this for my own use, I did try to add enough flexibility for others to use it as well.
 
 The theme is built for a cybersecurity and compliance professional. The theme combines a personal blog with a structured portfolio using three custom post types for: Projects, Expertise, and Certifications, with a shared Skill taxonomy that links related content across the entire site.
 
 The homepage is assembled from independently controlled sections, each with configurable visibility, color schemes, and background images managed through a dedicated admin page.
 
 > [!important]
-> This is a work in progress - use at your own risk.
->
 > **Minimum Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._6.2%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._7.4-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._5.7_/_10.3_-blue)
 >
 > **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
@@ -20,7 +31,7 @@ The homepage is assembled from independently controlled sections, each with conf
 ## Structure
 
 ```text
-russteicheira/
+wp-cs-theme/
 ├── style.css                  ← Required WP theme header
 ├── functions.php              ← Setup, enqueue, CPTs, taxonomies, AJAX, helpers
 ├── theme.json                 ← Block editor color/font palette
@@ -61,12 +72,9 @@ russteicheira/
 │   ├── certs.php              ← Certifications section
 │   └── contact.php            ← AJAX contact form
 ├── inc/
-│   ├── section-settings.php   ← Sections admin page (visibility, colors, bg images)
-│   ├── customizer.php         ← Customizer panels, settings, controls
-│   └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
-└── .audits/
-    ├── todo.md                ← Development task tracker
-    └── theme-*-audit-*.md     ← Periodic theme audit reports
+    ├── section-settings.php   ← Sections admin page (visibility, colors, bg images)
+    ├── customizer.php         ← Customizer panels, settings, controls
+    └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 ```
 
 ## Custom Post Types
@@ -185,3 +193,4 @@ There are a few known limitations:
 1. The title structure is geared around one first name and one last name. Additional names should work just fine, but it might look off.
 2. I did not program anything around WooCommerce.
 3. Currently no way to easily change color overlays (like the grid in the hero section).
+4. I am sure I am missing others that I can't think of.
