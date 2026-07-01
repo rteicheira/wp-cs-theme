@@ -76,7 +76,7 @@
 						</a>
 					</div>
 				</article>
-			<?php endwhile; ?>
+			<?php endwhile; wp_reset_postdata(); ?>
 
 			<div class="pagination">
 				<?php

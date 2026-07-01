@@ -469,16 +469,15 @@ add_action( 'customize_controls_print_footer_scripts', function () {
 add_action( 'customize_controls_print_footer_scripts', function () {
 	$home_url = wp_json_encode( home_url( '/' ) );
 	$nonce    = wp_create_nonce( 'rt_reset_colors' );
-	$i18n     = wp_json_encode( array(
-		'confirmMsg' => __( "Reset ALL site colors to their defaults?\n\nThis will clear every color customization across the entire site — the color palette, hero, navigation, and footer.\n\nThis cannot be undone.", 'russteicheira' ),
-		'resetting'  => __( 'Resetting…', 'russteicheira' ),
-		'resetBtn'   => __( 'Reset All Site Colors', 'russteicheira' ),
-		'resetFailed' => __( 'Reset failed. Please try again.', 'russteicheira' ),
-	) );
 	?>
 	<script>
 	( function () {
-		var i18n = <?php echo $i18n; ?>;
+		var i18n = <?php echo wp_json_encode( array(
+			'confirmMsg'  => __( "Reset ALL site colors to their defaults?\n\nThis will clear every color customization across the entire site — the color palette, hero, navigation, and footer.\n\nThis cannot be undone.", 'russteicheira' ),
+			'resetting'   => __( 'Resetting…', 'russteicheira' ),
+			'resetBtn'    => __( 'Reset All Site Colors', 'russteicheira' ),
+			'resetFailed' => __( 'Reset failed. Please try again.', 'russteicheira' ),
+		) ); ?>;
 		document.addEventListener( 'click', function ( e ) {
 			if ( ! e.target || e.target.id !== 'rt-reset-colors-btn' ) { return; }
 

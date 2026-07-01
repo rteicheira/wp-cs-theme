@@ -132,6 +132,7 @@
   // ── TYPEWRITER HERO ────────────────────────────────────────
   var termEl = document.getElementById( 'hero-terminal' );
   var prefersReducedMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+  var cursorEl;
 
   if ( termEl && ! prefersReducedMotion ) {
     var phrases = ( typeof RT !== 'undefined' && Array.isArray( RT.typingPhrases ) && RT.typingPhrases.length )
@@ -147,7 +148,7 @@
     var charIdx   = 0;
     var deleting  = false;
 
-    var cursorEl = termEl.querySelector( '.cursor' );
+    cursorEl = termEl.querySelector( '.cursor' );
     if ( ! cursorEl ) {
       cursorEl = document.createElement( 'span' );
       cursorEl.className = 'cursor';
@@ -260,7 +261,7 @@
       var target = hash && hash.length > 1 ? document.getElementById( hash.slice( 1 ) ) : null;
       if ( ! target ) return;
       e.preventDefault();
-      var top = target.getBoundingClientRect().top + window.pageYOffset - 72;
+      var top = target.getBoundingClientRect().top + window.pageYOffset - 64;
       window.scrollTo( { top: top, behavior: 'smooth' } );
     } );
   } );

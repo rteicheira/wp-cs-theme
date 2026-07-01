@@ -46,19 +46,32 @@ function rt_sections_admin_enqueue( $hook ) {
 		return;
 	}
 	wp_enqueue_style( 'wp-components' );
+	wp_enqueue_style(
+		'rt-admin-sections',
+		RT_URI . '/css/admin-sections.css',
+		array( 'wp-components' ),
+		RT_VERSION
+	);
 	wp_enqueue_script( 'wp-components' );
 	wp_enqueue_script( 'wp-element' );
 	wp_enqueue_script( 'wp-dom-ready' );
 	wp_enqueue_media();
+	wp_enqueue_script(
+		'rt-admin-sections',
+		RT_URI . '/js/admin-sections.js',
+		array( 'wp-dom-ready', 'wp-element', 'wp-components', 'jquery' ),
+		RT_VERSION,
+		true
+	);
 
-	wp_localize_script( 'wp-dom-ready', 'rtSectionsL10n', array(
-		'selectBgImage'            => __( 'Select Background Image',                                                  'russteicheira' ),
-		'useAsBg'                  => __( 'Use as Background',                                                        'russteicheira' ),
-		'changeImage'              => __( 'Change Image',                                                             'russteicheira' ),
-		'uploadSelectImage'        => __( 'Upload / Select Image',                                                    'russteicheira' ),
-		'openColorPicker'          => __( 'Open color picker',                                                        'russteicheira' ),
-		'resetToDefault'           => __( 'Reset to default',                                                         'russteicheira' ),
-		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.', 'russteicheira' ),
+	wp_localize_script( 'rt-admin-sections', 'rtSectionsL10n', array(
+		'selectBgImage'             => __( 'Select Background Image',                                                  'russteicheira' ),
+		'useAsBg'                   => __( 'Use as Background',                                                        'russteicheira' ),
+		'changeImage'               => __( 'Change Image',                                                             'russteicheira' ),
+		'uploadSelectImage'         => __( 'Upload / Select Image',                                                    'russteicheira' ),
+		'openColorPicker'           => __( 'Open color picker',                                                        'russteicheira' ),
+		'resetToDefault'            => __( 'Reset to default',                                                         'russteicheira' ),
+		'resetSectionColorsConfirm' => __( 'Reset all section colors to theme defaults? This cannot be undone.',       'russteicheira' ),
 	) );
 }
 add_action( 'admin_enqueue_scripts', 'rt_sections_admin_enqueue' );
@@ -163,17 +176,18 @@ function rt_sections_sanitize_about( array $raw ) {
 		'skills'           => rt_sections_sanitize_skills(
 			isset( $raw['skills'] ) && is_array( $raw['skills'] ) ? $raw['skills'] : array()
 		),
-		'bg_color'     => isset( $input['about']['bg_color'] )     ? rt_sanitize_color( $input['about']['bg_color'] )     : '',
-		'accent_color' => isset( $input['about']['accent_color'] ) ? rt_sanitize_color( $input['about']['accent_color'] ) : '',
-		'bg_image_id'  => isset( $input['about']['bg_image_id'] )  ? absint( $input['about']['bg_image_id'] )              : 0,
-		'bg_fixed'     => isset( $input['about']['bg_fixed'] ) && '1' === $input['about']['bg_fixed'] ? '1' : '0',
-		'badge_bg'      => isset( $input['about']['badge_bg'] )      ? rt_sanitize_color( $input['about']['badge_bg'] )      : '',
-		'badge_color'   => isset( $input['about']['badge_color'] )   ? rt_sanitize_color( $input['about']['badge_color'] )   : '',
-		'eyebrow_color'   => isset( $input['about']['eyebrow_color'] )   ? rt_sanitize_color( $input['about']['eyebrow_color'] )   : '',
-		'heading_color'   => isset( $input['about']['heading_color'] )   ? rt_sanitize_color( $input['about']['heading_color'] )   : '',
-		'body_color'      => isset( $input['about']['body_color'] )      ? rt_sanitize_color( $input['about']['body_color'] )      : '',
-		'card_title_color' => isset( $input['about']['card_title_color'] ) ? rt_sanitize_color( $input['about']['card_title_color'] ) : '',
-		'card_body_color'  => isset( $input['about']['card_body_color'] )  ? rt_sanitize_color( $input['about']['card_body_color'] )  : '',
+		'bg_color'         => isset( $raw['bg_color'] )         ? rt_sanitize_color( $raw['bg_color'] )         : '',
+		'accent_color'     => isset( $raw['accent_color'] )     ? rt_sanitize_color( $raw['accent_color'] )     : '',
+		'bg_image_id'      => isset( $raw['bg_image_id'] )      ? absint( $raw['bg_image_id'] )                  : 0,
+		'bg_fixed'         => isset( $raw['bg_fixed'] ) && '1' === $raw['bg_fixed'] ? '1' : '0',
+		'badge_bg'         => isset( $raw['badge_bg'] )         ? rt_sanitize_color( $raw['badge_bg'] )         : '',
+		'badge_color'      => isset( $raw['badge_color'] )      ? rt_sanitize_color( $raw['badge_color'] )      : '',
+		'eyebrow_color'    => isset( $raw['eyebrow_color'] )    ? rt_sanitize_color( $raw['eyebrow_color'] )    : '',
+		'heading_color'    => isset( $raw['heading_color'] )    ? rt_sanitize_color( $raw['heading_color'] )    : '',
+		'body_color'       => isset( $raw['body_color'] )       ? rt_sanitize_color( $raw['body_color'] )       : '',
+		'card_title_color' => isset( $raw['card_title_color'] ) ? rt_sanitize_color( $raw['card_title_color'] ) : '',
+		'card_body_color'  => isset( $raw['card_body_color'] )  ? rt_sanitize_color( $raw['card_body_color'] )  : '',
+		'portrait_id'      => isset( $raw['portrait_id'] )      ? absint( $raw['portrait_id'] )                  : 0,
 	);
 }
 
@@ -291,6 +305,9 @@ if ( ! function_exists( 'rt_section_enabled' ) ) {
 
 // ── HEX → RGBA HELPER ────────────────────────────────────────
 function rt_hex_to_rgba( $hex, $alpha ) {
+	if ( ! $hex ) {
+		return 'transparent';
+	}
 	$hex = ltrim( $hex, '#' );
 	if ( 3 === strlen( $hex ) ) {
 		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
@@ -421,12 +438,74 @@ function rt_render_eyebrow_heading_fields( $key, array $meta, $v, array $ctx ) {
 	<?php
 }
 
-/**
- * Render the About section's Body editor + Skills tag widget.
- */
-function rt_render_about_fields( $v ) {
+function rt_sections_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$opts = get_option( 'rt_sections', array() );
+
+	$v = function ( $section, $field ) use ( $opts ) {
+		return isset( $opts[ $section ][ $field ] ) ? $opts[ $section ][ $field ] : '';
+	};
+
+	$is_enabled = function ( $section ) use ( $opts ) {
+		if ( ! isset( $opts[ $section ]['enabled'] ) ) {
+			return true;
+		}
+		return '1' === $opts[ $section ]['enabled'];
+	};
+
+	$sections = array(
+		'about'     => array( 'label' => __( 'About',                  'russteicheira' ), 'toggle' => false ),
+		'certs'     => array( 'label' => __( 'Certifications',          'russteicheira' ), 'toggle' => true  ),
+		'expertise' => array( 'label' => __( 'Core Expertise',          'russteicheira' ), 'toggle' => true  ),
+		'portfolio' => array( 'label' => __( 'Portfolio / Projects',    'russteicheira' ), 'toggle' => true  ),
+		'blog'      => array( 'label' => __( 'Blog',                    'russteicheira' ), 'toggle' => true  ),
+		'contact'   => array( 'label' => __( 'Get in Touch',            'russteicheira' ), 'toggle' => false ),
+	);
 	?>
-	<tr>
+	<div class="wrap">
+		<h1><?php _e( 'Homepage Sections', 'russteicheira' ); ?></h1>
+		<p class="description" style="margin-bottom:24px;">
+			<?php _e( 'Edit section header text, colors, and background images. Individual cards (Capabilities, Expertise items) are managed through their own post-type screens.', 'russteicheira' ); ?>
+		</p>
+
+		<?php settings_errors( 'rt_sections_group' ); ?>
+
+		<form id="rt-sections-form" method="post" action="options.php">
+			<?php settings_fields( 'rt_sections_group' ); ?>
+
+			<?php foreach ( $sections as $key => $meta ) :
+				$enabled = $is_enabled( $key );
+				$ctx     = rt_sections_color_context( $key, $opts );
+				extract( $ctx );
+			?>
+			<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px 24px;margin-bottom:20px;">
+
+				<div style="display:flex;align-items:center;gap:16px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #f0f0f1;">
+					<h2 style="margin:0;font-size:1.05rem;"><?php echo esc_html( $meta['label'] ); ?></h2>
+
+					<?php if ( $meta['toggle'] ) : ?>
+						<label style="display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer;margin:0;">
+							<input type="checkbox"
+								name="rt_sections[<?php echo esc_attr( $key ); ?>][enabled]"
+								value="1"
+								<?php checked( $enabled ); ?> />
+							<?php _e( 'Enabled', 'russteicheira' ); ?>
+						</label>
+					<?php else : ?>
+						<span style="color:#646970;font-size:0.825rem;font-style:italic;">
+							<?php _e( 'Always visible', 'russteicheira' ); ?>
+						</span>
+					<?php endif; ?>
+				</div>
+
+				<table class="form-table" style="margin-top:0;">
+					<?php rt_render_eyebrow_heading_fields( $key, $meta, $v, $ctx ); ?>
+
+					<?php if ( 'about' === $key ) : ?>
+					<tr>
 		<th>
 			<label><?php _e( 'Body', 'russteicheira' ); ?></label>
 		</th>
@@ -644,6 +723,34 @@ function rt_render_about_fields( $v ) {
 								render();
 							})();
 							</script>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<label><?php _e( 'Portrait Photo', 'russteicheira' ); ?></label>
+						</th>
+						<td>
+							<?php
+							$portrait_id  = absint( $v( 'about', 'portrait_id' ) );
+							$portrait_url = $portrait_id ? wp_get_attachment_image_url( $portrait_id, 'large' ) : '';
+							?>
+							<div class="rt-bg-image">
+								<input type="hidden" class="rt-bg-id" name="rt_sections[about][portrait_id]"
+									value="<?php echo esc_attr( $portrait_id ?: '' ); ?>">
+								<div class="rt-bg-preview" style="<?php echo $portrait_url ? '' : 'display:none;'; ?>">
+									<img src="<?php echo esc_url( $portrait_url ); ?>" style="max-width:120px;max-height:120px;border-radius:50%;object-fit:cover;">
+								</div>
+								<p>
+									<button type="button" class="button rt-bg-upload">
+										<?php echo $portrait_url ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
+									</button>
+									<button type="button" class="button rt-bg-remove"
+										style="<?php echo $portrait_url ? '' : 'display:none;'; ?>">
+										<?php _e( 'Remove', 'russteicheira' ); ?>
+									</button>
+								</p>
+							</div>
+							<p class="description"><?php _e( 'Square or portrait crop works best. Displays as a circular photo above the heading.', 'russteicheira' ); ?></p>
 						</td>
 					</tr>
 

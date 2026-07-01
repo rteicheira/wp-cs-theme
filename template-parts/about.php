@@ -13,7 +13,7 @@ $portrait_id  = absint( rt_section_opt( 'about', 'portrait_id', 0 ) );
 $portrait_url = $portrait_id ? wp_get_attachment_image_url( $portrait_id, 'large' ) : '';
 
 $body_raw = rt_section_opt( 'about', 'body', '' );
-$content  = $body_raw ? wpautop( wp_kses_post( $body_raw ) ) : '';
+$content  = $body_raw ? wpautop( $body_raw ) : '';
 
 $skills_raw = rt_section_opt( 'about', 'skills', '' );
 if ( $skills_raw ) {

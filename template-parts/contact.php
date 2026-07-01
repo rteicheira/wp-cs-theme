@@ -69,7 +69,7 @@ if ( ! is_array( $links ) ) {
 
 					<button type="submit" class="btn btn--primary" id="contact-submit">
 						<span class="btn__text"><?php _e( 'Send Message', 'russteicheira' ); ?> &rarr;</span>
-						<span class="btn__loading" aria-hidden="true" hidden><?php _e( 'Sending&hellip;', 'russteicheira' ); ?></span>
+						<span class="btn__loading" aria-hidden="true"><?php _e( 'Sending&hellip;', 'russteicheira' ); ?></span>
 					</button>
 				</form>
 			</div>

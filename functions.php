@@ -781,10 +781,10 @@ function rt_handle_contact() {
 	$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) )     : '';
 	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
 
-	// Strip CRLF sequences to prevent header injection via $name or $subject.
-	$name    = str_replace( array( "\r", "\n" ), '', $name );
+	// Strip CRLF and angle brackets to prevent header injection via $name/$subject.
+	$name    = str_replace( array( "\r", "\n", '<', '>' ), '', $name );
 	$subject = str_replace( array( "\r", "\n" ), '', $subject );
-	$subject = $subject ?: 'Contact Form Submission';
+	$subject = $subject ? mb_substr( $subject, 0, 200 ) : 'Contact Form Submission';
 
 	if ( ! $name || ! is_email( $email ) || ! $message ) {
 		wp_send_json_error( array( 'message' => __( 'Please fill in all required fields.', 'russteicheira' ) ) );

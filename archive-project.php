@@ -47,7 +47,7 @@
 						</div>
 					<?php endif; ?>
 				</article>
-			<?php endwhile; ?>
+			<?php endwhile; wp_reset_postdata(); ?>
 		</div>
 
 		<div class="pagination" style="margin-top:3rem;">
