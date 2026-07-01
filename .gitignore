@@ -1,1 +1,3 @@
 /.audits/*
+/.github/*
+.cspell.json
