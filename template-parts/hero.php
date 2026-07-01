@@ -18,7 +18,7 @@
 			?>
 		</h1>
 
-		<p class="hero__terminal" id="hero-terminal" aria-live="polite">
+		<p class="hero__terminal" id="hero-terminal" aria-live="off" aria-hidden="true">
 			<span class="cursor" aria-hidden="true"></span>
 		</p>
 

@@ -200,7 +200,7 @@
   var status = document.getElementById( 'form-status' );
   var submit = document.getElementById( 'contact-submit' );
 
-  if ( form && typeof RT !== 'undefined' ) {
+  if ( form && submit && status && typeof RT !== 'undefined' ) {
     form.addEventListener( 'submit', function ( e ) {
       e.preventDefault();
 
@@ -231,7 +231,7 @@
         .then( function ( res ) { return res.json(); } )
         .then( function ( json ) {
           status.className   = 'form-status ' + ( json.success ? 'success' : 'error' );
-          status.textContent = json.data.message;
+          status.textContent = ( json.data && json.data.message ) ? json.data.message : RT.contactError;
           if ( json.success ) form.reset();
         } )
         .catch( function () {

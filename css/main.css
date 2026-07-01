@@ -963,10 +963,11 @@ a.card-tag:hover {
   color: var(--white);
   font-family: var(--font-body);
   font-size: 0.9rem;
-  outline: none;
   transition: border-color var(--ease), background var(--ease);
   width: 100%;
 }
+.form-group input:focus:not(:focus-visible),
+.form-group textarea:focus:not(:focus-visible) { outline: none; }
 .form-group input::placeholder,
 .form-group textarea::placeholder { color: #4A5A6A; }
 .form-group input:focus,

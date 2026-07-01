@@ -64,6 +64,7 @@ wp.domReady( function () {
 	document.querySelectorAll( '.rt-color-field' ).forEach( function ( wrap ) {
 		var input    = wrap.querySelector( '.rt-color-input' );
 		var mount    = wrap.querySelector( '.rt-color-picker-mount' );
+		if ( ! input || ! mount ) return;
 		var defColor = wrap.dataset.defaultColor || '';
 		var comp     = el( ColorField, {
 			value:        input.value,

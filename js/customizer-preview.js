@@ -78,10 +78,11 @@
     // site_tagline_color — hero eyebrow text + dash + footer tagline
     wp.customize( 'site_tagline_color', function ( value ) {
         value.bind( function ( to ) {
-            if ( to ) {
+            var hex = safeHex( to );
+            if ( hex ) {
                 liveStyle( 'rt-tagline-color',
-                    '.hero__eyebrow,.footer-tagline{color:' + to + '}' +
-                    '.hero__eyebrow::before{background:' + to + '}'
+                    '.hero__eyebrow,.footer-tagline{color:' + hex + '}' +
+                    '.hero__eyebrow::before{background:' + hex + '}'
                 );
             } else {
                 liveStyle( 'rt-tagline-color', '' );
@@ -92,7 +93,8 @@
     // hero_desc_color — hero description paragraph
     wp.customize( 'hero_desc_color', function ( value ) {
         value.bind( function ( to ) {
-            liveStyle( 'rt-desc-color', to ? '.hero__desc{color:' + to + '}' : '' );
+            var hex = safeHex( to );
+            liveStyle( 'rt-desc-color', hex ? '.hero__desc{color:' + hex + '}' : '' );
         } );
     } );
 

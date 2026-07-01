@@ -326,18 +326,18 @@ function rt_project_meta_box_cb( $post ) {
 	?>
 	<table class="form-table" style="width:100%">
 		<tr>
-			<th><label for="project_url"><?php _e( 'Live URL', 'russteicheira' ); ?></label></th>
+			<th><label for="project_url"><?php esc_html_e( 'Live URL', 'russteicheira' ); ?></label></th>
 			<td><input type="url" id="project_url" name="project_url" value="<?php echo esc_attr( $url ); ?>" class="widefat" placeholder="https://…" /></td>
 		</tr>
 		<tr>
-			<th><label for="project_github"><?php _e( 'GitHub URL', 'russteicheira' ); ?></label></th>
+			<th><label for="project_github"><?php esc_html_e( 'GitHub URL', 'russteicheira' ); ?></label></th>
 			<td><input type="url" id="project_github" name="project_github" value="<?php echo esc_attr( $github ); ?>" class="widefat" placeholder="https://github.com/…" /></td>
 		</tr>
 		<tr>
-			<th><label for="project_featured"><?php _e( 'Featured', 'russteicheira' ); ?></label></th>
+			<th><label for="project_featured"><?php esc_html_e( 'Featured', 'russteicheira' ); ?></label></th>
 			<td>
 				<input type="checkbox" id="project_featured" name="project_featured" value="1" <?php checked( $featured, '1' ); ?> />
-				<label for="project_featured"><?php _e( 'Show on homepage', 'russteicheira' ); ?></label>
+				<label for="project_featured"><?php esc_html_e( 'Show on homepage', 'russteicheira' ); ?></label>
 			</td>
 		</tr>
 	</table>
@@ -345,16 +345,25 @@ function rt_project_meta_box_cb( $post ) {
 }
 
 function rt_save_project_meta( $post_id ) {
-	if ( ! isset( $_POST['rt_project_nonce'] ) ) {
-		return;
-	}
-	if ( ! wp_verify_nonce( $_POST['rt_project_nonce'], 'rt_project_meta' ) ) {
-		return;
+	$is_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+	if ( $is_rest ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+	} else {
+		if ( ! isset( $_POST['rt_project_nonce'] ) ||
+			 ! wp_verify_nonce( $_POST['rt_project_nonce'], 'rt_project_meta' ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
 	}
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 		return;
 	}
-	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+	// Meta box fields are only present on classic-style saves (incl. block editor meta box iframe).
+	if ( ! isset( $_POST['project_url'] ) && ! isset( $_POST['project_github'] ) && ! isset( $_POST['project_featured'] ) ) {
 		return;
 	}
 
@@ -391,12 +400,12 @@ function rt_capability_meta_box_cb( $post ) {
 	$icon = $icon ? $icon : '📄';
 	?>
 	<p>
-		<label for="capability_icon"><strong><?php _e( 'Icon (emoji)', 'russteicheira' ); ?></strong></label><br>
+		<label for="capability_icon"><strong><?php esc_html_e( 'Icon (emoji)', 'russteicheira' ); ?></strong></label><br>
 		<input type="text" id="capability_icon" name="capability_icon"
 			value="<?php echo esc_attr( $icon ); ?>"
 			style="width:60px;font-size:1.5em;text-align:center;margin-top:4px;" />
 	</p>
-	<p class="description"><?php _e( 'Default: 📄. Title: 40 chars max. Excerpt (description): 50 chars per line, 100 max.', 'russteicheira' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Default: 📄. Title: 40 chars max. Excerpt (description): 50 chars per line, 100 max.', 'russteicheira' ); ?></p>
 	<p class="description" style="margin-top:8px;color:#b00;"><strong><?php esc_html_e( 'Limit: 5 published.', 'russteicheira' ); ?></strong> <?php esc_html_e( 'A 6th reverts to Draft. Use Order (Page Attributes) to control sequence.', 'russteicheira' ); ?></p>
 	<?php
 }
@@ -415,27 +424,6 @@ function rt_save_capability_meta( $post_id ) {
 		return;
 	}
 
-	// Enforce 5-item limit: if this post is being published and would exceed 5, revert to draft.
-	if ( isset( $_POST['post_status'] ) && 'publish' === $_POST['post_status'] ) {
-		$published = new WP_Query( array(
-			'post_type'      => 'capability',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-		) );
-		// Count published, excluding the current post (already counted if previously published)
-		$ids            = array_map( 'intval', $published->posts );
-		$others_count   = count( array_diff( $ids, array( $post_id ) ) );
-		if ( $others_count >= 5 ) {
-			remove_action( 'save_post_capability', 'rt_save_capability_meta' );
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
-			add_action( 'save_post_capability', 'rt_save_capability_meta' );
-			set_transient( 'rt_cap_limit_' . get_current_user_id(), true, 60 );
-			return;
-		}
-	}
-
 	$icon = isset( $_POST['capability_icon'] ) ? sanitize_text_field( wp_unslash( $_POST['capability_icon'] ) ) : '';
 	if ( ! $icon ) {
 		$icon = '📄';
@@ -444,14 +432,32 @@ function rt_save_capability_meta( $post_id ) {
 }
 add_action( 'save_post_capability', 'rt_save_capability_meta' );
 
-function rt_capability_limit_fields( $data ) {
+function rt_capability_limit_fields( $data, $postarr ) {
 	if ( 'capability' !== $data['post_type'] ) {
 		return $data;
 	}
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 		return $data;
 	}
-	$uid = get_current_user_id();
+	$uid     = get_current_user_id();
+	$post_id = isset( $postarr['ID'] ) ? intval( $postarr['ID'] ) : 0;
+
+	// Enforce 5-item publish limit — runs before the row is written, covers all save paths.
+	if ( 'publish' === $data['post_status'] ) {
+		$published    = new WP_Query( array(
+			'post_type'      => 'capability',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		) );
+		$ids          = array_map( 'intval', $published->posts );
+		$others_count = count( array_diff( $ids, array( $post_id ) ) );
+		if ( $others_count >= 5 ) {
+			$data['post_status'] = 'draft';
+			set_transient( 'rt_cap_limit_' . $uid, true, 60 );
+		}
+	}
 
 	if ( mb_strlen( $data['post_title'] ) > 40 ) {
 		$data['post_title'] = mb_substr( $data['post_title'], 0, 40 );
@@ -465,7 +471,7 @@ function rt_capability_limit_fields( $data ) {
 
 	return $data;
 }
-add_filter( 'wp_insert_post_data', 'rt_capability_limit_fields' );
+add_filter( 'wp_insert_post_data', 'rt_capability_limit_fields', 10, 2 );
 
 function rt_capability_admin_notices() {
 	$uid = get_current_user_id();
@@ -538,12 +544,12 @@ function rt_expertise_meta_box_cb( $post ) {
 	$icon = $icon ? $icon : '📄';
 	?>
 	<p>
-		<label for="expertise_icon"><strong><?php _e( 'Icon (emoji)', 'russteicheira' ); ?></strong></label><br>
+		<label for="expertise_icon"><strong><?php esc_html_e( 'Icon (emoji)', 'russteicheira' ); ?></strong></label><br>
 		<input type="text" id="expertise_icon" name="expertise_icon"
 			value="<?php echo esc_attr( $icon ); ?>"
 			style="width:60px;font-size:1.5em;text-align:center;margin-top:4px;" />
 	</p>
-	<p class="description"><?php _e( 'Default: 📄. Title: 32 chars max. Excerpt (description): 42 chars per line, 200 max. Skills panel for tags.', 'russteicheira' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Default: 📄. Title: 32 chars max. Excerpt (description): 42 chars per line, 200 max. Skills panel for tags.', 'russteicheira' ); ?></p>
 	<?php
 }
 
@@ -595,18 +601,18 @@ function rt_cert_meta_box_cb( $post ) {
 	<table class="form-table" style="margin-top:0;">
 		<tr>
 			<th style="width:180px;">
-				<label for="cert_icon"><?php _e( 'Icon (emoji)', 'russteicheira' ); ?></label>
+				<label for="cert_icon"><?php esc_html_e( 'Icon (emoji)', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_icon" name="cert_icon"
 					value="<?php echo esc_attr( $icon ); ?>"
 					style="width:60px;font-size:1.4rem;text-align:center;" />
-				<p class="description"><?php _e( 'Emoji shown on the card (e.g. 🏅 🎓 🔐 📜). Defaults to 🏅 if blank.', 'russteicheira' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Emoji shown on the card (e.g. 🏅 🎓 🔐 📜). Defaults to 🏅 if blank.', 'russteicheira' ); ?></p>
 			</td>
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_issuer"><?php _e( 'Issuing Organization', 'russteicheira' ); ?></label>
+				<label for="cert_issuer"><?php esc_html_e( 'Issuing Organization', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_issuer" name="cert_issuer"
@@ -617,7 +623,7 @@ function rt_cert_meta_box_cb( $post ) {
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_date"><?php _e( 'Issue Date', 'russteicheira' ); ?></label>
+				<label for="cert_date"><?php esc_html_e( 'Issue Date', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_date" name="cert_date"
@@ -628,38 +634,38 @@ function rt_cert_meta_box_cb( $post ) {
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_expires"><?php _e( 'Expiry Date', 'russteicheira' ); ?></label>
+				<label for="cert_expires"><?php esc_html_e( 'Expiry Date', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_expires" name="cert_expires"
 					value="<?php echo esc_attr( $expires ); ?>"
 					style="width:160px;"
 					placeholder="<?php esc_attr_e( 'e.g. 2026 or Jan 2026', 'russteicheira' ); ?>" />
-				<p class="description"><?php _e( 'Leave blank if the certification does not expire.', 'russteicheira' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Leave blank if the certification does not expire.', 'russteicheira' ); ?></p>
 			</td>
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_id"><?php _e( 'Credential ID', 'russteicheira' ); ?></label>
+				<label for="cert_id"><?php esc_html_e( 'Credential ID', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="text" id="cert_id" name="cert_id"
 					value="<?php echo esc_attr( $cert_id ); ?>"
 					class="regular-text"
 					placeholder="<?php esc_attr_e( 'e.g. ABC-123456', 'russteicheira' ); ?>" />
-				<p class="description"><?php _e( 'Credential or certificate ID number. Leave blank to hide.', 'russteicheira' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Credential or certificate ID number. Leave blank to hide.', 'russteicheira' ); ?></p>
 			</td>
 		</tr>
 		<tr>
 			<th>
-				<label for="cert_url"><?php _e( 'Credential URL', 'russteicheira' ); ?></label>
+				<label for="cert_url"><?php esc_html_e( 'Credential URL', 'russteicheira' ); ?></label>
 			</th>
 			<td>
 				<input type="url" id="cert_url" name="cert_url"
 					value="<?php echo esc_attr( $url ); ?>"
 					class="large-text"
 					placeholder="https://" />
-				<p class="description"><?php _e( 'Link to the digital credential or verification page. Leave blank to hide the "Verify →" link.', 'russteicheira' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Link to the digital credential or verification page. Leave blank to hide the "Verify →" link.', 'russteicheira' ); ?></p>
 			</td>
 		</tr>
 	</table>

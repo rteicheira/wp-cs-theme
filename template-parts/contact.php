@@ -65,7 +65,7 @@ if ( ! is_array( $links ) ) {
 						<textarea id="contact-message" name="message" rows="5" placeholder="<?php esc_attr_e( "Tell me a bit about your project or what you're working on\xe2\x80\xa6", 'russteicheira' ); ?>" required></textarea>
 					</div>
 
-					<div class="form-status" id="form-status" role="alert" aria-live="polite"></div>
+					<div class="form-status" id="form-status" role="status"></div>
 
 					<button type="submit" class="btn btn--primary" id="contact-submit">
 						<span class="btn__text"><?php _e( 'Send Message', 'russteicheira' ); ?> &rarr;</span>
