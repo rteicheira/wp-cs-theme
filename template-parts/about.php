@@ -51,7 +51,7 @@ if ( $skills_raw ) {
 				<div class="gold-line" aria-hidden="true"></div>
 
 				<div class="about__content">
-					<?php echo $content; ?>
+					<?php echo wp_kses_post( $content ); ?>
 				</div>
 
 				<?php if ( ! empty( $skills ) ) : ?>

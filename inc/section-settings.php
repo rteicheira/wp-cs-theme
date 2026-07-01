@@ -479,7 +479,6 @@ function rt_sections_page() {
 			<?php foreach ( $sections as $key => $meta ) :
 				$enabled = $is_enabled( $key );
 				$ctx     = rt_sections_color_context( $key, $opts );
-				extract( $ctx );
 			?>
 			<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px 24px;margin-bottom:20px;">
 
@@ -914,12 +913,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_bg ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_bg'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $bg_color ); ?>" />
+											value="<?php echo esc_attr( $ctx['bg_color'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Overrides the section\'s default background. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
@@ -931,12 +930,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_body_color ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_body_color'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][body_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $body_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['body_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Color for body/description text within this section. Leave blank to use the theme default.', 'russteicheira' ); ?></p>
@@ -946,17 +945,17 @@ function rt_sections_page() {
 								<th style="padding-top:12px;"><?php _e( 'Background Image', 'russteicheira' ); ?></th>
 								<td>
 									<div class="rt-bg-image">
-										<div class="rt-bg-preview" style="<?php echo $img_thumb ? '' : 'display:none;'; ?>margin-bottom:8px;">
-											<img src="<?php echo esc_url( $img_thumb ); ?>" />
+										<div class="rt-bg-preview" style="<?php echo $ctx['img_thumb'] ? '' : 'display:none;'; ?>margin-bottom:8px;">
+											<img src="<?php echo esc_url( $ctx['img_thumb'] ); ?>" />
 										</div>
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_image_id]"
 											class="rt-bg-id"
-											value="<?php echo esc_attr( (int) $img_id ?: '' ); ?>" />
+											value="<?php echo esc_attr( (int) $ctx['img_id'] ?: '' ); ?>" />
 										<button type="button" class="button rt-bg-upload">
-											<?php echo $img_id ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
+											<?php echo $ctx['img_id'] ? esc_html__( 'Change Image', 'russteicheira' ) : esc_html__( 'Upload / Select Image', 'russteicheira' ); ?>
 										</button>
-										<button type="button" class="button rt-bg-remove" style="<?php echo $img_id ? '' : 'display:none;'; ?>margin-left:6px;">
+										<button type="button" class="button rt-bg-remove" style="<?php echo $ctx['img_id'] ? '' : 'display:none;'; ?>margin-left:6px;">
 											<?php _e( 'Remove', 'russteicheira' ); ?>
 										</button>
 									</div>
@@ -965,21 +964,21 @@ function rt_sections_page() {
 									</p>
 								</td>
 							</tr>
-							<tr class="rt-bg-fixed-row" <?php echo $img_id ? '' : 'style="display:none;"'; ?>>
+							<tr class="rt-bg-fixed-row" <?php echo $ctx['img_id'] ? '' : 'style="display:none;"'; ?>>
 								<th><?php _e( 'Image Behavior', 'russteicheira' ); ?></th>
 								<td>
 									<label style="margin-right:1.5rem;">
 										<input type="radio"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
 											value="0"
-											<?php checked( '1' !== $bg_fixed ); ?> />
+											<?php checked( '1' !== $ctx['bg_fixed'] ); ?> />
 										<?php _e( 'Scroll with page', 'russteicheira' ); ?>
 									</label>
 									<label>
 										<input type="radio"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][bg_fixed]"
 											value="1"
-											<?php checked( $bg_fixed, '1' ); ?> />
+											<?php checked( $ctx['bg_fixed'], '1' ); ?> />
 										<?php _e( 'Fixed (parallax)', 'russteicheira' ); ?>
 									</label>
 									<p class="description"><?php _e( 'Fixed: the image stays in place as the page scrolls through the section. Not supported on iOS Safari.', 'russteicheira' ); ?></p>
@@ -996,12 +995,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_accent ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_accent'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][accent_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $accent_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['accent_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php echo 'about' === $key ? esc_html__( 'Background color for the capabilities panel on the right side of the About section.', 'russteicheira' ) : esc_html__( 'Background color for the primary cards or info boxes within this section.', 'russteicheira' ); ?></p>
@@ -1013,12 +1012,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_card_title_color ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_card_title_color'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_title_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $card_title_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['card_title_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Color for the primary heading/title text inside cards.', 'russteicheira' ); ?></p>
@@ -1030,12 +1029,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_card_body_color ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_card_body_color'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_body_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $card_body_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['card_body_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Color for the description/body text inside cards.', 'russteicheira' ); ?></p>
@@ -1048,12 +1047,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_card_tag_bg ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_card_tag_bg'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_bg]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $card_tag_bg_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['card_tag_bg_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Background fill for skill tag badges on cards.', 'russteicheira' ); ?></p>
@@ -1065,12 +1064,12 @@ function rt_sections_page() {
 								</th>
 								<td>
 									<div class="rt-color-field"
-										data-default-color="<?php echo esc_attr( $def_card_tag_color ); ?>"
+										data-default-color="<?php echo esc_attr( $ctx['def_card_tag_color'] ); ?>"
 										data-input-name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]">
 										<input type="hidden"
 											name="rt_sections[<?php echo esc_attr( $key ); ?>][card_tag_color]"
 											class="rt-color-input"
-											value="<?php echo esc_attr( $card_tag_col ); ?>" />
+											value="<?php echo esc_attr( $ctx['card_tag_col'] ); ?>" />
 										<div class="rt-color-picker-mount"></div>
 									</div>
 									<p class="description"><?php _e( 'Text and border color for skill tag badges on cards.', 'russteicheira' ); ?></p>
