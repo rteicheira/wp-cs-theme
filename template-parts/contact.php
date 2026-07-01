@@ -57,7 +57,7 @@ if ( ! is_array( $links ) ) {
 
 					<div class="form-group">
 						<label for="contact-subject"><?php _e( 'Subject', 'russteicheira' ); ?></label>
-						<input type="text" id="contact-subject" name="subject" placeholder="<?php esc_attr_e( 'PCI compliance consultation', 'russteicheira' ); ?>" required />
+						<input type="text" id="contact-subject" name="subject" placeholder="<?php esc_attr_e( 'Question', 'russteicheira' ); ?>" required />
 					</div>
 
 					<div class="form-group">
