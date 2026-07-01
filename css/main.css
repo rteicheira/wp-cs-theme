@@ -805,8 +805,17 @@ a.card-tag:hover {
   gap: 0.3rem;
 }
 .project-card__gh:hover { color: var(--teal); }
-.projects__empty, .projects__cta { text-align: center; }
-.projects__cta { margin-top: 1rem; }
+.projects__empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgba(26,122,110,0.03);
+  border: 1px dashed rgba(26,122,110,0.25);
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+}
+.projects__empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.projects__empty p { color: #7A8A9A; font-size: 0.9rem; max-width: 480px; margin: 0 auto; }
+.projects__cta { text-align: center; margin-top: 1rem; }
 
 /* ── BLOG PREVIEW ────────────────────────────────────────────── */
 .blog-preview { background: var(--white); }

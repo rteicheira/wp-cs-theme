@@ -97,13 +97,14 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 
 		<?php else : ?>
 			<div class="projects__empty">
-				<p><?php _e( 'Projects coming soon. Check back shortly.', 'russteicheira' ); ?></p>
+				<div class="projects__empty-icon" aria-hidden="true">🗂️</div>
+				<p><?php esc_html_e( 'Projects are on their way. Check back soon.', 'russteicheira' ); ?></p>
 			</div>
 		<?php endif; ?>
 
 		<div class="projects__cta">
 			<a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>" class="btn btn--outline">
-				<?php _e( 'View All Projects', 'russteicheira' ); ?> →
+				<?php _e( 'All Projects', 'russteicheira' ); ?> →
 			</a>
 		</div>
 
