@@ -71,10 +71,13 @@
 				?>.
 			</span>
 			<?php $credit = rt_get( 'footer_credit', '' ); if ( $credit ) : ?>
-			<span class="footer-built">
+			<span class="footer-credit">
 				<?php echo esc_html( $credit ); ?>
 			</span>
 			<?php endif; ?>
+		</p>
+		<p class="footer-github">
+			<a href="https://github.com/rteicheira/wp-cs-theme" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Get theme on GitHub', 'russteicheira' ); ?></a>
 		</p>
 	</div>
 </footer>

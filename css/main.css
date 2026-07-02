@@ -1091,6 +1091,9 @@ a.card-tag:hover {
 }
 .footer-bottom a { color: var(--gray); }
 .footer-bottom a:hover { color: var(--teal-lt); }
+.footer-github { margin-top: 0.35rem; }
+.footer-github a { font-size: 0.7rem; color: #3A4A5A; text-decoration: none; }
+.footer-github a:hover { color: var(--teal-lt); }
 
 /* ── BLOG (archive / single) ─────────────────────────────────── */
 .blog-layout {
