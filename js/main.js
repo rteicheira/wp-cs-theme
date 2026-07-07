@@ -159,15 +159,19 @@
     termEl.appendChild( textNode );
     termEl.appendChild( cursorEl );
 
+    var typeTimer = null;
+
     function type() {
       var phrase = phrases[ phraseIdx ];
+      var delay;
       if ( ! deleting ) {
         charIdx++;
         textNode.nodeValue = phrase.slice( 0, charIdx );
         if ( charIdx === phrase.length ) {
           deleting = true;
-          setTimeout( type, 2200 );
-          return;
+          delay    = 2200;
+        } else {
+          delay = 62;
         }
       } else {
         charIdx--;
@@ -176,10 +180,22 @@
           deleting  = false;
           phraseIdx = ( phraseIdx + 1 ) % phrases.length;
         }
+        delay = deleting ? 32 : 62;
       }
-      setTimeout( type, deleting ? 32 : 62 );
+      typeTimer = setTimeout( type, delay );
     }
-    setTimeout( type, 900 );
+
+    // Pause the timer while the tab is hidden so it can't die from
+    // aggressive browser throttling; resume cleanly on return.
+    document.addEventListener( 'visibilitychange', function () {
+      if ( document.hidden ) {
+        clearTimeout( typeTimer );
+      } else {
+        typeTimer = setTimeout( type, 62 );
+      }
+    } );
+
+    typeTimer = setTimeout( type, 900 );
 
   } else if ( termEl ) {
     var fallbackPhrase = ( typeof RT !== 'undefined' && Array.isArray( RT.typingPhrases ) && RT.typingPhrases.length )

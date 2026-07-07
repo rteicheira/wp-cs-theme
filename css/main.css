@@ -1216,6 +1216,34 @@ article.single-post {
   font-style: italic;
 }
 .post-content img { border-radius: var(--radius); margin: 1.5rem 0; }
+
+/* Image alignment / text-wrap */
+.post-content .alignleft,
+.post-content figure.alignleft,
+.post-content .wp-block-image.alignleft {
+  float: left;
+  margin: 0.25rem 1.75rem 1rem 0;
+  max-width: 50%;
+}
+.post-content .alignright,
+.post-content figure.alignright,
+.post-content .wp-block-image.alignright {
+  float: right;
+  margin: 0.25rem 0 1rem 1.75rem;
+  max-width: 50%;
+}
+.post-content .aligncenter,
+.post-content figure.aligncenter,
+.post-content .wp-block-image.aligncenter {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Reset default img margin when the figure/img itself is floated */
+.post-content .alignleft img,
+.post-content .alignright img { margin: 0; }
+/* Contain floats so the next section doesn't bleed up */
+.post-content::after { content: ''; display: table; clear: both; }
 .post-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2rem; }
 .post-tag {
   font-family: var(--font-mono);
