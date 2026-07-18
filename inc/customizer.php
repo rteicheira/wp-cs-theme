@@ -553,31 +553,41 @@ add_action( 'wp_ajax_rt_reset_colors', function () {
 // ── FORCE DOFOLLOW ────────────────────────────────────────────
 // When enabled, strips 'nofollow' from the rel string WordPress automatically
 // appends to target="_blank" links, and scrubs it from post content links.
+// Priority 99 ensures we run after WordPress core and any SEO plugins that
+// inject nofollow at the default priority-10 hook.
 if ( '1' === get_theme_mod( 'force_dofollow', '0' ) ) {
 
-	// Strip 'nofollow' from WP's automatic rel injection (wp_targeted_link_rel).
+	// Strip 'nofollow' from WP's automatic rel injection.
 	add_filter( 'wp_targeted_link_rel', function ( $rel ) {
 		return implode( ' ', array_filter(
-			explode( ' ', $rel ),
-			function ( $token ) { return 'nofollow' !== strtolower( trim( $token ) ); }
+			preg_split( '/\s+/', $rel, -1, PREG_SPLIT_NO_EMPTY ),
+			function ( $token ) { return 'nofollow' !== strtolower( $token ); }
 		) );
-	} );
+	}, 99 );
 
 	// Strip 'nofollow' from rel attributes already present in post/page content.
+	// Two-level match: first capture the whole <a> tag, then operate only on the
+	// rel attribute inside it — avoids false matches on rel= inside href query strings.
 	add_filter( 'the_content', function ( $content ) {
 		return preg_replace_callback(
-			'/(<a\s[^>]*\brel=["\'])([^"\']+)(["\'][^>]*>)/i',
+			'/<a\s[^>]+>/i',
 			function ( $m ) {
-				$tokens  = preg_split( '/\s+/', $m[2], -1, PREG_SPLIT_NO_EMPTY );
-				$cleaned = implode( ' ', array_filter(
-					$tokens,
-					function ( $t ) { return 'nofollow' !== strtolower( $t ); }
-				) );
-				return $m[1] . $cleaned . $m[3];
+				return preg_replace_callback(
+					'/(\brel=)(["\'])([^"\']+)\2/i',
+					function ( $rm ) {
+						$tokens = preg_split( '/\s+/', $rm[3], -1, PREG_SPLIT_NO_EMPTY );
+						$clean  = implode( ' ', array_filter(
+							$tokens,
+							function ( $t ) { return 'nofollow' !== strtolower( $t ); }
+						) );
+						return $rm[1] . $rm[2] . $clean . $rm[2];
+					},
+					$m[0]
+				);
 			},
 			$content
 		);
-	} );
+	}, 99 );
 }
 
 // ── COLOR CSS OUTPUT ──────────────────────────────────────────
