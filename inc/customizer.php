@@ -318,6 +318,26 @@ function rt_customizer_register( $wp_customize ) {
 	) ) );
 
 	// ════════════════════════════════════════════════════════════
+	// SECTION: SEO
+	// ════════════════════════════════════════════════════════════
+	$wp_customize->add_section( 'rt_seo', array(
+		'title'    => __( 'SEO', 'russteicheira' ),
+		'priority' => 35,
+	) );
+
+	$wp_customize->add_setting( 'force_dofollow', array(
+		'default'           => '0',
+		'sanitize_callback' => 'rt_sanitize_checkbox',
+		'transport'         => 'refresh',
+	) );
+	$wp_customize->add_control( 'force_dofollow', array(
+		'label'       => __( 'Force dofollow on external links', 'russteicheira' ),
+		'description' => __( 'When enabled, strips <code>nofollow</code> from all outbound links — including links where WordPress automatically adds it alongside <code>noopener</code>. Useful when you intentionally want to pass link equity to external sites.', 'russteicheira' ),
+		'section'     => 'rt_seo',
+		'type'        => 'checkbox',
+	) );
+
+	// ════════════════════════════════════════════════════════════
 	// SECTION: Footer
 	// ════════════════════════════════════════════════════════════
 	$wp_customize->add_section( 'rt_footer', array(
@@ -529,6 +549,36 @@ add_action( 'wp_ajax_rt_reset_colors', function () {
 	}
 	wp_send_json_success();
 } );
+
+// ── FORCE DOFOLLOW ────────────────────────────────────────────
+// When enabled, strips 'nofollow' from the rel string WordPress automatically
+// appends to target="_blank" links, and scrubs it from post content links.
+if ( '1' === get_theme_mod( 'force_dofollow', '0' ) ) {
+
+	// Strip 'nofollow' from WP's automatic rel injection (wp_targeted_link_rel).
+	add_filter( 'wp_targeted_link_rel', function ( $rel ) {
+		return implode( ' ', array_filter(
+			explode( ' ', $rel ),
+			function ( $token ) { return 'nofollow' !== strtolower( trim( $token ) ); }
+		) );
+	} );
+
+	// Strip 'nofollow' from rel attributes already present in post/page content.
+	add_filter( 'the_content', function ( $content ) {
+		return preg_replace_callback(
+			'/(<a\s[^>]*\brel=["\'])([^"\']+)(["\'][^>]*>)/i',
+			function ( $m ) {
+				$tokens  = preg_split( '/\s+/', $m[2], -1, PREG_SPLIT_NO_EMPTY );
+				$cleaned = implode( ' ', array_filter(
+					$tokens,
+					function ( $t ) { return 'nofollow' !== strtolower( $t ); }
+				) );
+				return $m[1] . $cleaned . $m[3];
+			},
+			$content
+		);
+	} );
+}
 
 // ── COLOR CSS OUTPUT ──────────────────────────────────────────
 // Appended inline to rt-main so overrides fire after the stylesheet's :root block.
