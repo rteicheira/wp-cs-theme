@@ -99,6 +99,142 @@ function rt_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', 'rt_enqueue_assets' );
 
 
+// ── READING TIME ─────────────────────────────────────────────
+function rt_reading_time() {
+    $content    = get_post_field( 'post_content', get_the_ID() );
+    $word_count = str_word_count( wp_strip_all_tags( $content ) );
+    $minutes    = max( 1, (int) round( $word_count / 200 ) );
+    /* translators: %d: estimated minutes to read the post */
+    return sprintf( _n( '%d min read', '%d min read', $minutes, 'russteicheira' ), $minutes );
+}
+
+
+// ── TABLE OF CONTENTS ─────────────────────────────────────────
+// Parses h2/h3 elements that carry an id attribute (Gutenberg adds these
+// automatically to heading blocks at save time). Returns '' if fewer than
+// three headings are found — not worth a TOC for short posts.
+function rt_get_toc() {
+    $content = get_post_field( 'post_content', get_the_ID() );
+    if ( ! preg_match_all(
+        '/<h([23])\b[^>]*\bid=["\']([^"\']+)["\'][^>]*>(.*?)<\/h\1>/is',
+        $content,
+        $matches
+    ) ) {
+        return '';
+    }
+    if ( count( $matches[0] ) < 3 ) {
+        return '';
+    }
+    $items = '';
+    foreach ( $matches[1] as $i => $level ) {
+        $id    = esc_attr( $matches[2][ $i ] );
+        $text  = wp_strip_all_tags( $matches[3][ $i ] );
+        $items .= '<li class="toc-item toc-item--h' . (int) $level . '"><a href="#' . $id . '">' . esc_html( $text ) . '</a></li>';
+    }
+    return '<nav class="toc" aria-label="' . esc_attr__( 'Table of contents', 'russteicheira' ) . '">'
+        . '<p class="toc__title">' . esc_html__( 'On this page', 'russteicheira' ) . '</p>'
+        . '<ol class="toc__list">' . $items . '</ol>'
+        . '</nav>';
+}
+
+
+// ── RELATED POSTS ─────────────────────────────────────────────
+// Finds up to 3 published posts sharing a skill tag with the current post.
+// Falls back to posts in the same category if the post has no skill tags,
+// and returns '' entirely when neither produces results.
+function rt_related_posts() {
+    $current_id = get_the_ID();
+    $skills     = get_the_terms( $current_id, 'skill' );
+    $args       = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => 3,
+        'post__not_in'   => array( $current_id ),
+        'no_found_rows'  => true,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    );
+
+    if ( $skills && ! is_wp_error( $skills ) ) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'skill',
+                'field'    => 'term_id',
+                'terms'    => wp_list_pluck( $skills, 'term_id' ),
+            ),
+        );
+    } else {
+        $cats = get_the_category( $current_id );
+        if ( ! $cats ) {
+            return '';
+        }
+        $args['category__in'] = wp_list_pluck( $cats, 'term_id' );
+    }
+
+    $query = new WP_Query( $args );
+    if ( ! $query->have_posts() ) {
+        return '';
+    }
+
+    $html = '<section class="related-posts">'
+        . '<h2 class="related-posts__heading">' . esc_html__( 'Related Posts', 'russteicheira' ) . '</h2>'
+        . '<div class="related-posts__grid">';
+
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        $html .= '<article class="related-post">';
+        if ( has_post_thumbnail() ) {
+            $html .= '<a class="related-post__thumb" href="' . esc_url( get_permalink() ) . '" tabindex="-1" aria-hidden="true">'
+                . get_the_post_thumbnail( null, 'blog-card' )
+                . '</a>';
+        }
+        $html .= '<div class="related-post__body">'
+            . '<a class="related-post__title" href="' . esc_url( get_permalink() ) . '">' . esc_html( get_the_title() ) . '</a>'
+            . '<p class="related-post__meta">' . esc_html( get_the_date( 'M j, Y' ) ) . ' &middot; ' . esc_html( rt_reading_time() ) . '</p>'
+            . '</div>'
+            . '</article>';
+    }
+    wp_reset_postdata();
+
+    $html .= '</div></section>';
+    return $html;
+}
+
+
+// ── PRISM SYNTAX HIGHLIGHTING ─────────────────────────────────
+// Load PrismJS only on singular posts/pages that contain a Code block.
+function rt_enqueue_prism() {
+    if ( ! is_singular() || ! has_block( 'core/code' ) ) {
+        return;
+    }
+    wp_enqueue_style(
+        'rt-prism',
+        RT_URI . '/css/prism.css',
+        array(),
+        filemtime( RT_DIR . '/css/prism.css' )
+    );
+    wp_enqueue_script(
+        'rt-prism',
+        RT_URI . '/js/prism.js',
+        array(),
+        filemtime( RT_DIR . '/js/prism.js' ),
+        true
+    );
+}
+add_action( 'wp_enqueue_scripts', 'rt_enqueue_prism' );
+
+// Add line-numbers class to the <pre> in every rendered Code block so the
+// Prism line-numbers plugin activates without needing a JS class injection step.
+add_filter( 'render_block_core/code', function ( $block_content ) {
+    return preg_replace(
+        '/(<pre\b[^>]*class=["\'])/',
+        '$1line-numbers ',
+        $block_content,
+        1
+    );
+} );
+
+
 // ── CUSTOM POST TYPE: PROJECTS + CAPABILITIES ────────────────
 function rt_register_post_types() {
 

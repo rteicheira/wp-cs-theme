@@ -17,6 +17,7 @@
 				}
 			}
 			echo ' &middot; ' . esc_html( get_the_author() );
+			echo ' &middot; ' . esc_html( rt_reading_time() );
 			?>
 		</div>
 		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
@@ -43,6 +44,10 @@
 		</div>
 	<?php endif; ?>
 
+	<?php $toc = rt_get_toc(); if ( $toc ) : ?>
+		<?php echo $toc; ?>
+	<?php endif; ?>
+
 	<div class="post-content">
 		<?php the_content(); ?>
 	</div>
@@ -58,6 +63,8 @@
 			<?php endforeach; ?>
 		</div>
 	<?php endif; ?>
+
+	<?php echo rt_related_posts(); ?>
 
 	<nav class="post-navigation" aria-label="<?php esc_attr_e( 'Post navigation', 'russteicheira' ); ?>" style="margin-top:3rem; display:flex; justify-content:space-between; gap:1rem;">
 		<div><?php previous_post_link( '%link', '← ' . __( 'Previous', 'russteicheira' ) ); ?></div>

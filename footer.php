@@ -82,6 +82,8 @@
 	</div>
 </footer>
 
+<button class="back-to-top" aria-label="<?php esc_attr_e( 'Back to top', 'russteicheira' ); ?>">&#8593;</button>
+
 <?php wp_footer(); ?>
 </body>
 </html>

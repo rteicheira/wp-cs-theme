@@ -1206,6 +1206,14 @@ article.single-post {
   font-size: 0.875rem;
   padding: 0;
 }
+/* Prism: cap tall blocks so they scroll rather than expanding the layout */
+pre.wp-block-code {
+  max-height: 28rem;
+  overflow-y: auto;
+}
+/* Prism toolbar plugin wraps <pre> in .code-toolbar; restore block margin there */
+.post-content .code-toolbar { margin-bottom: 1.5rem; }
+.post-content .code-toolbar > pre { margin-bottom: 0; }
 .post-content blockquote {
   border-left: 3px solid var(--gold);
   padding: 0.75rem 1.25rem;
@@ -1259,6 +1267,113 @@ article.single-post {
 .post-tag:hover {
   background: rgba(26,122,110,0.18);
   border-color: rgba(26,122,110,0.55);
+}
+
+/* ── TABLE OF CONTENTS ───────────────────────────────────── */
+.toc {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+.toc__title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  margin-bottom: 0.75rem;
+}
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.toc-item {
+  margin-bottom: 0.3rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.toc-item a {
+  color: var(--navy);
+  text-decoration: none;
+}
+.toc-item a:hover { color: var(--teal); }
+.toc-item--h3 {
+  padding-left: 1.25rem;
+  font-size: 0.825rem;
+  color: var(--text);
+}
+.toc-item--h3 a::before {
+  content: '— ';
+  color: var(--teal);
+  font-size: 0.75em;
+}
+
+/* ── RELATED POSTS ───────────────────────────────────────── */
+.related-posts {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border);
+}
+.related-posts__heading {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  margin-bottom: 1.25rem;
+}
+.related-posts__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.related-post {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+.related-post:hover {
+  border-color: rgba(26,122,110,0.35);
+  box-shadow: 0 4px 16px rgba(13,27,42,0.08);
+}
+.related-post__thumb { display: block; }
+.related-post__thumb img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+.related-post__body { padding: 0.875rem; }
+.related-post__title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+  text-decoration: none;
+}
+.related-post__title:hover { color: var(--teal); }
+.related-post__meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text);
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .related-posts__grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .related-posts__grid { grid-template-columns: 1fr; }
 }
 
 /* Sidebar */
@@ -1428,6 +1543,44 @@ article.single-post {
   .nav-links li.menu-item-has-children > .sub-menu-toggle {
     display: flex;
   }
+}
+
+/* ── BACK TO TOP ─────────────────────────────────────────── */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--teal);
+  color: var(--navy);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.5rem);
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 900;
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  background: var(--teal-lt);
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top { transition: none; }
 }
 
 /* Small mobile: ≤ 640px */

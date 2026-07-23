@@ -270,6 +270,18 @@
     } );
   }
 
+  // ── BACK TO TOP ────────────────────────────────────────────
+  var btt = document.querySelector( '.back-to-top' );
+  if ( btt ) {
+    window.addEventListener( 'scroll', function () {
+      btt.classList.toggle( 'is-visible', window.scrollY > 400 );
+    }, { passive: true } );
+
+    btt.addEventListener( 'click', function () {
+      window.scrollTo( { top: 0, behavior: 'smooth' } );
+    } );
+  }
+
   // ── SMOOTH SCROLL ─────────────────────────────────────────
   document.querySelectorAll( 'a[href^="#"]' ).forEach( function ( anchor ) {
     anchor.addEventListener( 'click', function ( e ) {
