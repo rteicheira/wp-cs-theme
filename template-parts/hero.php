@@ -33,11 +33,11 @@
 
 		<div class="hero__actions">
 			<a href="#projects" class="btn btn--primary">
-				<?php _e( 'View My Work', 'russteicheira' ); ?>
+				<?php esc_html_e( 'View My Work', 'russteicheira' ); ?>
 				<span aria-hidden="true">↓</span>
 			</a>
 			<a href="#contact" class="btn btn--secondary">
-				<?php _e( "Let's Connect", 'russteicheira' ); ?>
+				<?php esc_html_e( "Let's Connect", 'russteicheira' ); ?>
 			</a>
 		</div>
 

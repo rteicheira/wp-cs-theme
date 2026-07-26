@@ -57,10 +57,10 @@
 					<?php if ( $_live || $_gh ) : ?>
 						<div class="project-card__links">
 							<?php if ( $_live ) : ?>
-								<a href="<?php echo esc_url( $_live ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php _e( 'Live Site', 'russteicheira' ); ?></a>
+								<a href="<?php echo esc_url( $_live ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php esc_html_e( 'Live Site', 'russteicheira' ); ?></a>
 							<?php endif; ?>
 							<?php if ( $_gh ) : ?>
-								<a href="<?php echo esc_url( $_gh ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php _e( 'GitHub', 'russteicheira' ); ?></a>
+								<a href="<?php echo esc_url( $_gh ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php esc_html_e( 'GitHub', 'russteicheira' ); ?></a>
 							<?php endif; ?>
 						</div>
 					<?php endif; ?>

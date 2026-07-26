@@ -84,10 +84,10 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 						<?php if ( $live_url || $gh_url ) : ?>
 							<div class="project-card__links">
 								<?php if ( $live_url ) : ?>
-									<a href="<?php echo esc_url( $live_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php _e( 'Live Site', 'russteicheira' ); ?></a>
+									<a href="<?php echo esc_url( $live_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php esc_html_e( 'Live Site', 'russteicheira' ); ?></a>
 								<?php endif; ?>
 								<?php if ( $gh_url ) : ?>
-									<a href="<?php echo esc_url( $gh_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php _e( 'GitHub', 'russteicheira' ); ?></a>
+									<a href="<?php echo esc_url( $gh_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php esc_html_e( 'GitHub', 'russteicheira' ); ?></a>
 								<?php endif; ?>
 							</div>
 						<?php endif; ?>
@@ -104,7 +104,7 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 
 		<div class="projects__cta">
 			<a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>" class="btn btn--outline">
-				<?php _e( 'All Projects', 'russteicheira' ); ?> →
+				<?php esc_html_e( 'All Projects', 'russteicheira' ); ?> →
 			</a>
 		</div>
 

@@ -110,11 +110,40 @@ function rt_reading_time() {
 
 
 // ── TABLE OF CONTENTS ─────────────────────────────────────────
-// Parses h2/h3 elements that carry an id attribute (Gutenberg adds these
-// automatically to heading blocks at save time). Returns '' if fewer than
-// three headings are found — not worth a TOC for short posts.
+// Injects stable IDs into h2/h3/h4 headings that don't already have one.
+// Runs at priority 20 (after wpautop at 10) so the IDs are present both
+// when the_content() renders the post and when rt_get_toc() pre-renders it.
+add_filter( 'the_content', function ( $content ) {
+    if ( ! is_singular() ) {
+        return $content;
+    }
+    $used = array();
+    return preg_replace_callback(
+        '/<h([234])\b([^>]*)>(.*?)<\/h\1>/is',
+        function ( $m ) use ( &$used ) {
+            // Leave headings that already carry an id untouched
+            if ( preg_match( '/\bid=/', $m[2] ) ) {
+                return $m[0];
+            }
+            $base = sanitize_title( wp_strip_all_tags( $m[3] ) ) ?: 'heading';
+            $id   = $base;
+            $n    = 1;
+            while ( isset( $used[ $id ] ) ) {
+                $id = $base . '-' . ( ++$n );
+            }
+            $used[ $id ] = true;
+            return '<h' . $m[1] . $m[2] . ' id="' . esc_attr( $id ) . '">' . $m[3] . '</h' . $m[1] . '>';
+        },
+        $content
+    );
+}, 20 );
+
+// Builds the TOC by running the full the_content filter chain so the ID
+// injection above fires before we parse headings. Only h2/h3 appear in the
+// list (h4 gets an anchor but is too granular to list). Returns '' if fewer
+// than 3 qualifying headings are found.
 function rt_get_toc() {
-    $content = get_post_field( 'post_content', get_the_ID() );
+    $content = apply_filters( 'the_content', get_post_field( 'post_content', get_the_ID() ) );
     if ( ! preg_match_all(
         '/<h([23])\b[^>]*\bid=["\']([^"\']+)["\'][^>]*>(.*?)<\/h\1>/is',
         $content,
@@ -201,10 +230,34 @@ function rt_related_posts() {
 }
 
 
+// ── BLOCK EDITOR: CODE LANGUAGE SELECTOR ─────────────────────
+// Injects a "Syntax Highlighting" panel into the Core Code block inspector
+// so you can pick a language without editing raw HTML.
+function rt_enqueue_block_editor_assets() {
+    wp_enqueue_script(
+        'rt-code-lang',
+        RT_URI . '/js/admin-code-lang.js',
+        array( 'wp-blocks', 'wp-element', 'wp-hooks', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
+        filemtime( RT_DIR . '/js/admin-code-lang.js' ),
+        true
+    );
+}
+add_action( 'enqueue_block_editor_assets', 'rt_enqueue_block_editor_assets' );
+
+
 // ── PRISM SYNTAX HIGHLIGHTING ─────────────────────────────────
 // Load PrismJS only on singular posts/pages that contain a Code block.
+// has_block() is the canonical check; the string fallback catches posts
+// migrated or saved outside the block editor.
 function rt_enqueue_prism() {
-    if ( ! is_singular() || ! has_block( 'core/code' ) ) {
+    if ( ! is_singular() ) {
+        return;
+    }
+    global $post;
+    if ( ! $post ) {
+        return;
+    }
+    if ( ! has_block( 'core/code', $post ) && strpos( $post->post_content, 'wp-block-code' ) === false ) {
         return;
     }
     wp_enqueue_style(
@@ -223,15 +276,43 @@ function rt_enqueue_prism() {
 }
 add_action( 'wp_enqueue_scripts', 'rt_enqueue_prism' );
 
-// Add line-numbers class to the <pre> in every rendered Code block so the
-// Prism line-numbers plugin activates without needing a JS class injection step.
+// Prepare each rendered Code block for Prism:
+//   • add line-numbers to <pre> so the gutter plugin activates
+//   • copy the language-* class from <pre> to <code> — the block editor
+//     language selector stores its value on the block's className (= <pre>),
+//     but Prism expects the class on the inner <code> element
+//   • fall back to language-none so the toolbar/copy button still fires
+//     even when no language has been picked
 add_filter( 'render_block_core/code', function ( $block_content ) {
-    return preg_replace(
+    // Add line-numbers class to <pre>
+    $block_content = preg_replace(
         '/(<pre\b[^>]*class=["\'])/',
         '$1line-numbers ',
         $block_content,
         1
     );
+
+    // If <code> already carries a language class, nothing more to do
+    if ( preg_match( '/<code\b[^>]*\blanguage-\w/', $block_content ) ) {
+        return $block_content;
+    }
+
+    // Check whether the language selector put a language-* class on <pre>
+    $lang_class = 'language-none';
+    if ( preg_match( '/<pre\b[^>]*\bclass=["\'][^"\']*\b(language-\w+)/', $block_content, $m ) ) {
+        $lang_class = $m[1];
+    }
+
+    // Apply the language class to <code>
+    $block_content = str_replace( '<code>', '<code class="' . $lang_class . '">', $block_content );
+    $block_content = preg_replace(
+        '/(<code\b[^>]*\bclass=["\'])(?![^"\']*\blanguage-)/',
+        '$1' . $lang_class . ' ',
+        $block_content,
+        1
+    );
+
+    return $block_content;
 } );
 
 
@@ -956,11 +1037,36 @@ add_action( 'admin_enqueue_scripts', 'rt_expertise_field_counters' );
 
 // ── CONTACT FORM AJAX ─────────────────────────────────────────
 function rt_get_visitor_ip() {
-	$cf = isset( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : '';
-	if ( $cf && filter_var( $cf, FILTER_VALIDATE_IP ) ) {
-		return sanitize_text_field( wp_unslash( $cf ) );
+	static $cf_cidrs = array(
+		'173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22',
+		'141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20',
+		'197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13',
+		'104.24.0.0/14',   '172.64.0.0/13',   '131.0.72.0/22',
+	);
+
+	$remote = sanitize_text_field( wp_unslash( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' ) );
+	$cf_hdr = isset( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : '';
+
+	if ( $cf_hdr && filter_var( $cf_hdr, FILTER_VALIDATE_IP ) && rt_ip_in_ranges( $remote, $cf_cidrs ) ) {
+		return sanitize_text_field( wp_unslash( $cf_hdr ) );
 	}
-	return sanitize_text_field( wp_unslash( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' ) );
+
+	return $remote;
+}
+
+function rt_ip_in_ranges( $ip, $cidrs ) {
+	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+		return false;
+	}
+	$ip_long = ip2long( $ip );
+	foreach ( $cidrs as $cidr ) {
+		list( $net, $bits ) = explode( '/', $cidr );
+		$mask = ~( ( 1 << ( 32 - (int) $bits ) ) - 1 );
+		if ( ( $ip_long & $mask ) === ( ip2long( $net ) & $mask ) ) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function rt_handle_contact() {
@@ -977,7 +1083,7 @@ function rt_handle_contact() {
 	$name    = isset( $_POST['name'] )    ? sanitize_text_field( wp_unslash( $_POST['name'] ) )        : '';
 	$email   = isset( $_POST['email'] )   ? sanitize_email( wp_unslash( $_POST['email'] ) )            : '';
 	$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) )     : '';
-	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+	$message = isset( $_POST['message'] ) ? mb_substr( sanitize_textarea_field( wp_unslash( $_POST['message'] ) ), 0, 2000 ) : '';
 
 	// Strip CRLF and angle brackets to prevent header injection via $name/$subject.
 	$name    = str_replace( array( "\r", "\n", '<', '>' ), '', $name );
@@ -1008,7 +1114,7 @@ function rt_handle_contact() {
 	if ( $sent ) {
 		wp_send_json_success( array( 'message' => __( "Message sent! I'll be in touch soon.", 'russteicheira' ) ) );
 	} else {
-		error_log( 'rt_handle_contact: wp_mail failed — recipient: ' . $to );
+		error_log( 'rt_handle_contact: wp_mail failed' );
 		wp_send_json_error( array( 'message' => __( 'Something went wrong. Please email me directly.', 'russteicheira' ) ) );
 	}
 }
@@ -1068,6 +1174,11 @@ if ( ! function_exists( 'rt_send_security_headers' ) ) {
 	function rt_send_security_headers() {
 		header( 'X-Frame-Options: SAMEORIGIN' );
 		header( 'X-Content-Type-Options: nosniff' );
+		header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+		header( 'Permissions-Policy: camera=(), microphone=(), geolocation=()' );
+		if ( is_ssl() ) {
+			header( 'Strict-Transport-Security: max-age=31536000; includeSubDomains' );
+		}
 	}
 }
 add_action( 'send_headers', 'rt_send_security_headers' );

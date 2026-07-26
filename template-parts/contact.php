@@ -46,30 +46,30 @@ if ( ! is_array( $links ) ) {
 			<div class="contact__form-wrap">
 				<form class="contact-form" id="contact-form" novalidate aria-label="<?php esc_attr_e( 'Contact form', 'russteicheira' ); ?>">
 					<div class="form-group">
-						<label for="contact-name"><?php _e( 'Your Name', 'russteicheira' ); ?></label>
+						<label for="contact-name"><?php esc_html_e( 'Your Name', 'russteicheira' ); ?></label>
 						<input type="text" id="contact-name" name="name" placeholder="<?php esc_attr_e( 'Jane Smith', 'russteicheira' ); ?>" required autocomplete="name" />
 					</div>
 
 					<div class="form-group">
-						<label for="contact-email"><?php _e( 'Email Address', 'russteicheira' ); ?></label>
+						<label for="contact-email"><?php esc_html_e( 'Email Address', 'russteicheira' ); ?></label>
 						<input type="email" id="contact-email" name="email" placeholder="jane@company.com" required autocomplete="email" />
 					</div>
 
 					<div class="form-group">
-						<label for="contact-subject"><?php _e( 'Subject', 'russteicheira' ); ?></label>
+						<label for="contact-subject"><?php esc_html_e( 'Subject', 'russteicheira' ); ?></label>
 						<input type="text" id="contact-subject" name="subject" placeholder="<?php esc_attr_e( 'Question', 'russteicheira' ); ?>" required />
 					</div>
 
 					<div class="form-group">
-						<label for="contact-message"><?php _e( 'Message', 'russteicheira' ); ?></label>
+						<label for="contact-message"><?php esc_html_e( 'Message', 'russteicheira' ); ?></label>
 						<textarea id="contact-message" name="message" rows="5" placeholder="<?php esc_attr_e( "Tell me a bit about your project or what you're working on\xe2\x80\xa6", 'russteicheira' ); ?>" required></textarea>
 					</div>
 
 					<div class="form-status" id="form-status" role="status"></div>
 
 					<button type="submit" class="btn btn--primary" id="contact-submit">
-						<span class="btn__text"><?php _e( 'Send Message', 'russteicheira' ); ?> &rarr;</span>
-						<span class="btn__loading" aria-hidden="true"><?php _e( 'Sending&hellip;', 'russteicheira' ); ?></span>
+						<span class="btn__text"><?php esc_html_e( 'Send Message', 'russteicheira' ); ?> &rarr;</span>
+						<span class="btn__loading" aria-hidden="true"><?php esc_html_e( 'Sending…', 'russteicheira' ); ?></span>
 					</button>
 				</form>
 			</div>

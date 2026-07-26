@@ -10,7 +10,7 @@
 <?php wp_body_open(); ?>
 
 <a class="skip-link screen-reader-text" href="#main-content">
-	<?php _e( 'Skip to content', 'russteicheira' ); ?>
+	<?php esc_html_e( 'Skip to content', 'russteicheira' ); ?>
 </a>
 
 <nav class="site-nav" id="site-nav" role="navigation" aria-label="<?php esc_attr_e( 'Primary Navigation', 'russteicheira' ); ?>">

@@ -289,7 +289,7 @@
       var target = hash && hash.length > 1 ? document.getElementById( hash.slice( 1 ) ) : null;
       if ( ! target ) return;
       e.preventDefault();
-      var top = target.getBoundingClientRect().top + window.pageYOffset - 64;
+      var top = target.getBoundingClientRect().top + window.pageYOffset - 85;
       window.scrollTo( { top: top, behavior: 'smooth' } );
     } );
   } );

@@ -4,6 +4,8 @@
 
 <article id="post-<?php the_ID(); ?>" <?php post_class( 'single-post' ); ?>>
 
+	<div class="reading-time-float"><?php echo esc_html( rt_reading_time() ); ?></div>
+
 	<header class="single-post__header">
 		<div class="single-post__meta">
 			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
@@ -17,8 +19,8 @@
 				}
 			}
 			echo ' &middot; ' . esc_html( get_the_author() );
-			echo ' &middot; ' . esc_html( rt_reading_time() );
 			?>
+			<span class="reading-time-inline"> &middot; <?php echo esc_html( rt_reading_time() ); ?></span>
 		</div>
 		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
 		<?php

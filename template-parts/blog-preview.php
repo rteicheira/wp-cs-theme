@@ -37,7 +37,9 @@ $blog_header = rt_get_section_header( 'blog-content', array(
 
 						<div class="blog-card__top" aria-hidden="true">
 							<?php if ( has_post_thumbnail() ) : ?>
-								<?php the_post_thumbnail( 'blog-card', [ 'alt' => '' ] ); ?>
+								<a href="<?php echo esc_url( get_permalink() ); ?>" tabindex="-1">
+									<?php the_post_thumbnail( 'blog-card', [ 'alt' => '' ] ); ?>
+								</a>
 							<?php else : ?>
 								<span class="blog-card__icon">
 									<?php
@@ -129,7 +131,7 @@ $blog_header = rt_get_section_header( 'blog-content', array(
 		<?php else : ?>
 			<div class="blog-preview__placeholder">
 				<div class="blog-preview__placeholder-icon" aria-hidden="true">📝</div>
-				<p><?php _e( 'Blog posts are on their way. Check back soon.', 'russteicheira' ); ?></p>
+				<p><?php esc_html_e( 'Blog posts are on their way. Check back soon.', 'russteicheira' ); ?></p>
 			</div>
 		<?php endif; ?>
 
@@ -140,7 +142,7 @@ $blog_header = rt_get_section_header( 'blog-content', array(
 			?>
 			<a href="<?php echo esc_url( $blog_url ); ?>"
 			   class="btn btn--outline">
-				<?php _e( 'All Posts', 'russteicheira' ); ?> →
+				<?php esc_html_e( 'All Posts', 'russteicheira' ); ?> →
 			</a>
 		</div>
 

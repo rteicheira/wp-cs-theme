@@ -2,9 +2,9 @@
 
 <div class="projects-archive">
 
-	<p class="section-eyebrow"><?php _e( '// portfolio', 'russteicheira' ); ?></p>
-	<h1 class="section-title"><?php _e( 'All Projects', 'russteicheira' ); ?></h1>
-	<p class="section-sub"><?php _e( 'Everything I\'ve built, automated, or shipped.', 'russteicheira' ); ?></p>
+	<p class="section-eyebrow"><?php esc_html_e( '// portfolio', 'russteicheira' ); ?></p>
+	<h1 class="section-title"><?php esc_html_e( 'All Projects', 'russteicheira' ); ?></h1>
+	<p class="section-sub"><?php esc_html_e( 'Everything I\'ve built, automated, or shipped.', 'russteicheira' ); ?></p>
 
 	<?php if ( have_posts() ) : ?>
 		<div class="projects-archive__grid">
@@ -39,10 +39,10 @@
 					<?php if ( $live_url || $gh_url ) : ?>
 						<div class="project-card__links">
 							<?php if ( $live_url ) : ?>
-								<a href="<?php echo esc_url( $live_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php _e( 'Live Site', 'russteicheira' ); ?></a>
+								<a href="<?php echo esc_url( $live_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">↗ <?php esc_html_e( 'Live Site', 'russteicheira' ); ?></a>
 							<?php endif; ?>
 							<?php if ( $gh_url ) : ?>
-								<a href="<?php echo esc_url( $gh_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php _e( 'GitHub', 'russteicheira' ); ?></a>
+								<a href="<?php echo esc_url( $gh_url ); ?>" class="project-card__gh" target="_blank" rel="noopener noreferrer">🐙 <?php esc_html_e( 'GitHub', 'russteicheira' ); ?></a>
 							<?php endif; ?>
 						</div>
 					<?php endif; ?>
@@ -55,7 +55,7 @@
 		</div>
 
 	<?php else : ?>
-		<p><?php _e( 'No projects yet. Check back soon.', 'russteicheira' ); ?></p>
+		<p><?php esc_html_e( 'No projects yet. Check back soon.', 'russteicheira' ); ?></p>
 	<?php endif; ?>
 
 </div>

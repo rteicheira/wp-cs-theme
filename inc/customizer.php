@@ -630,7 +630,7 @@ function rt_output_color_css() {
 		wp_add_inline_style( 'rt-main', '.hero{background-color:' . $hero_bg . ';}' );
 	}
 
-	$hero_img = esc_url_raw( get_theme_mod( 'hero_bg_image', '' ) );
+	$hero_img = esc_url( get_theme_mod( 'hero_bg_image', '' ) );
 	if ( $hero_img ) {
 		$hero_fixed = '1' === get_theme_mod( 'hero_bg_fixed', '0' ) ? 'fixed' : 'scroll';
 		wp_add_inline_style( 'rt-main', '.hero{background-image:url("' . $hero_img . '");background-size:cover;background-position:center;background-attachment:' . $hero_fixed . ';}' );
@@ -708,6 +708,7 @@ function rt_legal_links_allowed_html() {
 		'a'    => array( 'href' => array(), 'target' => array(), 'rel' => array(), 'class' => array() ),
 		'span' => array( 'class' => array() ),
 		'br'   => array(),
+		'img'  => array( 'src' => array(), 'alt' => array(), 'width' => array(), 'height' => array(), 'class' => array() ),
 	);
 }
 function rt_sanitize_legal_links( $value ) {

@@ -56,7 +56,7 @@ $certs_query = new WP_Query( array(
 						<?php endif; ?>
 						<?php if ( $cert_id ) : ?>
 							<p class="cert-card__cert-id">
-								<span class="cert-card__cert-id-label"><?php _e( 'ID:', 'russteicheira' ); ?></span>
+								<span class="cert-card__cert-id-label"><?php esc_html_e( 'ID:', 'russteicheira' ); ?></span>
 								<?php echo esc_html( $cert_id ); ?>
 							</p>
 						<?php endif; ?>
@@ -76,7 +76,7 @@ $certs_query = new WP_Query( array(
 								<?php if ( $url ) : ?>
 									<a href="<?php echo esc_url( $url ); ?>" class="cert-card__link"
 									   target="_blank" rel="noopener noreferrer">
-										<?php _e( 'Verify →', 'russteicheira' ); ?>
+										<?php esc_html_e( 'Verify →', 'russteicheira' ); ?>
 									</a>
 								<?php endif; ?>
 							</div>

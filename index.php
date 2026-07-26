@@ -88,7 +88,7 @@
 			</div>
 
 		<?php else : ?>
-			<p><?php _e( 'No posts found.', 'russteicheira' ); ?></p>
+			<p><?php esc_html_e( 'No posts found.', 'russteicheira' ); ?></p>
 		<?php endif; ?>
 	</div>
 
