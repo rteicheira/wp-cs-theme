@@ -1702,6 +1702,27 @@ pre.wp-block-code {
   box-shadow: 0 0 0 3px rgba(26,122,110,0.12);
 }
 
+/* Cookies consent checkbox + label on one line */
+.comment-form-cookies-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+}
+.comment-form-cookies-consent input[type="checkbox"] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.comment-form-cookies-consent label {
+  display: inline;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
 /* Submit button — mirrors .btn--primary */
 .form-submit { margin: 0; }
 .form-submit #submit {

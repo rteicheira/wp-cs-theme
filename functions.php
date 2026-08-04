@@ -1164,6 +1164,28 @@ add_filter( 'body_class', 'rt_body_classes' );
 
 
 
+// ── COMMENTS ──────────────────────────────────────────────────
+add_filter( 'comment_form_default_fields', function ( $fields ) {
+	unset( $fields['url'] );
+	return $fields;
+} );
+
+add_filter( 'comment_form_fields', function ( $fields ) {
+	$order   = array( 'author', 'email', 'comment', 'cookies' );
+	$ordered = array();
+	foreach ( $order as $key ) {
+		if ( isset( $fields[ $key ] ) ) {
+			$ordered[ $key ] = $fields[ $key ];
+		}
+	}
+	foreach ( $fields as $key => $field ) {
+		if ( ! isset( $ordered[ $key ] ) ) {
+			$ordered[ $key ] = $field;
+		}
+	}
+	return $ordered;
+} );
+
 // ── SECURITY ──────────────────────────────────────────────────
 remove_action( 'wp_head', 'wp_generator' );
 remove_action( 'wp_head', 'wlwmanifest_link' );
