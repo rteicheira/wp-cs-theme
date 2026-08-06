@@ -429,12 +429,13 @@ function rt_wm_queue_sends( $post_id, $content ) {
 
 add_action( 'rt_wm_send_event', function ( array $args ) {
 	$ep = rt_wm_discover_endpoint( $args['target'] );
-	if ( $ep ) {
-		wp_remote_post( $ep, array(
-			'timeout' => 10,
-			'body'    => array( 'source' => $args['source'], 'target' => $args['target'] ),
-		) );
+	if ( ! $ep || ! rt_wm_is_safe_url( $ep ) ) {
+		return;
 	}
+	wp_remote_post( $ep, array(
+		'timeout' => 10,
+		'body'    => array( 'source' => $args['source'], 'target' => $args['target'] ),
+	) );
 } );
 
 /**
@@ -466,7 +467,7 @@ function rt_wm_discover_endpoint( $url ) {
 		if ( $ep ) return rt_wm_absolute_url( $ep, $url );
 	}
 
-	$get = wp_remote_get( $url, array( 'timeout' => 8, 'redirection' => 3 ) );
+	$get = wp_remote_get( $url, array( 'timeout' => 8, 'redirection' => 3, 'limit_response_size' => 1048576 ) );
 	if ( is_wp_error( $get ) ) return null;
 
 	$dom = new DOMDocument();

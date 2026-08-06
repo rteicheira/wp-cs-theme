@@ -57,7 +57,7 @@ $_reg_count  = get_comments( array(
 			<div class="webmentions__threads">
 				<h3 class="webmentions__threads-title"><?php
 					$n = count( $_threads );
-					printf( esc_html( _n( '%d reply', '%d replies &amp; mentions', $n, 'russteicheira' ) ), $n );
+					printf( esc_html( _n( '%d reply', '%d replies & mentions', $n, 'russteicheira' ) ), $n );
 				?></h3>
 				<?php foreach ( $_threads as $wm ) :
 					$source  = get_comment_meta( $wm->comment_ID, 'webmention_source', true );
