@@ -5,7 +5,7 @@
 >
 > While I highly respect and support developers who write everything from scratch, I had a highly specific vision in mind for this theme that I couldn't find anywhere else. Additionally, I wanted a hands-on project to level up my AI-assisted workflows, something that is increasingly relevant for my professional work. While I use AI for my daily analytics and scripting on the job, I hadn't yet built a project of this scale completely from the ground up.
 >
-> Over the last week, I’ve poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
+> Over the last week, I've poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
 >
 > Thank you for checking it out! If you decide to use it, I'd love to hear your feedback. **Please note that I do not currently plan to publish this to the official WordPress repository**. If you find this there, it wasn't published by me.
 >
@@ -31,6 +31,7 @@ The homepage is assembled from independently controlled sections, each with conf
 ```text
 wp-cs-theme/
 ├── style.css                  ← Required WP theme header
+├── screenshot.png             ← WP admin theme thumbnail (1200×900)
 ├── functions.php              ← Setup, enqueue, CPTs, taxonomies, AJAX, helpers
 ├── theme.json                 ← Block editor color/font palette
 ├── front-page.php             ← Homepage (all sections)
@@ -40,27 +41,32 @@ wp-cs-theme/
 ├── page.php                   ← Static page template
 ├── archive-project.php        ← Project archive
 ├── taxonomy-skill.php         ← Skill taxonomy archive (posts + projects)
+├── search.php                 ← Search results page
+├── comments.php               ← Comment thread + webmention display
 ├── 404.php                    ← Not found
-├── header.php                 ← <head>, nav
+├── header.php                 ← <head>, nav, search overlay
 ├── footer.php                 ← footer, wp_footer()
 ├── css/
 │   ├── main.css               ← All styles (tokens → responsive)
 │   ├── admin-sections.css     ← Sections admin page styles
+│   ├── prism.css              ← Prism syntax highlighting styles
 │   ├── fonts.css              ← @font-face declarations
 │   └── fonts/                 ← Self-hosted woff2 files
 │       ├── inter-v20-latin.woff2
 │       ├── jetbrains-mono-v24-latin.woff2
 │       └── space-grotesk-v22-latin.woff2
 ├── js/
-│   ├── main.js                ← Nav, typewriter, smooth scroll, contact AJAX
+│   ├── main.js                ← Nav, search overlay, typewriter, smooth scroll, contact AJAX
+│   ├── prism.js               ← Prism syntax highlighting library (vendor)
 │   ├── admin-sections.js      ← Sections admin page: color picker, media uploader, tab nav
 │   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
 │   ├── admin-field-counters.js ← Capability/expertise title+excerpt character counters
+│   ├── admin-code-lang.js     ← Gutenberg sidebar: code block language selector
 │   └── customizer-preview.js  ← Customizer live preview bindings
 ├── preview/
-│   ├── static.html            ← Provides a full preview of the entire homepage
-│   ├── screenshot.png         ← WP theme preview (1200×900)
-│   └── portrait.jpg           ← Used to show the portait location in the about me section
+│   ├── static.html            ← Full static preview of the homepage
+│   ├── screenshot.png         ← Source image for the WP admin thumbnail
+│   └── portrait.jpg           ← Placeholder showing portrait position in About section
 ├── template-parts/
 │   ├── hero.php               ← Hero / above-the-fold section
 │   ├── about.php              ← About Me + capabilities panel
@@ -70,6 +76,7 @@ wp-cs-theme/
 │   ├── certs.php              ← Certifications section
 │   └── contact.php            ← AJAX contact form
 ├── inc/
+    ├── webmention.php         ← IndieWeb Webmention send/receive support
     ├── section-settings.php   ← Sections admin page (visibility, colors, bg images)
     ├── customizer.php         ← Customizer panels, settings, controls
     └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
@@ -160,8 +167,8 @@ Footer content is configurable in **Appearance → Customize → Footer**:
 | --- | --- | --- |
 | Site Tagline | `Cybersecurity & Compliance Professional` | Shown under the logo |
 | Copyright Name | Site title | Name shown in the copyright line |
-| Credit Line | _(blank)_ | Optional "Built by …" line |
-| Document Links | _(blank)_ | HTML links rendered above the copyright bar |
+| Credit Line | *(blank)* | Optional "Built by …" line |
+| Document Links | *(blank)* | HTML links rendered above the copyright bar |
 
 Social/contact icons in the footer are pulled from the **Contact** section link list.
 
