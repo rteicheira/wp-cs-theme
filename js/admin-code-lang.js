@@ -7,13 +7,14 @@
 ( function () {
 	'use strict';
 
-	var el               = wp.element.createElement;
-	var Fragment         = wp.element.Fragment;
-	var addFilter        = wp.hooks.addFilter;
+	var el                = wp.element.createElement;
+	var Fragment          = wp.element.Fragment;
+	var addFilter         = wp.hooks.addFilter;
 	var InspectorControls = wp.blockEditor.InspectorControls;
-	var PanelBody        = wp.components.PanelBody;
-	var SelectControl    = wp.components.SelectControl;
-	var __               = wp.i18n.__;
+	var PanelBody         = wp.components.PanelBody;
+	var SelectControl     = wp.components.SelectControl;
+	var TextControl       = wp.components.TextControl;
+	var __                = wp.i18n.__;
 
 	var LANGS = [
 		{ value: '',                      label: '— None (plain text) —' },
@@ -45,6 +46,8 @@
 			}
 
 			var className = props.attributes.className || '';
+			var metadata  = props.attributes.metadata  || {};
+			var filename  = metadata.filename || '';
 
 			// Determine which language is currently active
 			var active = '';
@@ -56,7 +59,6 @@
 			}
 
 			function onChange( selected ) {
-				// Strip any existing language-* class, then append the new one
 				var stripped = className
 					.replace( /\blanguage-\S+/g, '' )
 					.replace( /\s+/g, ' ' )
@@ -65,6 +67,11 @@
 					? ( stripped ? stripped + ' ' + selected : selected )
 					: stripped;
 				props.setAttributes( { className: next || undefined } );
+			}
+
+			function onFilenameChange( value ) {
+				var next = Object.assign( {}, metadata, { filename: value || undefined } );
+				props.setAttributes( { metadata: next } );
 			}
 
 			return el(
@@ -82,6 +89,13 @@
 							value: active,
 							options: LANGS,
 							onChange: onChange,
+							__nextHasNoMarginBottom: true,
+						} ),
+						el( TextControl, {
+							label: __( 'Filename', 'russteicheira' ),
+							value: filename,
+							placeholder: 'e.g. nginx.conf',
+							onChange: onFilenameChange,
 							__nextHasNoMarginBottom: true,
 						} )
 					)

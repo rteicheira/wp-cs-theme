@@ -283,7 +283,7 @@ add_action( 'wp_enqueue_scripts', 'rt_enqueue_prism' );
 //     but Prism expects the class on the inner <code> element
 //   • fall back to language-none so the toolbar/copy button still fires
 //     even when no language has been picked
-add_filter( 'render_block_core/code', function ( $block_content ) {
+add_filter( 'render_block_core/code', function ( $block_content, $block ) {
     // Add line-numbers class to <pre>
     $block_content = preg_replace(
         '/(<pre\b[^>]*class=["\'])/',
@@ -293,27 +293,34 @@ add_filter( 'render_block_core/code', function ( $block_content ) {
     );
 
     // If <code> already carries a language class, nothing more to do
-    if ( preg_match( '/<code\b[^>]*\blanguage-\w/', $block_content ) ) {
-        return $block_content;
+    if ( ! preg_match( '/<code\b[^>]*\blanguage-\w/', $block_content ) ) {
+        // Check whether the language selector put a language-* class on <pre>
+        $lang_class = 'language-none';
+        if ( preg_match( '/<pre\b[^>]*\bclass=["\'][^"\']*\b(language-\w+)/', $block_content, $m ) ) {
+            $lang_class = $m[1];
+        }
+
+        // Apply the language class to <code>
+        $block_content = str_replace( '<code>', '<code class="' . $lang_class . '">', $block_content );
+        $block_content = preg_replace(
+            '/(<code\b[^>]*\bclass=["\'])(?![^"\']*\blanguage-)/',
+            '$1' . $lang_class . ' ',
+            $block_content,
+            1
+        );
     }
 
-    // Check whether the language selector put a language-* class on <pre>
-    $lang_class = 'language-none';
-    if ( preg_match( '/<pre\b[^>]*\bclass=["\'][^"\']*\b(language-\w+)/', $block_content, $m ) ) {
-        $lang_class = $m[1];
-    }
-
-    // Apply the language class to <code>
-    $block_content = str_replace( '<code>', '<code class="' . $lang_class . '">', $block_content );
-    $block_content = preg_replace(
-        '/(<code\b[^>]*\bclass=["\'])(?![^"\']*\blanguage-)/',
-        '$1' . $lang_class . ' ',
-        $block_content,
-        1
-    );
+    // Always wrap with header bar; filename is optional
+    $filename      = isset( $block['attrs']['metadata']['filename'] )
+        ? sanitize_text_field( $block['attrs']['metadata']['filename'] )
+        : '';
+    $block_content = '<div class="rt-code-wrap">'
+        . '<div class="code-filename">' . esc_html( $filename ) . '</div>'
+        . $block_content
+        . '</div>';
 
     return $block_content;
-} );
+}, 10, 2 );
 
 
 // ── CUSTOM POST TYPE: PROJECTS + CAPABILITIES ────────────────
