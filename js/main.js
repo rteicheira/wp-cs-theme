@@ -9,6 +9,76 @@
   var toggle = document.getElementById( 'nav-toggle' );
   var menu   = document.getElementById( 'primary-menu' );
 
+  // ── SEARCH OVERLAY ─────────────────────────────────────────
+  var searchToggle  = document.getElementById( 'search-toggle' );
+  var searchOverlay = document.getElementById( 'search-overlay' );
+  var searchClose   = document.getElementById( 'search-overlay-close' );
+  var searchInput   = document.getElementById( 'search-overlay-input' );
+
+  function openSearch() {
+    if ( ! searchOverlay ) return;
+    closeNav();
+    searchOverlay.classList.add( 'is-open' );
+    if ( searchToggle ) searchToggle.setAttribute( 'aria-expanded', 'true' );
+    document.body.style.overflow = 'hidden';
+    // rAF ensures element is visible before focusing (avoids scroll jump)
+    requestAnimationFrame( function () {
+      if ( searchInput ) searchInput.focus();
+    } );
+  }
+
+  function closeSearch() {
+    if ( ! searchOverlay ) return;
+    searchOverlay.classList.remove( 'is-open' );
+    if ( searchToggle ) {
+      searchToggle.setAttribute( 'aria-expanded', 'false' );
+      searchToggle.focus();
+    }
+    document.body.style.overflow = '';
+  }
+
+  if ( searchToggle ) {
+    searchToggle.addEventListener( 'click', function () {
+      searchOverlay && searchOverlay.classList.contains( 'is-open' ) ? closeSearch() : openSearch();
+    } );
+  }
+  if ( searchClose ) {
+    searchClose.addEventListener( 'click', closeSearch );
+  }
+  if ( searchOverlay ) {
+    searchOverlay.addEventListener( 'click', function ( e ) {
+      if ( e.target === searchOverlay ) closeSearch();
+    } );
+    // Focus trap: keep Tab inside overlay when open
+    searchOverlay.addEventListener( 'keydown', function ( e ) {
+      if ( e.key !== 'Tab' || ! searchOverlay.classList.contains( 'is-open' ) ) return;
+      var focusable = searchOverlay.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      var first = focusable[0];
+      var last  = focusable[ focusable.length - 1 ];
+      if ( e.shiftKey ) {
+        if ( document.activeElement === first ) { e.preventDefault(); last.focus(); }
+      } else {
+        if ( document.activeElement === last ) { e.preventDefault(); first.focus(); }
+      }
+    } );
+  }
+
+  // Keyboard shortcut: / or Cmd+K opens search; Escape closes it
+  document.addEventListener( 'keydown', function ( e ) {
+    if ( searchOverlay && searchOverlay.classList.contains( 'is-open' ) ) {
+      if ( e.key === 'Escape' ) closeSearch();
+      return;
+    }
+    var tag = document.activeElement ? document.activeElement.tagName : '';
+    if ( ( e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' ) ||
+         ( ( e.metaKey || e.ctrlKey ) && e.key === 'k' ) ) {
+      e.preventDefault();
+      openSearch();
+    }
+  } );
+
   // ── MOBILE NAV OPEN/CLOSE ──────────────────────────────────
   function closeNav() {
     if ( ! toggle ) return;
