@@ -15,6 +15,7 @@ define( 'RT_URI',     get_template_directory_uri() );
 require_once RT_DIR . '/inc/fallback-nav.php';
 require_once RT_DIR . '/inc/customizer.php';
 require_once RT_DIR . '/inc/section-settings.php';
+require_once RT_DIR . '/inc/webmention.php';
 
 
 // ── THEME SETUP ──────────────────────────────────────────────

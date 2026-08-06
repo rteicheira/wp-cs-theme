@@ -7,8 +7,9 @@
 	<div class="reading-time-float"><?php echo esc_html( rt_reading_time() ); ?></div>
 
 	<header class="single-post__header">
+		<a class="u-url" href="<?php echo esc_url( get_permalink() ); ?>" hidden></a>
 		<div class="single-post__meta">
-			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
+			<time class="dt-published" datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
 			<?php
 			$cats = get_the_category();
 			if ( $cats ) {
@@ -18,11 +19,11 @@
 					if ( $i < count( $cats ) - 1 ) echo ', ';
 				}
 			}
-			echo ' &middot; ' . esc_html( get_the_author() );
+			echo ' &middot; <span class="p-author h-card">' . esc_html( get_the_author() ) . '</span>';
 			?>
 			<span class="reading-time-inline"> &middot; <?php echo esc_html( rt_reading_time() ); ?></span>
 		</div>
-		<h1 class="single-post__title"><?php echo esc_html( get_the_title() ); ?></h1>
+		<h1 class="single-post__title p-name"><?php echo esc_html( get_the_title() ); ?></h1>
 		<?php
 		$post_skills = get_the_terms( get_the_ID(), 'skill' );
 		if ( $post_skills && ! is_wp_error( $post_skills ) ) : ?>
@@ -50,7 +51,7 @@
 		<?php echo $toc; ?>
 	<?php endif; ?>
 
-	<div class="post-content">
+	<div class="post-content e-content">
 		<?php the_content(); ?>
 	</div>
 
