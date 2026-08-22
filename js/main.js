@@ -72,7 +72,7 @@
       return;
     }
     var tag = document.activeElement ? document.activeElement.tagName : '';
-    if ( ( e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' ) ||
+    if ( ( e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && ! document.activeElement.isContentEditable ) ||
          ( ( e.metaKey || e.ctrlKey ) && e.key === 'k' ) ) {
       e.preventDefault();
       openSearch();

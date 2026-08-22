@@ -26,9 +26,7 @@
 			<div class="post-list">
 				<?php while ( have_posts() ) : the_post();
 					$_type       = get_post_type();
-					$_type_label = $_type === 'project'
-						? esc_html__( 'Project', 'russteicheira' )
-						: esc_html__( 'Post', 'russteicheira' );
+					$_type_label = $_type === 'project' ? 'Project' : 'Post';
 				?>
 				<article id="post-<?php the_ID(); ?>" class="post-entry">
 					<?php if ( has_post_thumbnail() ) : ?>
@@ -38,7 +36,7 @@
 					<?php endif; ?>
 					<div class="post-entry__body">
 						<div class="post-entry__meta">
-							<span class="search-result-type search-result-type--<?php echo esc_attr( $_type ); ?>"><?php echo $_type_label; ?></span>
+							<span class="search-result-type search-result-type--<?php echo esc_attr( $_type ); ?>"><?php echo esc_html( $_type_label ); ?></span>
 							<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></time>
 						</div>
 						<h2 class="post-entry__title">

@@ -511,7 +511,8 @@ function rt_wm_absolute_url( $href, $base ) {
 	if ( strpos( $href, '//' ) === 0 ) return $p['scheme'] . ':' . $href;
 	if ( strpos( $href, '/' )  === 0 ) return $p['scheme'] . '://' . $p['host'] . $href;
 	$dir = isset( $p['path'] ) ? rtrim( dirname( $p['path'] ), '/' ) . '/' : '/';
-	return $p['scheme'] . '://' . $p['host'] . $dir . ltrim( $href, './' );
+	if ( strpos( $href, './' ) === 0 ) $href = substr( $href, 2 );
+	return $p['scheme'] . '://' . $p['host'] . $dir . $href;
 }
 
 // ── MICROFORMATS: h-entry on single posts ─────────────────────────────────────
