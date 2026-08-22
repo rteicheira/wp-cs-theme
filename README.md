@@ -22,7 +22,7 @@ The homepage is assembled from independently controlled sections, each with conf
 > [!important]
 > **Minimum Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._6.2%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._7.4-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._5.7_/_10.3_-blue)
 >
-> **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.0%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
+> **Recommended Requirements:** ![Static Badge](https://img.shields.io/badge/WordPress-v._7.1%2B-green) ![Static Badge](https://img.shields.io/badge/PHP-v._8.0-blue) ![Static Badge](https://img.shields.io/badge/MySQL_/_MariaDB-v._8.0_/_10.6_-blue)
 
 ![Preview Screenshot](preview/screenshot.png)
 
