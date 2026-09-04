@@ -191,6 +191,31 @@ The nav and footer display a text logo derived from the first letter of each of 
 | ≤ 768px | Hamburger nav activates |
 | ≤ 640px | All grids → 1 col |
 
+## Cloudflare / Hosting Notes
+
+### CSP is managed by the host, not the theme
+
+The `rt_send_security_headers()` function in `functions.php` sets a `Content-Security-Policy` header, but on this particular hosting setup (Nexcess / NewFold Digital platform) the platform completely replaces that header before the response reaches the client. The live CSP is controlled by the platform and includes additional directives for Termly (cookie consent) and Cloudflare Insights.
+
+This means:
+
+- Changes to the CSP in PHP have no effect on the live site
+- To enforce a stricter CSP, create a **Cloudflare Transform Rule** (Rules → Transform Rules → Modify Response Header) that overwrites the `Content-Security-Policy` header at the edge
+- The `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy` headers set by the theme *are* passed through as-is
+
+### Cloudflare IP ranges in `functions.php`
+
+`rt_get_visitor_ip()` (used for contact-form rate limiting) validates whether `REMOTE_ADDR` belongs to Cloudflare before trusting the `CF-Connecting-IP` header. The Cloudflare IPv4 and IPv6 CIDR ranges are hardcoded in a static array inside that function.
+
+**These ranges change occasionally.** If rate limiting stops working correctly (all submissions appearing to come from one IP), the ranges may be stale. Verify the current list at:
+
+- <https://www.cloudflare.com/ips-v4>
+- <https://www.cloudflare.com/ips-v6>
+
+Update the `$cf_cidrs` array in `functions.php` accordingly.
+
+---
+
 ## Limitations
 
 There are a few known limitations:
