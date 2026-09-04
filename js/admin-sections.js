@@ -4,6 +4,7 @@
  * Strings injected via wp_localize_script as window.rtSectionsL10n
  */
 wp.domReady( function () {
+	if ( typeof rtSectionsL10n === 'undefined' ) { return; }
 	var el       = wp.element.createElement;
 	var useState = wp.element.useState;
 	var Popover  = wp.components.Popover;
@@ -122,6 +123,7 @@ wp.domReady( function () {
 			e.preventDefault();
 			var nav     = tab.closest( '.rt-tab-nav' );
 			var wrapper = tab.closest( '.rt-tab-wrapper' );
+			if ( ! wrapper ) return;
 			nav.querySelectorAll( '.nav-tab' ).forEach( function ( t ) {
 				t.classList.remove( 'nav-tab-active' );
 			} );
@@ -142,7 +144,8 @@ wp.domReady( function () {
 			document.querySelectorAll( '.rt-color-input' ).forEach( function ( input ) {
 				input.value = '';
 			} );
-			document.getElementById( 'submit' ).click();
+			var submitBtn = document.getElementById( 'submit' );
+			if ( submitBtn ) { submitBtn.click(); }
 		} );
 	}
 } );

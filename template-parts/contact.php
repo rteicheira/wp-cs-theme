@@ -44,7 +44,7 @@ if ( ! is_array( $links ) ) {
 			</div>
 
 			<div class="contact__form-wrap">
-				<form class="contact-form" id="contact-form" novalidate aria-label="<?php esc_attr_e( 'Contact form', 'russteicheira' ); ?>">
+				<form class="contact-form" id="contact-form" method="post" novalidate aria-label="<?php esc_attr_e( 'Contact form', 'russteicheira' ); ?>">
 					<div class="form-group">
 						<label for="contact-name"><?php esc_html_e( 'Your Name', 'russteicheira' ); ?></label>
 						<input type="text" id="contact-name" name="name" placeholder="<?php esc_attr_e( 'Jane Smith', 'russteicheira' ); ?>" required autocomplete="name" />

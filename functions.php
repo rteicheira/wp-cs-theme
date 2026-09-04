@@ -1046,10 +1046,14 @@ add_action( 'admin_enqueue_scripts', 'rt_expertise_field_counters' );
 // ── CONTACT FORM AJAX ─────────────────────────────────────────
 function rt_get_visitor_ip() {
 	static $cf_cidrs = array(
+		// IPv4
 		'173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22',
 		'141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20',
 		'197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13',
 		'104.24.0.0/14',   '172.64.0.0/13',   '131.0.72.0/22',
+		// IPv6
+		'2400:cb00::/32', '2606:4700::/32', '2803:f800::/32', '2405:b500::/32',
+		'2405:8100::/32', '2a06:98c0::/29', '2c0f:f248::/32',
 	);
 
 	$remote = sanitize_text_field( wp_unslash( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' ) );
@@ -1063,16 +1067,34 @@ function rt_get_visitor_ip() {
 }
 
 function rt_ip_in_ranges( $ip, $cidrs ) {
-	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+	$ip_bin = inet_pton( $ip );
+	if ( $ip_bin === false ) {
 		return false;
 	}
-	$ip_long = ip2long( $ip );
 	foreach ( $cidrs as $cidr ) {
 		list( $net, $bits ) = explode( '/', $cidr );
-		$mask = ~( ( 1 << ( 32 - (int) $bits ) ) - 1 );
-		if ( ( $ip_long & $mask ) === ( ip2long( $net ) & $mask ) ) {
-			return true;
+		$net_bin = inet_pton( $net );
+		if ( $net_bin === false || strlen( $net_bin ) !== strlen( $ip_bin ) ) {
+			continue;
 		}
+		$bits  = (int) $bits;
+		$bytes = strlen( $ip_bin );
+		$match = true;
+		for ( $i = 0; $i < $bytes; $i++ ) {
+			$remaining = $bits - $i * 8;
+			if ( $remaining >= 8 ) {
+				$mask = 0xff;
+			} elseif ( $remaining > 0 ) {
+				$mask = 0xff & ( 0xff << ( 8 - $remaining ) );
+			} else {
+				$mask = 0;
+			}
+			if ( ( ord( $ip_bin[ $i ] ) & $mask ) !== ( ord( $net_bin[ $i ] ) & $mask ) ) {
+				$match = false;
+				break;
+			}
+		}
+		if ( $match ) return true;
 	}
 	return false;
 }

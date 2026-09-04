@@ -103,9 +103,12 @@ $projects_header = rt_get_section_header( 'portfolio-content', array(
 		<?php endif; ?>
 
 		<div class="projects__cta">
-			<a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>" class="btn btn--outline">
+			<?php $archive_url = get_post_type_archive_link( 'project' ); ?>
+			<?php if ( $archive_url ) : ?>
+			<a href="<?php echo esc_url( $archive_url ); ?>" class="btn btn--outline">
 				<?php esc_html_e( 'All Projects', 'russteicheira' ); ?> →
 			</a>
+			<?php endif; ?>
 		</div>
 
 	</div>

@@ -19,6 +19,7 @@
     if ( ! searchOverlay ) return;
     closeNav();
     searchOverlay.classList.add( 'is-open' );
+    searchOverlay.removeAttribute( 'aria-hidden' );
     if ( searchToggle ) searchToggle.setAttribute( 'aria-expanded', 'true' );
     document.body.style.overflow = 'hidden';
     // rAF ensures element is visible before focusing (avoids scroll jump)
@@ -30,6 +31,7 @@
   function closeSearch() {
     if ( ! searchOverlay ) return;
     searchOverlay.classList.remove( 'is-open' );
+    searchOverlay.setAttribute( 'aria-hidden', 'true' );
     if ( searchToggle ) {
       searchToggle.setAttribute( 'aria-expanded', 'false' );
       searchToggle.focus();
@@ -71,8 +73,9 @@
       if ( e.key === 'Escape' ) closeSearch();
       return;
     }
-    var tag = document.activeElement ? document.activeElement.tagName : '';
-    if ( ( e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && ! document.activeElement.isContentEditable ) ||
+    var ae  = document.activeElement;
+    var tag = ae ? ae.tagName : '';
+    if ( ( e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && ! ( ae && ae.isContentEditable ) ) ||
          ( ( e.metaKey || e.ctrlKey ) && e.key === 'k' ) ) {
       e.preventDefault();
       openSearch();
@@ -84,7 +87,9 @@
     if ( ! toggle ) return;
     toggle.setAttribute( 'aria-expanded', 'false' );
     if ( menu ) menu.classList.remove( 'is-open' );
-    document.body.style.overflow = '';
+    if ( ! searchOverlay || ! searchOverlay.classList.contains( 'is-open' ) ) {
+      document.body.style.overflow = '';
+    }
   }
 
   if ( toggle && menu ) {
@@ -103,6 +108,7 @@
 
     document.addEventListener( 'keydown', function ( e ) {
       if ( e.key === 'Escape' ) {
+        if ( searchOverlay && searchOverlay.classList.contains( 'is-open' ) ) return;
         closeNav();
         if ( toggle ) toggle.focus();
       }
@@ -126,7 +132,9 @@
       btn.className        = 'sub-menu-toggle';
       btn.setAttribute( 'aria-expanded', 'false' );
       btn.setAttribute( 'aria-controls', subId );
-      btn.setAttribute( 'aria-label', 'Toggle submenu' );
+      var parentLink = li.querySelector( 'a' );
+      var parentText = parentLink ? parentLink.textContent.trim() : '';
+      btn.setAttribute( 'aria-label', parentText ? 'Toggle ' + parentText + ' submenu' : 'Toggle submenu' );
       btn.innerHTML        = '▾';
       li.style.position    = 'relative';
       li.appendChild( btn );
@@ -143,7 +151,8 @@
         if ( e.key === 'Escape' ) {
           li.classList.remove( 'sub-open' );
           btn.setAttribute( 'aria-expanded', 'false' );
-          li.querySelector( 'a' ).focus();
+          var link = li.querySelector( 'a' );
+          if ( link ) link.focus();
         }
       } );
     } );
@@ -261,6 +270,7 @@
       if ( document.hidden ) {
         clearTimeout( typeTimer );
       } else {
+        clearTimeout( typeTimer );
         typeTimer = setTimeout( type, 62 );
       }
     } );
@@ -295,10 +305,12 @@
       var required = form.querySelectorAll( '[required]' );
       required.forEach( function ( field ) {
         field.classList.remove( 'is-invalid' );
+        field.removeAttribute( 'aria-invalid' );
         var empty   = ! field.value.trim();
         var badMail = field.type === 'email' && ! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( field.value );
         if ( empty || badMail ) {
           field.classList.add( 'is-invalid' );
+          field.setAttribute( 'aria-invalid', 'true' );
           valid = false;
         }
       } );
@@ -336,6 +348,7 @@
     form.querySelectorAll( 'input, textarea' ).forEach( function ( field ) {
       field.addEventListener( 'input', function () {
         field.classList.remove( 'is-invalid' );
+        field.removeAttribute( 'aria-invalid' );
       } );
     } );
   }

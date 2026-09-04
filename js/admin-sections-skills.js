@@ -14,6 +14,7 @@ wp.domReady( function () {
 	var dropdown = document.getElementById( 'rt-skills-dropdown' );
 	var pillsEl  = document.getElementById( 'rt-skills-pills' );
 	var hiddenEl = document.getElementById( 'rt-skills-hidden' );
+	if ( ! input || ! dropdown || ! pillsEl || ! hiddenEl ) { return; }
 
 	function focusedIndex() {
 		var items = dropdown.querySelectorAll( 'li' );

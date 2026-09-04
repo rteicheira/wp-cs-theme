@@ -95,7 +95,7 @@ function rt_wm_receive( WP_REST_Request $request ) {
 	}
 
 	// rate-limit: 10 webmentions per source domain per hour
-	$rate_key = 'rt_wm_rate_' . md5( (string) parse_url( $source, PHP_URL_HOST ) );
+	$rate_key = 'rt_wm_rate_' . md5( strtolower( (string) parse_url( $source, PHP_URL_HOST ) ) );
 	$attempts = (int) get_transient( $rate_key );
 	if ( $attempts >= 10 ) {
 		return new WP_Error( 'rate_limited', 'Too many webmentions from this domain.', array( 'status' => 429 ) );
@@ -157,9 +157,10 @@ function rt_wm_process( array $args ) {
 	}
 
 	$response = wp_remote_get( $source, array(
-		'timeout'    => 10,
-		'user-agent' => 'WordPress/' . get_bloginfo( 'version' ) . ' webmention (russteicheira.net)',
-		'sslverify'  => true,
+		'timeout'             => 10,
+		'user-agent'          => 'WordPress/' . get_bloginfo( 'version' ) . ' webmention (russteicheira.net)',
+		'sslverify'           => true,
+		'limit_response_size' => 1048576,
 	) );
 
 	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
@@ -461,6 +462,7 @@ function rt_wm_extract_external_links( $content ) {
  * Returns the absolute endpoint URL, or null if none found.
  */
 function rt_wm_discover_endpoint( $url ) {
+	if ( ! rt_wm_is_safe_url( $url ) ) return null;
 	$head = wp_remote_head( $url, array( 'timeout' => 5, 'redirection' => 3 ) );
 	if ( ! is_wp_error( $head ) ) {
 		$ep = rt_wm_parse_link_header_rel( wp_remote_retrieve_header( $head, 'link' ), 'webmention' );

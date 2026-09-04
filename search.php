@@ -31,7 +31,7 @@
 				<article id="post-<?php the_ID(); ?>" class="post-entry">
 					<?php if ( has_post_thumbnail() ) : ?>
 						<div class="post-entry__thumb">
-							<a href="<?php echo esc_url( get_permalink() ); ?>"><?php the_post_thumbnail( 'blog-card', [ 'alt' => '' ] ); ?></a>
+							<a href="<?php echo esc_url( get_permalink() ); ?>" aria-label="<?php echo esc_attr( get_the_title() ); ?>"><?php the_post_thumbnail( 'blog-card', [ 'alt' => '' ] ); ?></a>
 						</div>
 					<?php endif; ?>
 					<div class="post-entry__body">
@@ -58,7 +58,7 @@
 								<?php endforeach; ?>
 							</div>
 						<?php endif; ?>
-						<a href="<?php echo esc_url( get_permalink() ); ?>" class="post-entry__more"><?php esc_html_e( 'View', 'russteicheira' ); ?> →</a>
+						<a href="<?php echo esc_url( get_permalink() ); ?>" class="post-entry__more"><?php esc_html_e( 'View', 'russteicheira' ); ?> <span class="screen-reader-text"><?php echo esc_html( get_the_title() ); ?></span>→</a>
 					</div>
 				</article>
 				<?php endwhile; ?>

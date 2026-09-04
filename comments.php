@@ -37,9 +37,9 @@ $_reg_count  = get_comments( array(
 				<?php foreach ( $_webm[ $type ] as $wm ) :
 					$avatar = get_comment_meta( $wm->comment_ID, 'webmention_avatar', true );
 					$name   = $wm->comment_author ?: __( 'Someone', 'russteicheira' );
-					$url    = esc_url( $wm->comment_author_url ?: get_comment_meta( $wm->comment_ID, 'webmention_source', true ) );
+					$url    = $wm->comment_author_url ?: get_comment_meta( $wm->comment_ID, 'webmention_source', true );
 				?>
-					<a class="webmentions__face" href="<?php echo $url; ?>" title="<?php echo esc_attr( $name ); ?>" target="_blank" rel="noopener noreferrer">
+					<a class="webmentions__face" href="<?php echo esc_url( $url ); ?>" title="<?php echo esc_attr( $name ); ?>" target="_blank" rel="noopener noreferrer">
 						<?php if ( $avatar ) : ?>
 							<img src="<?php echo esc_url( $avatar ); ?>" alt="<?php echo esc_attr( $name ); ?>" width="36" height="36" loading="lazy">
 						<?php else : ?>

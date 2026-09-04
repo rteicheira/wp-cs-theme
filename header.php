@@ -38,7 +38,7 @@
 				'container'      => false,
 				'menu_class'     => 'nav-links',
 				'fallback_cb'    => 'rt_fallback_nav',
-				'items_wrap'     => '<ul id="%1$s" class="%2$s" role="menubar">%3$s</ul>',
+				'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',
 			] );
 			?>
 
@@ -68,7 +68,7 @@
 	</div><!-- .nav-inner -->
 </nav><!-- .site-nav -->
 
-<div id="search-overlay" class="search-overlay" role="dialog" aria-label="<?php esc_attr_e( 'Search', 'russteicheira' ); ?>" aria-modal="true">
+<div id="search-overlay" class="search-overlay" role="dialog" aria-label="<?php esc_attr_e( 'Search', 'russteicheira' ); ?>" aria-modal="true" aria-hidden="true">
 	<button class="search-overlay__close" id="search-overlay-close" aria-label="<?php esc_attr_e( 'Close search', 'russteicheira' ); ?>">
 		<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 	</button>
