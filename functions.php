@@ -15,6 +15,7 @@ define( 'RT_URI',     get_template_directory_uri() );
 require_once RT_DIR . '/inc/fallback-nav.php';
 require_once RT_DIR . '/inc/customizer.php';
 require_once RT_DIR . '/inc/section-settings.php';
+require_once RT_DIR . '/inc/series-manager.php';
 require_once RT_DIR . '/inc/webmention.php';
 
 
@@ -1273,6 +1274,128 @@ function rt_register_skill_taxonomy() {
 	register_taxonomy_for_object_type( 'post_tag', 'project' );
 }
 add_action( 'init', 'rt_register_skill_taxonomy' );
+
+// ── SERIES TAXONOMY ───────────────────────────────────────────
+function rt_register_series_taxonomy() {
+	register_taxonomy( 'series', array( 'post' ), array(
+		'labels' => array(
+			'name'          => __( 'Series',            'russteicheira' ),
+			'singular_name' => __( 'Series',            'russteicheira' ),
+			'search_items'  => __( 'Search Series',     'russteicheira' ),
+			'all_items'     => __( 'All Series',        'russteicheira' ),
+			'edit_item'     => __( 'Edit Series',       'russteicheira' ),
+			'update_item'   => __( 'Update Series',     'russteicheira' ),
+			'add_new_item'  => __( 'Add New Series',    'russteicheira' ),
+			'new_item_name' => __( 'New Series Name',   'russteicheira' ),
+			'menu_name'     => __( 'Series',            'russteicheira' ),
+			'not_found'     => __( 'No series found.',  'russteicheira' ),
+		),
+		'hierarchical'       => true,   // category-style UI — a series is a named group
+		'show_ui'            => true,
+		'show_in_rest'       => true,
+		'show_admin_column'  => true,
+		'show_in_nav_menus'  => false,
+		'publicly_queryable' => true,
+		'query_var'          => true,
+		'rewrite'            => array( 'slug' => 'series' ),
+	) );
+}
+add_action( 'init', 'rt_register_series_taxonomy' );
+
+/**
+ * Return $ids reordered by the admin-saved series order stored in term meta,
+ * with any IDs not present in the stored list appended at the end.
+ *
+ * @param int[] $ids     Post IDs already filtered to those that should appear.
+ * @param int   $term_id The series term ID.
+ * @return int[]
+ */
+function rt_apply_series_order( array $ids, $term_id ) {
+	$stored = get_term_meta( (int) $term_id, '_rt_series_order', true );
+	if ( empty( $stored ) || ! is_array( $stored ) ) {
+		return $ids;
+	}
+	$ids_int    = array_map( 'intval', $ids );
+	$stored_int = array_map( 'intval', $stored );
+	$ordered    = array_values( array_intersect( $stored_int, $ids_int ) );
+	$remaining  = array_values( array_diff( $ids_int, $ordered ) );
+	return array_merge( $ordered, $remaining );
+}
+
+/**
+ * Build the "Part X of Y" series nav block for single posts.
+ * Posts in a series are ordered by publish date ASC.
+ * Returns empty string when the current post belongs to no series,
+ * or when it is the only post in the series.
+ */
+function rt_series_nav() {
+	if ( ! is_singular( 'post' ) ) return '';
+
+	$terms = get_the_terms( get_the_ID(), 'series' );
+	if ( ! $terms || is_wp_error( $terms ) ) return '';
+
+	$series = $terms[0]; // use the first series only
+
+	$posts = get_posts( array(
+		'post_type'        => 'post',
+		'post_status'      => 'publish',
+		'tax_query'        => array(
+			array(
+				'taxonomy' => 'series',
+				'field'    => 'term_id',
+				'terms'    => $series->term_id,
+			),
+		),
+		'orderby'          => 'date',
+		'order'            => 'ASC',
+		'posts_per_page'   => -1,
+		'fields'           => 'ids',
+		'suppress_filters' => false,
+	) );
+
+	$posts = rt_apply_series_order( array_map( 'intval', $posts ), $series->term_id );
+
+	if ( count( $posts ) < 2 ) return '';
+
+	$current_id  = get_the_ID();
+	$current_idx = array_search( $current_id, $posts, true );
+	if ( $current_idx === false ) return '';
+
+	$total = count( $posts );
+	$part  = $current_idx + 1;
+
+	$label = sprintf(
+		/* translators: 1: current part number, 2: total parts */
+		esc_html__( 'Part %1$d of %2$d', 'russteicheira' ),
+		$part,
+		$total
+	);
+
+	$html  = '<nav class="series-nav" aria-label="'
+		. esc_attr( sprintf( __( '%s — series navigation', 'russteicheira' ), $series->name ) ) . '">';
+	$html .= '<p class="series-nav__eyebrow">' . esc_html__( 'Series', 'russteicheira' ) . '</p>';
+	$html .= '<p class="series-nav__title">' . esc_html( $series->name ) . '</p>';
+	$html .= '<p class="series-nav__count">' . $label . '</p>';
+	$html .= '<ol class="series-nav__list">';
+
+	foreach ( $posts as $idx => $pid ) {
+		$is_current = ( (int) $pid === (int) $current_id );
+		if ( $is_current ) {
+			$html .= '<li class="series-nav__item series-nav__item--current" aria-current="page">'
+				. esc_html( get_the_title( $pid ) )
+				. '</li>';
+		} else {
+			$html .= '<li class="series-nav__item"><a href="'
+				. esc_url( get_permalink( $pid ) ) . '">'
+				. esc_html( get_the_title( $pid ) )
+				. '</a></li>';
+		}
+	}
+
+	$html .= '</ol></nav>';
+
+	return $html;
+}
 
 // Skill taxonomy archives show blog posts and projects, not expertise CPT entries.
 add_action( 'pre_get_posts', function ( $query ) {

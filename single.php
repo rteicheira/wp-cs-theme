@@ -1,8 +1,13 @@
 <?php get_header(); ?>
 
 <?php while ( have_posts() ) : the_post(); ?>
+<?php
+	$_series_nav  = rt_series_nav();
+	$_toc         = rt_get_toc();
+	$_has_sidebar = $_series_nav || $_toc;
+?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class( 'single-post' ); ?>>
+<article id="post-<?php the_ID(); ?>" <?php post_class( $_has_sidebar ? 'single-post has-sidebar' : 'single-post' ); ?>>
 
 	<div class="reading-time-float"><?php echo esc_html( rt_reading_time() ); ?></div>
 
@@ -41,30 +46,45 @@
 		<?php endif; ?>
 	</header>
 
-	<?php if ( has_post_thumbnail() ) : ?>
-		<div class="single-post__thumb">
-			<?php the_post_thumbnail( 'full', [ 'alt' => get_the_title() ] ); ?>
-		</div>
+	<?php if ( $_has_sidebar ) : ?>
+	<div class="single-post__layout">
 	<?php endif; ?>
 
-	<?php $toc = rt_get_toc(); if ( $toc ) : ?>
-		<?php echo $toc; ?>
+		<?php if ( has_post_thumbnail() ) : ?>
+			<div class="single-post__thumb">
+				<?php the_post_thumbnail( 'full', [ 'alt' => get_the_title() ] ); ?>
+			</div>
+		<?php endif; ?>
+
+	<?php if ( $_has_sidebar ) : ?>
+		<aside class="single-post__sidebar">
+			<?php if ( $_series_nav ) echo $_series_nav; ?>
+			<?php if ( $_toc ) echo $_toc; ?>
+		</aside>
+
+		<div class="single-post__body">
 	<?php endif; ?>
 
-	<div class="post-content e-content">
-		<?php the_content(); ?>
-	</div>
-
-	<?php
-	$tags = get_the_tags();
-	if ( $tags ) : ?>
-		<div class="post-tags">
-			<?php foreach ( $tags as $tag ) : ?>
-				<a href="<?php echo esc_url( get_tag_link( $tag ) ); ?>" class="post-tag">
-					#<?php echo esc_html( $tag->name ); ?>
-				</a>
-			<?php endforeach; ?>
+		<div class="post-content e-content">
+			<?php the_content(); ?>
 		</div>
+
+		<?php
+		$tags = get_the_tags();
+		if ( $tags ) : ?>
+			<div class="post-tags">
+				<?php foreach ( $tags as $tag ) : ?>
+					<a href="<?php echo esc_url( get_tag_link( $tag ) ); ?>" class="post-tag">
+						#<?php echo esc_html( $tag->name ); ?>
+					</a>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+
+	<?php if ( $_has_sidebar ) : ?>
+		</div><!-- .single-post__body -->
+
+	</div><!-- .single-post__layout -->
 	<?php endif; ?>
 
 	<?php echo rt_related_posts(); ?>

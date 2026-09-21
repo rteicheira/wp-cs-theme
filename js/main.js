@@ -2,6 +2,12 @@
  * RussTeicheira — main.js
  * Nav toggle, submenus, typewriter, contact form AJAX, smooth scroll.
  */
+// Disable scroll restoration so Chrome won't replay a horizontal scroll
+// position into the html scroll container created by overflow-x:hidden.
+if ( 'scrollRestoration' in history ) {
+  history.scrollRestoration = 'manual';
+}
+
 ( function () {
   'use strict';
 
@@ -354,6 +360,12 @@
   }
 
   // ── BACK TO TOP ────────────────────────────────────────────
+  // pageshow fires after scroll restoration; reset horizontal scroll here
+  // so the browser can't replay it after history.scrollRestoration='manual'.
+  window.addEventListener( 'pageshow', function () {
+    document.documentElement.scrollLeft = 0;
+  }, { passive: true } );
+
   var btt = document.querySelector( '.back-to-top' );
   if ( btt ) {
     window.addEventListener( 'scroll', function () {
@@ -361,7 +373,7 @@
     }, { passive: true } );
 
     btt.addEventListener( 'click', function () {
-      window.scrollTo( { top: 0, behavior: 'smooth' } );
+      window.scrollTo( { top: 0, left: 0, behavior: 'smooth' } );
     } );
   }
 

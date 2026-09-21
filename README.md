@@ -79,6 +79,7 @@ wp-cs-theme/
     ├── webmention.php         ← IndieWeb Webmention send/receive support
     ├── section-settings.php   ← Sections admin page (visibility, colors, bg images)
     ├── customizer.php         ← Customizer panels, settings, controls
+    ├── series-manager.php     ← Series Manager admin page (drag-to-reorder posts in a series)
     └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 ```
 
@@ -129,6 +130,15 @@ Displayed in the Certifications section. Admin-only — no public archive or sin
 - **Order** — controls display order via page-attributes
 
 ## Taxonomies
+
+### Series
+
+A taxonomy registered on **Posts** only, used to group related posts into a numbered series.
+
+- On single posts the **Series Navigation** block shows the full list of posts in the series, with the current post highlighted and its "Part X of Y" position in the header
+- Reading order defaults to publish date ASC; administrators can drag-and-drop a custom order at **WP Admin → Posts → Manage Series**
+- Custom order is stored as `_rt_series_order` term meta (array of post IDs); posts added since the last save are automatically appended at the end
+- The shared helper `rt_apply_series_order( array $ids, $term_id )` in `functions.php` handles the ordering logic for both the public series nav and the admin manager page
 
 ### Skill
 
@@ -181,6 +191,23 @@ Destination email = WP admin email (`Settings → General → Administration Ema
 
 The nav and footer display a text logo derived from the first letter of each of the first two words in **Settings → General → Site Title** (e.g. "Russ Teicheira" → `RT.`). If a site icon image is set in the Customizer, that image is used instead.
 
+## Single Post Layout
+
+When a post belongs to a series and/or has two or more H2/H3 headings, `single.php` renders a two-column layout:
+
+| Column | Content |
+| --- | --- |
+| Left (main) | Post header, featured image, post body, tags, related posts, post navigation, comments |
+| Right (sidebar, sticky on desktop) | Series Navigation (if post is in a series), Table of Contents (if ≥ 2 H2/H3 headings) |
+
+On screens ≤ 900px the layout collapses to a single column: the sidebar (TOC and series nav) stacks above the post body. On single-post pages without a series or headings, no sidebar is rendered and the full-width layout is used.
+
+The **Table of Contents** is generated server-side from the post's H2 and H3 tags. H3 items are nested beneath their parent H2 with a `—` prefix. The TOC is omitted entirely if fewer than two headings are found.
+
+The **back-to-top button** (`.back-to-top`) appears at bottom-right after the user scrolls 400px and returns to the top on click. On mobile (≤ 640px) it is anchored to the visual-viewport right edge using `left: calc(100dvw - width - gap)` rather than `right`, ensuring it stays on screen even when the layout viewport is wider than the visual viewport.
+
+A floating **reading time** indicator appears at top-right on screens wider than 960px. On mobile, reading time collapses to inline text in the post header.
+
 ## Responsive Breakpoints
 
 | Breakpoint | Behavior |
@@ -188,8 +215,9 @@ The nav and footer display a text logo derived from the first letter of each of 
 | > 1024px | Full desktop layout |
 | ≤ 1024px | Expertise grid → 2 col, footer adjusts |
 | ≤ 900px | About/Contact stack to 1 col, blog sidebar hides |
+| ≤ 901px | Single post switches from two-column (body + sidebar) to stacked |
 | ≤ 768px | Hamburger nav activates |
-| ≤ 640px | All grids → 1 col |
+| ≤ 640px | All grids → 1 col; back-to-top button anchored to visual viewport |
 
 ## Cloudflare / Hosting Notes
 

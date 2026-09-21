@@ -1,0 +1,101 @@
+.rt-series-manager p.description {
+	margin: 0.5rem 0 1.5rem;
+	color: #646970;
+}
+.rt-series-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	margin-bottom: 1.5rem;
+	max-width: 680px;
+}
+.rt-series-card__header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem 1.25rem 0.75rem;
+	border-bottom: 1px solid #f0f0f1;
+}
+.rt-series-card__name {
+	font-size: 14px;
+	font-weight: 600;
+	margin: 0;
+}
+.rt-series-card__name a { color: #1d2327; text-decoration: none; }
+.rt-series-card__name a:hover { color: #2271b1; }
+.rt-series-card__count {
+	font-size: 12px;
+	color: #646970;
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+.rt-series-list {
+	list-style: none;
+	margin: 0;
+	padding: 0.5rem 0;
+}
+.rt-series-item {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.4rem 1.25rem;
+	font-size: 13px;
+	color: #1d2327;
+	transition: background 0.1s;
+	cursor: default;
+}
+.rt-series-item:hover { background: #f6f7f7; }
+.rt-series-item--placeholder {
+	background: #f0f6fc !important;
+	border: 1px dashed #72aee6 !important;
+	height: 36px;
+	visibility: visible !important;
+}
+.rt-series-item__handle {
+	cursor: grab;
+	color: #8c8f94;
+	font-size: 16px;
+	line-height: 1;
+	user-select: none;
+	flex-shrink: 0;
+}
+.rt-series-item__handle:active { cursor: grabbing; }
+.ui-sortable-helper { box-shadow: 0 2px 8px rgba(0,0,0,.12); background: #fff; }
+.rt-series-item__title {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.rt-post-status {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 2px 6px;
+	border-radius: 3px;
+	flex-shrink: 0;
+}
+.rt-post-status--draft  { background: #f0f0f1; color: #646970; }
+.rt-post-status--future { background: #fcf9e8; color: #996800; }
+.rt-series-item__edit {
+	font-size: 12px;
+	color: #2271b1;
+	text-decoration: none;
+	flex-shrink: 0;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+.rt-series-item:hover .rt-series-item__edit { opacity: 1; }
+.rt-series-card__footer {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1.25rem 1rem;
+	border-top: 1px solid #f0f0f1;
+}
+.rt-save-status { font-size: 13px; }
+.rt-save-status.is-success { color: #00a32a; }
+.rt-save-status.is-error   { color: #d63638; }
