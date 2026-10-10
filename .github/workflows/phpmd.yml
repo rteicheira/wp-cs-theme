@@ -45,18 +45,18 @@ jobs:
         with:
           coverage: none
           tools: phpmd
-
+          
       - name: Run PHPMD
         continue-on-error: true
         run: |
           # 1. Ensure the target directory exists for the report file
           mkdir -p .github/workflows
           
-          # 2. Execute using the new v3.x 'analyze' command structure
+          # 2. Execute using the correct v3.x options
           phpmd analyze src/ \
             --format sarif \
-            --rulesets codesize \
-            --reportfile .github/workflows/phpmd-results.sarif
+            --ruleset codesize \
+            --reportfile-sarif .github/workflows/phpmd-results.sarif
 
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v4
