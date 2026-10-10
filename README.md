@@ -211,8 +211,6 @@ The provider script loads only on pages with a protected form, on first focus of
 - Turnstile: `script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`
 - reCAPTCHA: `script-src https://www.google.com https://www.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com`
 
-Tests: `php tests/spam-protection-unit.php` (add `--live` to also hit both providers' siteverify endpoints with their public test keys).
-
 ## Site Logo
 
 The nav and footer display a text logo derived from the first letter of each of the first two words in **Settings → General → Site Title** (e.g. "Russ Teicheira" → `RT.`). If a site icon image is set in the Customizer, that image is used instead.

@@ -2031,8 +2031,7 @@ pre.wp-block-code {
 }
 .comment-form-comment,
 .comment-form-author,
-.comment-form-email,
-.comment-form-url {
+.comment-form-email {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -2048,8 +2047,7 @@ pre.wp-block-code {
 .comment-form .required { color: var(--teal); }
 .comment-form textarea,
 .comment-form input[type="text"],
-.comment-form input[type="email"],
-.comment-form input[type="url"] {
+.comment-form input[type="email"] {
   display: block;
   width: 100%;
   font-family: var(--font-body);
@@ -2069,8 +2067,7 @@ pre.wp-block-code {
 }
 .comment-form textarea:focus,
 .comment-form input[type="text"]:focus,
-.comment-form input[type="email"]:focus,
-.comment-form input[type="url"]:focus {
+.comment-form input[type="email"]:focus {
   outline: none;
   border-color: var(--teal);
   box-shadow: 0 0 0 3px rgba(26,122,110,0.12);

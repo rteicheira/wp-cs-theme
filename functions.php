@@ -44,8 +44,7 @@ function rt_theme_setup() {
 		'footer'  => __( 'Footer Navigation',  'russteicheira' ),
 	) );
 
-	add_image_size( 'project-thumb', 800, 500, true );
-	add_image_size( 'blog-card',     600, 400, true );
+	add_image_size( 'blog-card', 600, 400, true );
 }
 add_action( 'after_setup_theme', 'rt_theme_setup' );
 
@@ -90,7 +89,6 @@ function rt_enqueue_assets() {
 	wp_localize_script( 'rt-main', 'RT', array(
 		'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
 		'nonce'         => wp_create_nonce( 'rt_nonce' ),
-		'themeUri'      => RT_URI,
 		'typingPhrases' => rt_get_typing_phrases(),
 		'contactError'  => __( 'Something went wrong. Please try again or email me directly.', 'russteicheira' ),
 	) );
@@ -454,7 +452,7 @@ add_action( 'init', 'rt_register_post_types' );
 
 
 // ── CPT CAPABILITIES ──────────────────────────────────────────
-// Grant primitive caps for all three custom CPTs to the administrator role.
+// Grant primitive caps for all four custom CPTs to the administrator role.
 // Runs on theme activation and once on the first admin_init after activation.
 if ( ! function_exists( 'rt_grant_cpt_caps' ) ) {
 	function rt_grant_cpt_caps() {
@@ -462,14 +460,8 @@ if ( ! function_exists( 'rt_grant_cpt_caps' ) ) {
 		if ( ! $administrator ) {
 			return;
 		}
-		$sets = array(
-			array( 'rt_capability',    'rt_capabilities'    ),
-			array( 'rt_expertise',     'rt_expertises'      ),
-			array( 'rt_project',       'rt_projects'        ),
-			array( 'rt_certification', 'rt_certifications'  ),
-		);
-		foreach ( $sets as $set ) {
-			list( $singular, $plural ) = $set;
+		$plurals = array( 'rt_capabilities', 'rt_expertises', 'rt_projects', 'rt_certifications' );
+		foreach ( $plurals as $plural ) {
 			foreach ( array(
 				"edit_{$plural}",
 				"edit_others_{$plural}",
@@ -1396,7 +1388,7 @@ function rt_series_nav() {
 	$html .= '<p class="series-nav__count">' . $label . '</p>';
 	$html .= '<ol class="series-nav__list">';
 
-	foreach ( $posts as $idx => $pid ) {
+	foreach ( $posts as $pid ) {
 		$is_current = ( (int) $pid === (int) $current_id );
 		if ( $is_current ) {
 			$html .= '<li class="series-nav__item series-nav__item--current" aria-current="page">'
