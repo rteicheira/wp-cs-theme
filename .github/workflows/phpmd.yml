@@ -47,7 +47,8 @@ jobs:
           tools: phpmd
 
       - name: Run PHPMD
-        run: phpmd . sarif codesize --reportfile phpmd-results.sarif
+        #run: phpmd . sarif codesize --reportfile phpmd-results.sarif
+        run: vendor/bin/phpmd src/ sarif phpmd.xml --reportfile .github/workflows/phpmd-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
@@ -55,3 +56,4 @@ jobs:
         with:
           sarif_file: .github/workflows/phpmd-results.sarif
           wait-for-processing: true
+          checkout_path: /home/runner/work/wp-cs-theme/wp-cs-theme
