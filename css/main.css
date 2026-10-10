@@ -1187,6 +1187,24 @@ a.card-tag:hover {
   color: #F0A0A0;
 }
 
+/* ── SPAM PROTECTION (contact + comment forms) ─────────────── */
+/* Children join the form's flex gap only when they have content. */
+.rt-captcha { display: contents; }
+.rt-captcha__widget:empty { display: none; }
+.rt-captcha__msg {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #E05555;
+}
+.rt-captcha__note {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+.rt-captcha__note a { color: inherit; text-decoration: underline; }
+/* Google allows hiding the v3 badge when .rt-captcha__note is shown instead. */
+.grecaptcha-badge { visibility: hidden; }
+
 /* ── FOOTER ──────────────────────────────────────────────────── */
 .site-footer {
   background: #08111C;

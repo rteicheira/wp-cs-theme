@@ -17,6 +17,7 @@ require_once RT_DIR . '/inc/customizer.php';
 require_once RT_DIR . '/inc/section-settings.php';
 require_once RT_DIR . '/inc/series-manager.php';
 require_once RT_DIR . '/inc/webmention.php';
+require_once RT_DIR . '/inc/spam-protection.php';
 
 
 // ── THEME SETUP ──────────────────────────────────────────────
@@ -1140,6 +1141,19 @@ function rt_handle_contact() {
 	// would let a broken SMTP connection bypass the rate limit entirely.
 	set_transient( $ip_key, $attempts + 1, HOUR_IN_SECONDS );
 
+	// Spam protection (when configured). 'unverified' = no token or provider
+	// down: send it anyway, flagged, rather than lose a real message.
+	if ( rt_captcha_protects( 'contact' ) ) {
+		$captcha = rt_captcha_verify( rt_captcha_posted_token(), 'contact' );
+		if ( 'fail' === $captcha ) {
+			wp_send_json_error( array( 'message' => __( "Your message couldn't be verified as coming from a person. Please try again or email me directly.", 'russteicheira' ) ) );
+			return;
+		}
+		if ( 'unverified' === $captcha ) {
+			$subject = '[Unverified] ' . $subject;
+		}
+	}
+
 	$sent = wp_mail( $to, '[russteicheira.net] ' . $subject, $body, $headers );
 
 	if ( $sent ) {
@@ -1225,11 +1239,15 @@ add_filter( 'the_generator', '__return_empty_string' );
 
 if ( ! function_exists( 'rt_send_security_headers' ) ) {
 	function rt_send_security_headers() {
+		$captcha    = rt_captcha_csp_sources();
+		$script_src = trim( "'self' 'unsafe-inline' " . implode( ' ', $captcha['script'] ) );
+		$frame_src  = $captcha['frame'] ? ' frame-src ' . implode( ' ', $captcha['frame'] ) . ';' : '';
+
 		header( 'X-Frame-Options: SAMEORIGIN' );
 		header( 'X-Content-Type-Options: nosniff' );
 		header( 'Referrer-Policy: strict-origin-when-cross-origin' );
 		header( 'Permissions-Policy: camera=(), microphone=(), geolocation=()' );
-		header( "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none';" );
+		header( "Content-Security-Policy: default-src 'self'; script-src {$script_src}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';{$frame_src} frame-ancestors 'none';" );
 		if ( is_ssl() ) {
 			header( 'Strict-Transport-Security: max-age=31536000; includeSubDomains' );
 		}

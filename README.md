@@ -57,6 +57,7 @@ wp-cs-theme/
 │       └── space-grotesk-v22-latin.woff2
 ├── js/
 │   ├── main.js                ← Nav, search overlay, typewriter, smooth scroll, contact AJAX
+│   ├── spam-protection.js     ← Turnstile / reCAPTCHA token handling for contact + comment forms
 │   ├── prism.js               ← Prism syntax highlighting library (vendor)
 │   ├── admin-sections.js      ← Sections admin page: color picker, media uploader, tab nav
 │   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
@@ -80,6 +81,7 @@ wp-cs-theme/
     ├── section-settings.php   ← Sections admin page (visibility, colors, bg images)
     ├── customizer.php         ← Customizer panels, settings, controls
     ├── series-manager.php     ← Series Manager admin page (drag-to-reorder posts in a series)
+    ├── spam-protection.php    ← Settings → Spam Protection (Cloudflare Turnstile / Google reCAPTCHA)
     └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 ```
 
@@ -186,6 +188,30 @@ Social/contact icons in the footer are pulled from the **Contact** section link 
 
 Submits via WordPress AJAX to `wp_mail()`. No plugin required.
 Destination email = WP admin email (`Settings → General → Administration Email Address`).
+
+## Spam Protection
+
+`Settings → Spam Protection` adds a bot check to the contact form and to blog comments (logged-out visitors only; webmentions and pingbacks are unaffected). Off until enabled with keys for the chosen provider:
+
+- **Cloudflare Turnstile** (default) — rendered with `appearance: interaction-only`, so it's invisible unless Cloudflare wants a click. Use the *Managed* widget mode.
+- **Google reCAPTCHA** — v3 (invisible, score threshold 0.1–0.9) or v2 checkbox.
+
+Each provider keeps its own keys, so switching doesn't lose them. Secret keys are never echoed back to the admin screen.
+
+The provider script loads only on pages with a protected form, on first focus of the form (reCAPTCHA v2: when the form nears the viewport). Outcomes:
+
+| Result | Contact form | Comment |
+|--------|--------------|---------|
+| Verified | Sent | Normal moderation rules |
+| Rejected (bad/expired/reused token, low v3 score, wrong host or form) | Error message | `wp_die()` with a back link |
+| Unverified (no token because the script was blocked, or provider unreachable) | Sent, subject prefixed `[Unverified]` | Held for moderation |
+
+**CSP:** the theme's own header adds the active provider's origins automatically, but the live header is set by the host (see below), so add them there or in the Cloudflare Transform Rule too:
+
+- Turnstile: `script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`
+- reCAPTCHA: `script-src https://www.google.com https://www.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com`
+
+Tests: `php tests/spam-protection-unit.php` (add `--live` to also hit both providers' siteverify endpoints with their public test keys).
 
 ## Site Logo
 

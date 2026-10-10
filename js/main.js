@@ -327,22 +327,28 @@ if ( 'scrollRestoration' in history ) {
       status.className = 'form-status';
       status.textContent = '';
 
-      var data = new FormData( form );
-      data.append( 'action', 'rt_contact' );
-      data.append( 'nonce',  RT.nonce );
+      // Spam protection (spam-protection.js), when enabled, fills its token field first.
+      var captcha = window.RTCaptcha ? window.RTCaptcha.token( form ) : Promise.resolve();
 
-      fetch( RT.ajaxUrl, { method: 'POST', body: data } )
+      captcha
+        .then( function () {
+          var data = new FormData( form );
+          data.append( 'action', 'rt_contact' );
+          data.append( 'nonce',  RT.nonce );
+          return fetch( RT.ajaxUrl, { method: 'POST', body: data } );
+        } )
         .then( function ( res ) { return res.json(); } )
         .then( function ( json ) {
           status.className   = 'form-status ' + ( json.success ? 'success' : 'error' );
           status.textContent = ( json.data && json.data.message ) ? json.data.message : RT.contactError;
           if ( json.success ) form.reset();
         } )
-        .catch( function () {
+        .catch( function ( err ) {
           status.className   = 'form-status error';
-          status.textContent = RT.contactError;
+          status.textContent = ( err && err.rtCaptcha ) ? err.message : RT.contactError;
         } )
         .finally( function () {
+          if ( window.RTCaptcha ) window.RTCaptcha.reset( form );
           submit.classList.remove( 'is-loading' );
           submit.disabled = false;
           if ( status.scrollIntoView ) {

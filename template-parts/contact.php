@@ -65,6 +65,8 @@ if ( ! is_array( $links ) ) {
 						<textarea id="contact-message" name="message" rows="5" placeholder="<?php esc_attr_e( "Tell me a bit about your project or what you're working on\xe2\x80\xa6", 'russteicheira' ); ?>" required></textarea>
 					</div>
 
+					<?php echo rt_captcha_field_html( 'contact' ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped when built. ?>
+
 					<div class="form-status" id="form-status" role="status"></div>
 
 					<button type="submit" class="btn btn--primary" id="contact-submit">
