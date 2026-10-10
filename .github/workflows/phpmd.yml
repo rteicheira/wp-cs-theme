@@ -52,10 +52,11 @@ jobs:
           # 1. Ensure the target directory exists for the report file
           mkdir -p .github/workflows
           
-          # 2. Execute using the correct v3.x options
-          phpmd analyze src/ \
+          # 2. Scan the current root directory (.) and exclude the .github folder
+          phpmd analyze . \
             --format sarif \
             --ruleset codesize \
+            --exclude .github \
             --reportfile-sarif .github/workflows/phpmd-results.sarif
 
       - name: Upload analysis results to GitHub
