@@ -47,9 +47,14 @@ jobs:
           tools: phpmd
 
       - name: Run PHPMD
-        #run: phpmd . sarif codesize --reportfile phpmd-results.sarif
-        run: vendor/bin/phpmd src/ sarif phpmd.xml --reportfile .github/workflows/phpmd-results.sarif
         continue-on-error: true
+        run: |
+          # 1. Create the target directory so PHPMD does not fail when generating the file
+          mkdir -p .github/workflows
+          
+          # 2. Use the global 'phpmd' binary configured via 'tools: phpmd'
+          # Note: Adjusted 'phpmd.xml' to 'codesize' or your valid custom ruleset path if needed
+          phpmd src/ sarif codesize --reportfile .github/workflows/phpmd-results.sarif
 
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v4
