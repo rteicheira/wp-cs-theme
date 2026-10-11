@@ -5,7 +5,7 @@
 >
 > While I highly respect and support developers who write everything from scratch, I had a highly specific vision in mind for this theme that I couldn't find anywhere else. Additionally, I wanted a hands-on project to level up my AI-assisted workflows, something that is increasingly relevant for my professional work. While I use AI for my daily analytics and scripting on the job, I hadn't yet built a project of this scale completely from the ground up.
 >
-> Over the last week, I've poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
+> Over the weeks, I've poured countless hours into this theme—tweaking components and constantly steering Claude to get it to do exactly what I wanted (Skynet isn't taking over just yet, trust me). Interestingly, for a tool designed to maximize efficiency, it introduced a massive amount of technical debt; I spent a day and a half solely troubleshooting and squashing bugs.
 >
 > Thank you for checking it out! If you decide to use it, I'd love to hear your feedback. **Please note that I do not currently plan to publish this to the official WordPress repository**. If you find this there, it wasn't published by me.
 >
