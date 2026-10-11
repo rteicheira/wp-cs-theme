@@ -82,6 +82,7 @@ wp-cs-theme/
     ├── customizer.php         ← Customizer panels, settings, controls
     ├── series-manager.php     ← Series Manager admin page (drag-to-reorder posts in a series)
     ├── spam-protection.php    ← Settings → Spam Protection (Cloudflare Turnstile / Google reCAPTCHA)
+    ├── hardening.php          ← XML-RPC off, usernames kept private
     └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 ```
 
@@ -211,7 +212,7 @@ The provider script loads only on pages with a protected form, on first focus of
 - A request without a completed check is refused, so bots can't skip it by leaving the token out.
 - A rejected token is refused.
 - Only an unreachable provider lets a login through, so an outage can't lock you out.
-- XML-RPC and application-password logins aren't checked.
+- Application-password logins aren't checked. XML-RPC is switched off entirely (see *Hardening* below), so it can't be used to get around the check.
 - Sites that saved their settings before login protection existed keep it unticked until it's switched on.
 - **Test first:** after saving, open the login page in a private window and make sure you can still log in.
 - **Locked out?** Add `define( 'RT_SPAM_PROTECTION_OFF', true );` to `wp-config.php`, log in, fix the settings, then remove the line. While it's set, the settings page shows a warning that protection is switched off.
@@ -220,6 +221,20 @@ The provider script loads only on pages with a protected form, on first focus of
 
 - Turnstile: `script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`
 - reCAPTCHA: `script-src https://www.google.com https://www.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com`
+
+## Hardening
+
+`inc/hardening.php`:
+
+- **XML-RPC is off.** `xmlrpc.php` answers with 403 and no methods are available, so bots can't use it to guess passwords around the login check. The block editor and webmentions use the REST API and keep working. Incoming **pingbacks** stop, because they arrive over XML-RPC; outgoing pingbacks still work. Anything else that needs XML-RPC (e.g. Jetpack or the WordPress mobile app) stops working until this is removed.
+- **Your username stays private:**
+  - the REST user list (`/wp-json/wp/v2/users`) is only available when logged in
+  - `?author=1` and `/author/…` pages return 404
+  - oEmbed data has no author
+  - there's no users sitemap
+  - the login page says "username, email address, or password is incorrect" without saying which
+
+  Posts still show the author's display name. If it's set to the login username, change *Display name publicly as* under Users → Profile.
 
 ## Site Logo
 

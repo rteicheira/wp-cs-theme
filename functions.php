@@ -18,6 +18,7 @@ require_once RT_DIR . '/inc/section-settings.php';
 require_once RT_DIR . '/inc/series-manager.php';
 require_once RT_DIR . '/inc/webmention.php';
 require_once RT_DIR . '/inc/spam-protection.php';
+require_once RT_DIR . '/inc/hardening.php';
 
 
 // ── THEME SETUP ──────────────────────────────────────────────
