@@ -1,16 +1,16 @@
 /**
  * RussTeicheira Theme — spam-protection.js
- * Cloudflare Turnstile / Google reCAPTCHA for the contact and comment forms
- * (Settings → Spam Protection; markup from rt_captcha_field_html()).
+ * Cloudflare Turnstile / Google reCAPTCHA for the contact, comment, and
+ * login forms (Settings → Spam Protection; markup from rt_captcha_field_html()).
  *
  * The provider script loads the first time a visitor focuses a protected form
  * (reCAPTCHA v2: when the form nears the viewport, since its checkbox must be
  * visible). Before sending, RTCaptcha.token( form ) puts a fresh token in the
  * hidden rt_captcha_token field. main.js calls it for the AJAX contact form;
- * native-submit forms (comments) are intercepted here.
+ * native-submit forms (comments, wp-login.php) are intercepted here.
  *
  * If the provider can't load (blocked or offline) the form is sent without a
- * token; the server lets it through flagged rather than losing it.
+ * token; the server decides (contact/comments: let through flagged; login: refused).
  */
 ( function () {
   'use strict';
@@ -208,7 +208,7 @@
 
     if ( ! box.dataset.nativeSubmit ) return;
 
-    // Native-submit form (comments): get a token, then submit for real.
+    // Native-submit form (comments, login): get a token, then submit for real.
     var button = form.querySelector( '[type="submit"]' );
 
     form.addEventListener( 'submit', function ( e ) {

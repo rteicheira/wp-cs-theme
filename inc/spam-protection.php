@@ -1,6 +1,6 @@
 <?php
 /**
- * Spam protection for the contact form and blog comments.
+ * Spam protection for the contact form, blog comments, and the login page.
  * WP Admin → Settings → Spam Protection
  *
  * Providers: Cloudflare Turnstile, or Google reCAPTCHA (v3 invisible / v2
@@ -12,6 +12,9 @@
  * Front end: rt_captcha_field_html() prints a .rt-captcha box inside the
  * form; js/spam-protection.js fills its hidden rt_captcha_token field.
  * Server: rt_captcha_verify() checks the token with the provider.
+ *
+ * Emergency switch: define( 'RT_SPAM_PROTECTION_OFF', true ); in
+ * wp-config.php turns every check off (e.g. if broken keys block logging in).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -22,13 +25,21 @@ const RT_CAPTCHA_OPTION = 'rt_spam_protection';
 // ── SETTINGS ──────────────────────────────────────────────────
 function rt_captcha_settings() {
 	$saved = get_option( RT_CAPTCHA_OPTION, array() );
+	$saved = is_array( $saved ) ? $saved : array();
+	// Login protection was added later: settings saved before then keep the
+	// login unchecked until it's switched on here, so an update can't
+	// suddenly put a check in front of the login.
+	if ( $saved && ! isset( $saved['protect_login'] ) ) {
+		$saved['protect_login'] = false;
+	}
 	return wp_parse_args(
-		is_array( $saved ) ? $saved : array(),
+		$saved,
 		array(
 			'enabled'          => false,
 			'provider'         => 'turnstile',
 			'protect_contact'  => true,
 			'protect_comments' => true,
+			'protect_login'    => true,
 			'ts_site_key'      => '',
 			'ts_secret_key'    => '',
 			'rc_version'       => 'v3',
@@ -43,6 +54,9 @@ function rt_captcha_settings() {
  * Enabled with both keys for the chosen provider.
  */
 function rt_captcha_active() {
+	if ( defined( 'RT_SPAM_PROTECTION_OFF' ) && RT_SPAM_PROTECTION_OFF ) {
+		return false;
+	}
 	$s      = rt_captcha_settings();
 	$prefix = 'turnstile' === $s['provider'] ? 'ts_' : 'rc_';
 	return $s['enabled'] && '' !== $s[ $prefix . 'site_key' ] && '' !== $s[ $prefix . 'secret_key' ];
@@ -51,14 +65,19 @@ function rt_captcha_active() {
 /**
  * Whether a form is protected right now.
  *
- * @param string $form 'contact' or 'comment'.
+ * @param string $form 'contact', 'comment', or 'login'.
  */
 function rt_captcha_protects( $form ) {
 	if ( ! rt_captcha_active() ) {
 		return false;
 	}
+	$keys = array(
+		'contact' => 'protect_contact',
+		'comment' => 'protect_comments',
+		'login'   => 'protect_login',
+	);
 	$s = rt_captcha_settings();
-	return 'comment' === $form ? (bool) $s['protect_comments'] : (bool) $s['protect_contact'];
+	return isset( $keys[ $form ] ) && (bool) $s[ $keys[ $form ] ];
 }
 
 function rt_captcha_sanitize( $input ) {
@@ -79,6 +98,7 @@ function rt_captcha_sanitize( $input ) {
 		'provider'         => ( isset( $input['provider'] ) && 'recaptcha' === $input['provider'] ) ? 'recaptcha' : 'turnstile',
 		'protect_contact'  => ! empty( $input['protect_contact'] ),
 		'protect_comments' => ! empty( $input['protect_comments'] ),
+		'protect_login'    => ! empty( $input['protect_login'] ),
 		'ts_site_key'      => $text( 'ts_site_key' ),
 		'ts_secret_key'    => $secret( 'ts_secret_key', 'ts_clear_secret' ),
 		'rc_version'       => ( isset( $input['rc_version'] ) && 'v2' === $input['rc_version'] ) ? 'v2' : 'v3',
@@ -139,9 +159,11 @@ function rt_captcha_render_settings() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Spam Protection', 'russteicheira' ); ?></h1>
-		<p><?php esc_html_e( 'Checks that the contact form and blog comments are sent by a person, not a bot. Choose Cloudflare Turnstile or Google reCAPTCHA; each keeps its own keys, so you can switch back and forth.', 'russteicheira' ); ?></p>
+		<p><?php esc_html_e( 'Checks that the contact form, blog comments, and the login page are used by a person, not a bot. Choose Cloudflare Turnstile or Google reCAPTCHA; each keeps its own keys, so you can switch back and forth.', 'russteicheira' ); ?></p>
 
-		<?php if ( $s['enabled'] && ! rt_captcha_active() ) : ?>
+		<?php if ( defined( 'RT_SPAM_PROTECTION_OFF' ) && RT_SPAM_PROTECTION_OFF ) : ?>
+			<div class="notice notice-warning inline"><p><?php esc_html_e( 'Spam protection is switched off in wp-config.php (RT_SPAM_PROTECTION_OFF), so these settings have no effect until that line is removed.', 'russteicheira' ); ?></p></div>
+		<?php elseif ( $s['enabled'] && ! rt_captcha_active() ) : ?>
 			<div class="notice notice-warning inline"><p><?php esc_html_e( 'Spam protection is turned on but isn\'t running yet — add both the site key and the secret key for the provider you chose.', 'russteicheira' ); ?></p></div>
 		<?php endif; ?>
 
@@ -160,8 +182,9 @@ function rt_captcha_render_settings() {
 						<fieldset>
 							<legend class="screen-reader-text"><?php esc_html_e( 'Forms to protect', 'russteicheira' ); ?></legend>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_contact]" value="1" <?php checked( $s['protect_contact'] ); ?>> <?php esc_html_e( 'Contact form', 'russteicheira' ); ?></label><br>
-							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_comments]" value="1" <?php checked( $s['protect_comments'] ); ?>> <?php esc_html_e( 'Blog comments', 'russteicheira' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Logged-in users are never checked. Webmentions and pingbacks are unaffected.', 'russteicheira' ); ?></p>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_comments]" value="1" <?php checked( $s['protect_comments'] ); ?>> <?php esc_html_e( 'Blog comments', 'russteicheira' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_login]" value="1" <?php checked( $s['protect_login'] ); ?>> <?php esc_html_e( 'Log in, password reset, and registration', 'russteicheira' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Logged-in users are never checked on comments. Webmentions and pingbacks are unaffected.', 'russteicheira' ); ?></p>
 						</fieldset>
 					</td>
 				</tr>
@@ -260,6 +283,16 @@ function rt_captcha_render_settings() {
 
 		<h2><?php esc_html_e( 'Before you turn it on', 'russteicheira' ); ?></h2>
 		<ul class="ul-disc">
+			<li><?php esc_html_e( 'Test first: after saving, open your login page in a private window and make sure you can still log in.', 'russteicheira' ); ?></li>
+			<li>
+				<?php
+				printf(
+					/* translators: %s: wp-config.php line */
+					esc_html__( 'If you\'re ever locked out (for example, the keys were deleted at the provider), add %s to wp-config.php, log in, fix the settings here, then remove that line.', 'russteicheira' ),
+					'<code>define( \'RT_SPAM_PROTECTION_OFF\', true );</code>'
+				);
+				?>
+			</li>
 			<li><?php esc_html_e( 'Content Security Policy: if your host or a Cloudflare Transform Rule sets the CSP header, allow the provider there too. Turnstile needs https://challenges.cloudflare.com in script-src and frame-src. reCAPTCHA needs https://www.google.com and https://www.gstatic.com in script-src, and https://www.google.com and https://recaptcha.google.com in frame-src.', 'russteicheira' ); ?></li>
 			<li><?php esc_html_e( 'Privacy: both services receive visitor and device information. Mention the one you use in your Privacy Policy.', 'russteicheira' ); ?></li>
 		</ul>
@@ -297,7 +330,7 @@ function rt_captcha_csp_sources() {
  * attribution Google requires when its badge is hidden. Also enqueues the
  * script. Empty when the form isn't protected.
  *
- * @param string $form 'contact' or 'comment' (also the provider "action").
+ * @param string $form 'contact', 'comment', or 'login' (also the provider "action").
  */
 function rt_captcha_field_html( $form ) {
 	if ( ! rt_captcha_protects( $form ) ) {
@@ -332,7 +365,9 @@ function rt_captcha_field_html( $form ) {
 		esc_attr( $mode ),
 		esc_attr( $key ),
 		esc_attr( $form ),
-		'comment' === $form ? ' data-native-submit="1"' : ''
+		// Comments and wp-login.php forms post normally; js/spam-protection.js
+		// gets the token first. The contact form is AJAX (main.js calls RTCaptcha).
+		in_array( $form, array( 'comment', 'login' ), true ) ? ' data-native-submit="1"' : ''
 	);
 
 	if ( 'recaptcha-v3' === $mode ) {
@@ -355,6 +390,30 @@ add_filter( 'comment_form_submit_field', function ( $submit_field ) {
 	return rt_captcha_field_html( 'comment' ) . $submit_field;
 } );
 
+// Login, lost-password, and registration forms on wp-login.php.
+function rt_captcha_login_field() {
+	echo rt_captcha_field_html( 'login' ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped inside.
+}
+add_action( 'login_form', 'rt_captcha_login_field' );
+add_action( 'lostpassword_form', 'rt_captcha_login_field' );
+add_action( 'register_form', 'rt_captcha_login_field' );
+
+// wp-login.php doesn't load the theme stylesheet: a little layout for the widget there.
+function rt_captcha_login_styles() {
+	if ( ! rt_captcha_protects( 'login' ) ) {
+		return;
+	}
+	wp_add_inline_style(
+		'login',
+		'.rt-captcha__widget:not(:empty){margin:0 0 16px}'
+		. '#loginform .rt-captcha__widget iframe[title*="reCAPTCHA"]{transform:scale(.88);transform-origin:0 0}' // v2 checkbox is 304px; the login box is narrower.
+		. '.rt-captcha__msg{margin:0 0 16px;color:#d63638}'
+		. '.rt-captcha__note{margin:0 0 16px;font-size:12px;color:#50575e}'
+		. '.grecaptcha-badge{visibility:hidden}'
+	);
+}
+add_action( 'login_enqueue_scripts', 'rt_captcha_login_styles' );
+
 
 // ── VERIFICATION ──────────────────────────────────────────────
 /**
@@ -372,11 +431,13 @@ function rt_captcha_posted_token() {
  *  - 'pass'       protection is off, or the provider confirmed a person.
  *  - 'fail'       invalid / expired / reused / low-score / wrong-site token: reject.
  *  - 'unverified' no token (the provider's script was blocked in the visitor's
- *                 browser) or the provider is unreachable: let it through,
- *                 flagged, so a real message is never lost.
+ *                 browser) or the provider is unreachable: callers decide —
+ *                 the contact form and comments let it through flagged so a
+ *                 real message is never lost; the login only tolerates an
+ *                 unreachable provider.
  *
  * @param string $token  Token from the form.
- * @param string $action 'contact' or 'comment' — must match the token's action.
+ * @param string $action 'contact', 'comment', or 'login' — must match the token's action.
  */
 function rt_captcha_verify( $token, $action ) {
 	if ( ! rt_captcha_active() ) {
@@ -444,6 +505,66 @@ function rt_captcha_verify( $token, $action ) {
 	}
 	return 'pass';
 }
+
+/**
+ * Login-page check, stricter than the contact form: a missing token is
+ * refused (otherwise a bot could skip the check by leaving it out). Only an
+ * unreachable provider lets a login through, so an outage can't lock you out.
+ *
+ * @return true|WP_Error
+ */
+function rt_captcha_check_login_request() {
+	$token = rt_captcha_posted_token();
+	if ( '' === $token ) {
+		return new WP_Error( 'rt_captcha_missing', __( '<strong>Error:</strong> Please complete the security check, then try again.', 'russteicheira' ) );
+	}
+	if ( 'fail' === rt_captcha_verify( $token, 'login' ) ) {
+		return new WP_Error( 'rt_captcha_failed', __( '<strong>Error:</strong> The security check didn\'t pass. Please try again.', 'russteicheira' ) );
+	}
+	return true;
+}
+
+/**
+ * Only real form posts to wp-login.php are checked — not XML-RPC, REST
+ * application passwords, or cookie logins, which also run 'authenticate'.
+ */
+function rt_captcha_is_login_post() {
+	global $pagenow;
+	return 'wp-login.php' === $pagenow && 'POST' === ( isset( $_SERVER['REQUEST_METHOD'] ) ? $_SERVER['REQUEST_METHOD'] : '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- compared to a literal.
+}
+
+function rt_captcha_check_login( $user ) {
+	// phpcs:ignore WordPress.Security.NonceVerification -- core login form has no nonce.
+	if ( ! rt_captcha_protects( 'login' ) || ! rt_captcha_is_login_post() || ! isset( $_POST['log'] ) ) {
+		return $user;
+	}
+	$check = rt_captcha_check_login_request();
+	return is_wp_error( $check ) ? $check : $user;
+}
+add_filter( 'authenticate', 'rt_captcha_check_login', 30 );
+
+function rt_captcha_check_lost_password( $errors ) {
+	if ( ! rt_captcha_protects( 'login' ) || ! rt_captcha_is_login_post() ) {
+		return;
+	}
+	$check = rt_captcha_check_login_request();
+	if ( is_wp_error( $check ) ) {
+		$errors->add( $check->get_error_code(), $check->get_error_message() );
+	}
+}
+add_action( 'lostpassword_post', 'rt_captcha_check_lost_password' );
+
+function rt_captcha_check_registration( $errors ) {
+	if ( ! rt_captcha_protects( 'login' ) || ! rt_captcha_is_login_post() ) {
+		return $errors;
+	}
+	$check = rt_captcha_check_login_request();
+	if ( is_wp_error( $check ) ) {
+		$errors->add( $check->get_error_code(), $check->get_error_message() );
+	}
+	return $errors;
+}
+add_filter( 'registration_errors', 'rt_captcha_check_registration' );
 
 /**
  * Check comments posted through wp-comments-post.php. Failures are rejected;

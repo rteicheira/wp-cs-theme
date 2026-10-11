@@ -57,7 +57,7 @@ wp-cs-theme/
 │       └── space-grotesk-v22-latin.woff2
 ├── js/
 │   ├── main.js                ← Nav, search overlay, typewriter, smooth scroll, contact AJAX
-│   ├── spam-protection.js     ← Turnstile / reCAPTCHA token handling for contact + comment forms
+│   ├── spam-protection.js     ← Turnstile / reCAPTCHA token handling for contact, comment + login forms
 │   ├── prism.js               ← Prism syntax highlighting library (vendor)
 │   ├── admin-sections.js      ← Sections admin page: color picker, media uploader, tab nav
 │   ├── admin-sections-skills.js ← Sections admin page: About section skills tag widget
@@ -191,7 +191,7 @@ Destination email = WP admin email (`Settings → General → Administration Ema
 
 ## Spam Protection
 
-`Settings → Spam Protection` adds a bot check to the contact form and to blog comments (logged-out visitors only; webmentions and pingbacks are unaffected). Off until enabled with keys for the chosen provider:
+`Settings → Spam Protection` adds a bot check to the contact form, blog comments (logged-out visitors only; webmentions and pingbacks are unaffected), and the login page (log in, password reset, registration). Each can be ticked on or off. Off until enabled with keys for the chosen provider:
 
 - **Cloudflare Turnstile** (default) — rendered with `appearance: interaction-only`, so it's invisible unless Cloudflare wants a click. Use the *Managed* widget mode.
 - **Google reCAPTCHA** — v3 (invisible, score threshold 0.1–0.9) or v2 checkbox.
@@ -206,7 +206,17 @@ The provider script loads only on pages with a protected form, on first focus of
 | Rejected (bad/expired/reused token, low v3 score, wrong host or form) | Error message | `wp_die()` with a back link |
 | Unverified (no token because the script was blocked, or provider unreachable) | Sent, subject prefixed `[Unverified]` | Held for moderation |
 
-**CSP:** the theme's own header adds the active provider's origins automatically, but the live header is set by the host (see below), so add them there or in the Cloudflare Transform Rule too:
+**Login is stricter** (log in, password reset, registration on `wp-login.php`):
+
+- A request without a completed check is refused, so bots can't skip it by leaving the token out.
+- A rejected token is refused.
+- Only an unreachable provider lets a login through, so an outage can't lock you out.
+- XML-RPC and application-password logins aren't checked.
+- Sites that saved their settings before login protection existed keep it unticked until it's switched on.
+- **Test first:** after saving, open the login page in a private window and make sure you can still log in.
+- **Locked out?** Add `define( 'RT_SPAM_PROTECTION_OFF', true );` to `wp-config.php`, log in, fix the settings, then remove the line. While it's set, the settings page shows a warning that protection is switched off.
+
+**CSP:** the theme's own header adds the active provider's origins automatically (front-end pages only; `wp-login.php` doesn't get the theme's header), but the live header is set by the host (see below). Add them there or in the Cloudflare Transform Rule too, and make sure the rule also covers `/wp-login.php` if login protection is on:
 
 - Turnstile: `script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`
 - reCAPTCHA: `script-src https://www.google.com https://www.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com`
