@@ -192,7 +192,7 @@ Destination email = WP admin email (`Settings → General → Administration Ema
 
 ## Spam Protection
 
-`Settings → Spam Protection` adds a bot check to the contact form, blog comments (logged-out visitors only; webmentions and pingbacks are unaffected), and the login page (log in, password reset, registration). Each can be ticked on or off. Off until enabled with keys for the chosen provider:
+`Settings → Spam Protection` adds a bot check to *Comment boxes* (logged-out visitors only; webmentions are unaffected), *Contact forms*, and *Log in, password reset, and registration* (`wp-login.php`). Each can be ticked on or off. Off until enabled with keys for the chosen provider:
 
 - **Cloudflare Turnstile** (default) — rendered with `appearance: interaction-only`, so it's invisible unless Cloudflare wants a click. Use the *Managed* widget mode.
 - **Google reCAPTCHA** — v3 (invisible, score threshold 0.1–0.9) or v2 checkbox.

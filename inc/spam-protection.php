@@ -181,10 +181,10 @@ function rt_captcha_render_settings() {
 					<td>
 						<fieldset>
 							<legend class="screen-reader-text"><?php esc_html_e( 'Forms to protect', 'russteicheira' ); ?></legend>
-							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_contact]" value="1" <?php checked( $s['protect_contact'] ); ?>> <?php esc_html_e( 'Contact form', 'russteicheira' ); ?></label><br>
-							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_comments]" value="1" <?php checked( $s['protect_comments'] ); ?>> <?php esc_html_e( 'Blog comments', 'russteicheira' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_comments]" value="1" <?php checked( $s['protect_comments'] ); ?>> <?php esc_html_e( 'Comment boxes', 'russteicheira' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_contact]" value="1" <?php checked( $s['protect_contact'] ); ?>> <?php esc_html_e( 'Contact forms', 'russteicheira' ); ?></label><br>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_login]" value="1" <?php checked( $s['protect_login'] ); ?>> <?php esc_html_e( 'Log in, password reset, and registration', 'russteicheira' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Logged-in users are never checked on comments. Webmentions and pingbacks are unaffected.', 'russteicheira' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Logged-in users are never checked on comments. Webmentions are unaffected.', 'russteicheira' ); ?></p>
 						</fieldset>
 					</td>
 				</tr>
