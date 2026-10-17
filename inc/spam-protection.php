@@ -63,12 +63,33 @@ function rt_captcha_active() {
 }
 
 /**
+ * Whether Wordfence is active and the theme should leave log-in security to it.
+ *
+ * Wordfence covers log in, password reset, and registration (brute-force
+ * limits, its own captcha, 2FA), so the theme's own checks for those step
+ * aside instead of doubling up. It doesn't protect theme forms or comments
+ * the way the theme does, so those checks always stay on. Active (not just
+ * installed) counts: an installed-but-inactive plugin protects nothing.
+ *
+ * Override: add_filter( 'rt_defer_to_wordfence', '__return_false' );
+ * keeps the theme's own log-in checks even with Wordfence active.
+ */
+function rt_defer_to_wordfence() {
+	$active = defined( 'WORDFENCE_VERSION' ) || class_exists( 'wordfence', false );
+	return (bool) apply_filters( 'rt_defer_to_wordfence', $active );
+}
+
+/**
  * Whether a form is protected right now.
  *
  * @param string $form 'contact', 'comment', or 'login'.
  */
 function rt_captcha_protects( $form ) {
 	if ( ! rt_captcha_active() ) {
+		return false;
+	}
+	// Log in / reset / registration / post passwords: Wordfence's job when it's active.
+	if ( 'login' === $form && rt_defer_to_wordfence() ) {
 		return false;
 	}
 	$keys = array(
@@ -184,7 +205,10 @@ function rt_captcha_render_settings() {
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_comments]" value="1" <?php checked( $s['protect_comments'] ); ?>> <?php esc_html_e( 'Comment boxes', 'russteicheira' ); ?></label><br>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_contact]" value="1" <?php checked( $s['protect_contact'] ); ?>> <?php esc_html_e( 'Contact forms', 'russteicheira' ); ?></label><br>
 							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[protect_login]" value="1" <?php checked( $s['protect_login'] ); ?>> <?php esc_html_e( 'Log in, password reset, and registration', 'russteicheira' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Logged-in users are never checked on comments. Webmentions are unaffected.', 'russteicheira' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Logged-in users are never checked on comments. Webmentions are unaffected. Password-protected posts use the log in setting.', 'russteicheira' ); ?></p>
+							<?php if ( rt_defer_to_wordfence() ) : ?>
+								<div class="notice notice-info inline"><p><?php esc_html_e( 'Wordfence is active, so it handles log in, password reset, registration, and password-protected posts. The log in setting above is ignored while Wordfence is active. The contact form and comments are still protected here.', 'russteicheira' ); ?></p></div>
+							<?php endif; ?>
 						</fieldset>
 					</td>
 				</tr>

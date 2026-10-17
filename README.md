@@ -82,6 +82,7 @@ wp-cs-theme/
     ├── customizer.php         ← Customizer panels, settings, controls
     ├── series-manager.php     ← Series Manager admin page (drag-to-reorder posts in a series)
     ├── spam-protection.php    ← Settings → Spam Protection (Cloudflare Turnstile / Google reCAPTCHA)
+    ├── form-guard.php         ← Anti-spam for every public form (honeypot, timestamp, rate limits, link check, comments, post passwords, password reset, no sign-ups)
     ├── hardening.php          ← XML-RPC off, usernames kept private
     └── fallback-nav.php       ← Hardcoded nav if no WP menu assigned
 ```
@@ -190,6 +191,13 @@ Social/contact icons in the footer are pulled from the **Contact** section link 
 Submits via WordPress AJAX to `wp_mail()`. No plugin required.
 Destination email = WP admin email (`Settings → General → Administration Email Address`).
 
+**Spam checks** come from `inc/form-guard.php`:
+- **Honeypot:** a hidden field only bots fill in. The bot is told the message was sent.
+- **Signed timestamp:** anything sent faster than a person can type is refused. Unlike a WordPress nonce, the timestamp never expires, so the form keeps working on cached pages.
+- **Rate limit:** 5 messages per visitor per hour.
+- **Turnstile/reCAPTCHA**, when switched on.
+- **Link check:** a message with more than 2 links is still sent, but with **[Possible spam]** in the subject and a warning not to click the links.
+
 ## Spam Protection
 
 `Settings → Spam Protection` adds a bot check to *Comment boxes* (logged-out visitors only; webmentions are unaffected), *Contact forms*, and *Log in, password reset, and registration* (`wp-login.php`). Each can be ticked on or off. Off until enabled with keys for the chosen provider:
@@ -217,6 +225,30 @@ The provider script loads only on pages with a protected form, on first focus of
 - **Test first:** after saving, open the login page in a private window and make sure you can still log in.
 - **Locked out?** Add `define( 'RT_SPAM_PROTECTION_OFF', true );` to `wp-config.php`, log in, fix the settings, then remove the line. While it's set, the settings page shows a warning that protection is switched off.
 
+**Other public forms** (`inc/form-guard.php`):
+
+- **Blog comments:** a honeypot and signed timestamp, and at most 5 comments per visitor per 10 minutes. These checks run before the Turnstile/reCAPTCHA check. Logged-in users, pingbacks, and webmentions are never checked. WordPress already holds link-heavy comments for moderation (Settings → Discussion).
+- **Password-protected posts:** the post-password form gets the honeypot, timestamp, and log-in Turnstile/reCAPTCHA check, plus 10 attempts per visitor per 10 minutes, so post passwords can't be guessed.
+- **Password reset:** at most 5 "Lost your password?" requests per visitor per hour, even with Turnstile/reCAPTCHA off.
+- **Registration is always off.** It's not a membership site, so no spam accounts can be created.
+- **Adding a form later:** follow the steps in `inc/form-guard.php`'s header.
+  1. Print `rt_form_guard_fields( 'my-form' )` inside the form, and `rt_captcha_field_html( 'contact' )` before the submit button.
+  2. Call `rt_form_guard_check( 'my-form' )` first in the handler.
+  3. Call `rt_form_guard_record( 'my-form' )` once the submission is accepted.
+
+**With Wordfence active,** the theme leaves log-in security to Wordfence. Wordfence covers log in, password reset, and registration with brute-force limits, its own captcha, and 2FA.
+- **Switched off:**
+  - the log-in, reset, and registration Turnstile/reCAPTCHA check
+  - the reset limit
+  - the post-password guard
+- **Still on:**
+  - the contact form and comment checks, because Wordfence doesn't protect those
+  - registration staying off
+  - Hardening
+- **Settings screen:** Settings → Spam Protection shows a notice while this is in effect.
+- **Active, not just installed:** an installed but deactivated Wordfence protects nothing.
+- **To keep the theme's checks anyway:** add `add_filter( 'rt_defer_to_wordfence', '__return_false' );`.
+
 **CSP:** the theme's own header adds the active provider's origins automatically (front-end pages only; `wp-login.php` doesn't get the theme's header), but the live header is set by the host (see below). Add them there or in the Cloudflare Transform Rule too, and make sure the rule also covers `/wp-login.php` if login protection is on:
 
 - Turnstile: `script-src https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`
@@ -235,6 +267,18 @@ The provider script loads only on pages with a protected form, on first focus of
   - the login page says "username, email address, or password is incorrect" without saying which
 
   Posts still show the author's display name. If it's set to the login username, change *Display name publicly as* under Users → Profile.
+
+## Webmentions
+
+`inc/webmention.php` receives webmentions at `/wp-json/webmention/1.0/endpoint` and sends them for links in your posts.
+
+- **New mentions wait for approval.** They go to **Comments → Pending**, and you get the usual moderation email. Anyone can publish a page that links to yours, so mentions aren't shown automatically. Approved mentions appear under the post. Updating an existing mention keeps its status, so approved stays approved and spam stays spam.
+- **Limits:** 20 per sending address per hour, and 10 per source domain per hour.
+- **Can't be aimed at internal addresses.** Every outgoing fetch uses `rt_wm_safe_request()`: checking a source, discovering an endpoint, and sending.
+  - The host name is looked up once and must be a public IPv4 address.
+  - cURL is then pinned to that exact address (`CURLOPT_RESOLVE`), so a DNS server can't switch it to an internal one between the check and the connection (DNS rebinding).
+  - Redirects are followed by hand and re-checked at every hop.
+  - If the connection can't be pinned, the request is refused.
 
 ## Site Logo
 

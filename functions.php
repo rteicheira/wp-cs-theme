@@ -18,6 +18,7 @@ require_once RT_DIR . '/inc/section-settings.php';
 require_once RT_DIR . '/inc/series-manager.php';
 require_once RT_DIR . '/inc/webmention.php';
 require_once RT_DIR . '/inc/spam-protection.php';
+require_once RT_DIR . '/inc/form-guard.php';
 require_once RT_DIR . '/inc/hardening.php';
 
 
@@ -1095,14 +1096,26 @@ function rt_ip_in_ranges( $ip, $cidrs ) {
 }
 
 function rt_handle_contact() {
-	check_ajax_referer( 'rt_nonce', 'nonce' );
-
-	// Rate limit: 5 submissions per IP per hour.
-	$ip_key    = 'rt_contact_rate_' . md5( rt_get_visitor_ip() );
-	$attempts = (int) get_transient( $ip_key );
-	if ( $attempts >= 5 ) {
-		wp_send_json_error( array( 'message' => __( 'Too many messages sent. Please try again later.', 'russteicheira' ) ) );
-		return;
+	// Spam checks (inc/form-guard.php): honeypot, signed timestamp (instead of a
+	// nonce, which goes stale on cached pages), 5 per visitor per hour,
+	// Turnstile/reCAPTCHA, link check.
+	$message_raw = isset( $_POST['message'] ) && is_string( $_POST['message'] ) ? wp_unslash( $_POST['message'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- only scanned for links.
+	$guard       = rt_form_guard_check( 'contact', array( 'limit' => 5, 'text' => $message_raw ) );
+	switch ( $guard['status'] ) {
+		case 'honeypot':
+			// Pretend it worked; bots don't need to know.
+			wp_send_json_success( array( 'message' => __( "Message sent! I'll be in touch soon.", 'russteicheira' ) ) );
+			return;
+		case 'expired':
+			wp_send_json_error( array( 'message' => __( 'This page was open too long or didn\'t load fully. Please refresh the page and send your message again.', 'russteicheira' ) ) );
+			return;
+		case 'busy':
+			wp_send_json_error( array( 'message' => __( 'Too many messages sent. Please try again later.', 'russteicheira' ) ) );
+			return;
+		case 'too_fast':
+		case 'spam':
+			wp_send_json_error( array( 'message' => __( "Your message couldn't be verified as coming from a person. Please try again or email me directly.", 'russteicheira' ) ) );
+			return;
 	}
 
 	$name    = isset( $_POST['name'] )    ? sanitize_text_field( wp_unslash( $_POST['name'] ) )        : '';
@@ -1132,19 +1145,14 @@ function rt_handle_contact() {
 
 	// Count every attempt regardless of delivery outcome — counting only on success
 	// would let a broken SMTP connection bypass the rate limit entirely.
-	set_transient( $ip_key, $attempts + 1, HOUR_IN_SECONDS );
+	rt_form_guard_record( 'contact', HOUR_IN_SECONDS );
 
-	// Spam protection (when configured). 'unverified' = no token or provider
-	// down: send it anyway, flagged, rather than lose a real message.
-	if ( rt_captcha_protects( 'contact' ) ) {
-		$captcha = rt_captcha_verify( rt_captcha_posted_token(), 'contact' );
-		if ( 'fail' === $captcha ) {
-			wp_send_json_error( array( 'message' => __( "Your message couldn't be verified as coming from a person. Please try again or email me directly.", 'russteicheira' ) ) );
-			return;
-		}
-		if ( 'unverified' === $captcha ) {
-			$subject = '[Unverified] ' . $subject;
-		}
+	// Doubtful messages are still sent, flagged, rather than lose a real one.
+	if ( in_array( 'links', $guard['flags'], true ) ) {
+		$subject = '[Possible spam] ' . $subject;
+		$body   .= "\n\n(This message contains several links, which is common in spam. Don't click them unless you recognize the sender.)";
+	} elseif ( in_array( 'unverified', $guard['flags'], true ) ) {
+		$subject = '[Unverified] ' . $subject;
 	}
 
 	$sent = wp_mail( $to, '[russteicheira.net] ' . $subject, $body, $headers );

@@ -94,6 +94,15 @@ function rt_wm_receive( WP_REST_Request $request ) {
 		return new WP_Error( 'target_not_found', 'Target URL does not resolve to a post on this site.', array( 'status' => 400 ) );
 	}
 
+	// rate-limit: 20 webmentions per sending IP per hour (many source domains
+	// from one sender would otherwise slip past the per-domain limit below)
+	$ip_key   = 'rt_wm_ip_' . md5( rt_get_visitor_ip() . wp_salt( 'nonce' ) );
+	$ip_count = (int) get_transient( $ip_key );
+	if ( $ip_count >= 20 ) {
+		return new WP_Error( 'rate_limited', 'Too many webmentions from this address.', array( 'status' => 429 ) );
+	}
+	set_transient( $ip_key, $ip_count + 1, HOUR_IN_SECONDS );
+
 	// rate-limit: 10 webmentions per source domain per hour
 	$rate_key = 'rt_wm_rate_' . md5( strtolower( (string) parse_url( $source, PHP_URL_HOST ) ) );
 	$attempts = (int) get_transient( $rate_key );
@@ -156,12 +165,12 @@ function rt_wm_process( array $args ) {
 		return;
 	}
 
-	$response = wp_remote_get( $source, array(
+	$response = rt_wm_safe_request( 'GET', $source, array(
 		'timeout'             => 10,
 		'user-agent'          => 'WordPress/' . get_bloginfo( 'version' ) . ' webmention (russteicheira.net)',
 		'sslverify'           => true,
 		'limit_response_size' => 1048576,
-	) );
+	), 3 );
 
 	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 		rt_wm_delete_mention( $source, $post_id );
@@ -199,6 +208,80 @@ function rt_wm_is_safe_url( $url ) {
 	return (bool) filter_var( $ip, FILTER_VALIDATE_IP,
 		FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
 	);
+}
+
+/**
+ * Resolve a host to a single public IPv4 address, or null if it isn't one.
+ */
+function rt_wm_public_ip( $host ) {
+	$host = preg_replace( '/:\d+$/', '', (string) $host );
+	if ( '' === $host ) return null;
+	$ip = gethostbyname( $host );
+	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) return null;
+	return filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ? $ip : null;
+}
+
+/**
+ * HTTP request to an outside URL that can't be steered at internal addresses.
+ *
+ * rt_wm_is_safe_url() alone isn't enough: the HTTP client looks the name up
+ * again when it connects, so a DNS server that changes its answer between
+ * the check and the connection (DNS rebinding) could aim it at, say,
+ * 169.254.169.254. Here the name is resolved and checked once, and cURL is
+ * pinned to that exact IP (CURLOPT_RESOLVE), so the Host header and TLS
+ * certificate checks stay correct for the original name. Redirects are
+ * followed by hand, re-checking every hop, up to $max_redirects. If the pin
+ * can't be applied (cURL unavailable), the request is refused.
+ *
+ * @return array|WP_Error Response from the final hop, or WP_Error.
+ */
+function rt_wm_safe_request( $method, $url, array $args = array(), $max_redirects = 0 ) {
+	for ( $hop = 0; $hop <= $max_redirects; $hop++ ) {
+		$scheme = strtolower( (string) parse_url( $url, PHP_URL_SCHEME ) );
+		$host   = strtolower( (string) parse_url( $url, PHP_URL_HOST ) );
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true ) || '' === $host ) {
+			return new WP_Error( 'rt_wm_unsafe_url', 'Not an http(s) URL.' );
+		}
+		$ip = rt_wm_public_ip( $host );
+		if ( ! $ip ) {
+			return new WP_Error( 'rt_wm_unsafe_url', 'URL does not resolve to a public address.' );
+		}
+		$port = (int) parse_url( $url, PHP_URL_PORT );
+		$port = $port ? $port : ( 'https' === $scheme ? 443 : 80 );
+
+		$pinned = false;
+		$pin    = function ( $handle ) use ( $host, $port, $ip, &$pinned ) {
+			if ( defined( 'CURLOPT_RESOLVE' ) ) {
+				curl_setopt( $handle, CURLOPT_RESOLVE, array( $host . ':' . $port . ':' . $ip ) );
+				$pinned = true;
+			}
+		};
+		add_action( 'http_api_curl', $pin, 10, 1 );
+		$response = wp_remote_request( $url, array_merge( $args, array(
+			'method'      => $method,
+			'redirection' => 0,
+		) ) );
+		remove_action( 'http_api_curl', $pin, 10 );
+
+		if ( ! $pinned ) {
+			return new WP_Error( 'rt_wm_unpinned', 'Could not pin the connection to the checked address; request refused.' );
+		}
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$code     = (int) wp_remote_retrieve_response_code( $response );
+		$location = wp_remote_retrieve_header( $response, 'location' );
+		if ( $code < 300 || $code > 399 || ! $location || $hop === $max_redirects ) {
+			return $response;
+		}
+		$url = rt_wm_absolute_url( is_array( $location ) ? end( $location ) : $location, $url );
+		if ( 'GET' !== $method && 'HEAD' !== $method ) {
+			$method = 'GET'; // 301/302/303 turn a POST into a GET.
+			unset( $args['body'] );
+		}
+	}
+	return new WP_Error( 'rt_wm_redirects', 'Too many redirects.' );
 }
 
 // ── LINK VERIFICATION ─────────────────────────────────────────────────────────
@@ -366,16 +449,22 @@ function rt_wm_upsert_mention( $post_id, $source, $target, array $parsed ) {
 		'comment_content'      => wp_strip_all_tags( $parsed['excerpt'] ?: $parsed['title'] ),
 		'comment_date'         => $date,
 		'comment_date_gmt'     => get_gmt_from_date( $date ),
-		'comment_approved'     => 1,
 		'comment_agent'        => 'Webmention',
 	);
 
 	if ( $existing ) {
+		// An update keeps whatever status it has (approved, pending, or spam).
 		$data['comment_ID'] = (int) $existing[0];
 		wp_update_comment( $data );
 		$cid = (int) $existing[0];
 	} else {
+		// New webmentions wait in Comments → Pending until approved: anyone can
+		// publish a page that links here, so they aren't shown automatically.
+		$data['comment_approved'] = 0;
 		$cid = wp_insert_comment( $data );
+		if ( $cid ) {
+			wp_notify_moderator( $cid );
+		}
 	}
 
 	if ( $cid ) {
@@ -433,7 +522,7 @@ add_action( 'rt_wm_send_event', function ( array $args ) {
 	if ( ! $ep || ! rt_wm_is_safe_url( $ep ) ) {
 		return;
 	}
-	wp_remote_post( $ep, array(
+	rt_wm_safe_request( 'POST', $ep, array(
 		'timeout' => 10,
 		'body'    => array( 'source' => $args['source'], 'target' => $args['target'] ),
 	) );
@@ -463,13 +552,13 @@ function rt_wm_extract_external_links( $content ) {
  */
 function rt_wm_discover_endpoint( $url ) {
 	if ( ! rt_wm_is_safe_url( $url ) ) return null;
-	$head = wp_remote_head( $url, array( 'timeout' => 5, 'redirection' => 3 ) );
+	$head = rt_wm_safe_request( 'HEAD', $url, array( 'timeout' => 5 ), 3 );
 	if ( ! is_wp_error( $head ) ) {
 		$ep = rt_wm_parse_link_header_rel( wp_remote_retrieve_header( $head, 'link' ), 'webmention' );
 		if ( $ep ) return rt_wm_absolute_url( $ep, $url );
 	}
 
-	$get = wp_remote_get( $url, array( 'timeout' => 8, 'redirection' => 3, 'limit_response_size' => 1048576 ) );
+	$get = rt_wm_safe_request( 'GET', $url, array( 'timeout' => 8, 'limit_response_size' => 1048576 ), 3 );
 	if ( is_wp_error( $get ) ) return null;
 
 	$dom = new DOMDocument();

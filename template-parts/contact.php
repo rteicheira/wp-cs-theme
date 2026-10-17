@@ -45,6 +45,7 @@ if ( ! is_array( $links ) ) {
 
 			<div class="contact__form-wrap">
 				<form class="contact-form" id="contact-form" method="post" novalidate aria-label="<?php esc_attr_e( 'Contact form', 'russteicheira' ); ?>">
+					<?php echo rt_form_guard_fields( 'contact' ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped inside (inc/form-guard.php). ?>
 					<div class="form-group">
 						<label for="contact-name"><?php esc_html_e( 'Your Name', 'russteicheira' ); ?></label>
 						<input type="text" id="contact-name" name="name" placeholder="<?php esc_attr_e( 'Jane Smith', 'russteicheira' ); ?>" required autocomplete="name" />

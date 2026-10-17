@@ -2337,3 +2337,12 @@ pre.wp-block-code {
   margin: 0;
   padding-left: calc(36px + 0.75rem);
 }
+
+/* Spam trap (inc/form-guard.php): off-screen for people, still in the DOM for bots. */
+.rt-hp {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
