@@ -265,6 +265,7 @@ The provider script loads only on pages with a protected form, on first focus of
   - oEmbed data has no author
   - there's no users sitemap
   - the login page says "username, email address, or password is incorrect" without saying which
+  - the "Lost your password?" form shows the same "Check your email" page whether or not the account exists (an email is only sent for a real one)
 
   Posts still show the author's display name. If it's set to the login username, change *Display name publicly as* under Users → Profile.
 

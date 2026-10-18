@@ -9,7 +9,8 @@
  *   incoming pingbacks, which arrive over XML-RPC, stop.
  * - Usernames aren't published: no REST user list for visitors, no author
  *   archives or ?author= redirects, no author links in oEmbed data, no users
- *   sitemap, and the login page doesn't say whether a username exists.
+ *   sitemap, and neither the login page nor the lost-password form says
+ *   whether a username or email address exists.
  *   Posts still show the author's display name.
  */
 
@@ -93,6 +94,31 @@ function rt_generic_login_errors( $errors ) {
 	return $errors;
 }
 add_filter( 'wp_login_errors', 'rt_generic_login_errors' );
+
+/**
+ * The "Lost your password?" form shouldn't reveal accounts either. Core says
+ * "There is no account with that username or email address" for an unknown
+ * one but sends a real one to "Check your email", and it never runs the
+ * login-errors filter above on that screen. So an unknown account gets the
+ * same "Check your email" page, with no email sent. Other errors (empty
+ * field, too many requests, the spam check) still show, without the "no
+ * account" line. Only on wp-login.php: plugins that call retrieve_password()
+ * themselves get the error back as usual.
+ */
+function rt_generic_lost_password( $errors, $user_data ) {
+	if ( $user_data || 'wp-login.php' !== $GLOBALS['pagenow'] ) {
+		return $errors;
+	}
+	$errors->remove( 'invalid_email' ); // Core adds it for an unknown email before this runs.
+	if ( $errors->has_errors() ) {
+		return $errors;
+	}
+	// Same destination core uses after a real reset request.
+	$redirect_to = ! empty( $_REQUEST['redirect_to'] ) ? wp_unslash( $_REQUEST['redirect_to'] ) : 'wp-login.php?checkemail=confirm'; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- core's lost-password form has no nonce; wp_safe_redirect() validates it.
+	wp_safe_redirect( $redirect_to );
+	exit;
+}
+add_filter( 'lostpassword_errors', 'rt_generic_lost_password', 99, 2 );
 
 /**
  * Author archives (/author/<username>/, ?author=1) return a real 404. It's a
