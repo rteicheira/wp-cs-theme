@@ -245,6 +245,99 @@ function rt_guard_comment( $commentdata ) {
 add_filter( 'preprocess_comment', 'rt_guard_comment', 1 );
 
 
+// ── TEXT-ONLY COMMENTS, NO WEBSITE URL ───────────────────────
+// The comment form has no Website field (functions.php removes it), but
+// WordPress's comment handler (wp-comments-post.php) still accepts a "url"
+// value from anything that posts to it directly — which is how spam bots
+// attach their links. And core lets comments keep some HTML (<a>, <b>,
+// <blockquote>…) and turns typed web addresses into links. So:
+//  - a logged-out submission that sends a "url" is a bot (people can't fill a
+//    field the form doesn't have) and is refused;
+//  - no comment ever stores a website URL, and none is shown as a link;
+//  - comment text is plain text only: all HTML is stripped when saved and
+//    again when shown (covers comments saved before this);
+//  - typed web addresses stay plain text, and a logged-out comment that
+//    contains one waits for moderation instead of being published.
+// Webmentions (inc/webmention.php) are a separate comment type and keep
+// their source/author links.
+
+function rt_is_regular_comment( $comment_type ) {
+	return '' === (string) $comment_type || 'comment' === $comment_type;
+}
+
+function rt_comment_no_url( $commentdata ) {
+	$type = isset( $commentdata['comment_type'] ) ? $commentdata['comment_type'] : '';
+	if ( ! rt_is_regular_comment( $type ) ) {
+		return $commentdata;
+	}
+	// phpcs:ignore WordPress.Security.NonceVerification -- only checks whether a field the form doesn't have was sent.
+	$sent_url = isset( $_POST['url'] ) ? trim( (string) wp_unslash( $_POST['url'] ) ) : '';
+	if ( '' !== $sent_url && did_action( 'pre_comment_on_post' ) && ! is_user_logged_in() ) {
+		wp_die(
+			esc_html__( 'Your comment couldn\'t be verified as coming from a person. Please go back and try again.', 'russteicheira' ),
+			esc_html__( 'Comment not posted', 'russteicheira' ),
+			array(
+				'response'  => 403,
+				'back_link' => true,
+			)
+		);
+	}
+	$commentdata['comment_author_url'] = '';
+	return $commentdata;
+}
+add_filter( 'preprocess_comment', 'rt_comment_no_url', 0 );
+
+/**
+ * Plain text only: strip every tag (links, formatting, scripts, styles) but
+ * keep the line breaks people typed.
+ */
+function rt_comment_plain_text( $content ) {
+	return trim( wp_strip_all_tags( (string) $content, false ) );
+}
+add_filter( 'pre_comment_content', 'rt_comment_plain_text', 1 );
+
+// Never show a website for a regular comment (rt_comment_no_url() above stops
+// new ones being stored; this also hides URLs saved before that).
+add_filter(
+	'get_comment_author_url',
+	function ( $url, $comment_id, $comment ) {
+		return ( $comment instanceof WP_Comment && ! rt_is_regular_comment( $comment->comment_type ) ) ? $url : '';
+	},
+	99,
+	3
+);
+
+// Shown as plain text too, so comments saved before this can't render HTML.
+add_filter(
+	'comment_text',
+	function ( $text, $comment = null ) {
+		if ( $comment instanceof WP_Comment && ! rt_is_regular_comment( $comment->comment_type ) ) {
+			return $text;
+		}
+		return wp_strip_all_tags( $text, false );
+	},
+	1,
+	2
+);
+// Typed web addresses stay plain text (core would turn them into links).
+remove_filter( 'comment_text', 'make_clickable', 9 );
+
+/**
+ * Logged-out comments that mention a web address wait for moderation.
+ */
+function rt_comment_links_need_approval( $approved, $commentdata ) {
+	if ( is_user_logged_in() || 'spam' === $approved || 'trash' === $approved || is_wp_error( $approved ) ) {
+		return $approved;
+	}
+	$type = isset( $commentdata['comment_type'] ) ? $commentdata['comment_type'] : '';
+	if ( rt_is_regular_comment( $type ) && rt_count_links( isset( $commentdata['comment_content'] ) ? $commentdata['comment_content'] : '' ) > 0 ) {
+		return 0;
+	}
+	return $approved;
+}
+add_filter( 'pre_comment_approved', 'rt_comment_links_need_approval', 20, 2 );
+
+
 // ── PASSWORD-PROTECTED POSTS ──────────────────────────────────
 // The post-password form posts to wp-login.php?action=postpass, which
 // WordPress doesn't rate-limit, so it could be used to guess post passwords.

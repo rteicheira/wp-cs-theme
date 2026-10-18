@@ -213,7 +213,8 @@ The provider script loads only on pages with a protected form, on first focus of
 |--------|--------------|---------|
 | Verified | Sent | Normal moderation rules |
 | Rejected (bad/expired/reused token, low v3 score, wrong host or form) | Error message | `wp_die()` with a back link |
-| Unverified (no token because the script was blocked, or provider unreachable) | Sent, subject prefixed `[Unverified]` | Held for moderation |
+| No token (the check never ran: a bot posting the form directly, or JavaScript turned off) | Sent, subject prefixed `[Unverified]` | Refused, with a "please complete the security check" message |
+| Provider unreachable (outage) | Sent, subject prefixed `[Unverified]` | Held for moderation |
 
 **Login is stricter** (log in, password reset, registration on `wp-login.php`):
 
@@ -228,6 +229,13 @@ The provider script loads only on pages with a protected form, on first focus of
 **Other public forms** (`inc/form-guard.php`):
 
 - **Blog comments:** a honeypot and signed timestamp, and at most 5 comments per visitor per 10 minutes. These checks run before the Turnstile/reCAPTCHA check. Logged-in users, pingbacks, and webmentions are never checked. WordPress already holds link-heavy comments for moderation (Settings → Discussion).
+- **Comments are text only, with no website URL.** The form has no Website field, but WordPress's comment handler still accepts a `url` value from anything that posts to it directly, which is how spam bots attach links. So:
+  - **Bots refused:** a logged-out comment that sends a website URL is refused, because only a bot can fill a field the form doesn't have.
+  - **No website stored or shown:** no comment stores a website, and none is shown as a link, including older comments.
+  - **Plain text:** all HTML (links, formatting, scripts) is stripped when a comment is saved, and again when it's shown, which also covers comments saved earlier.
+  - **No links from addresses:** typed web addresses stay plain text.
+  - **Moderation:** a logged-out comment containing a web address waits for approval.
+  - **Unchanged:** webmentions keep their author links, and anonymous comments through the REST API and XML-RPC stay off.
 - **Password-protected posts:** the post-password form gets the honeypot, timestamp, and log-in Turnstile/reCAPTCHA check, plus 10 attempts per visitor per 10 minutes, so post passwords can't be guessed.
 - **Password reset:** at most 5 "Lost your password?" requests per visitor per hour, even with Turnstile/reCAPTCHA off.
 - **Registration is always off.** It's not a membership site, so no spam accounts can be created.

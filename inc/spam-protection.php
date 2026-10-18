@@ -591,8 +591,9 @@ function rt_captcha_check_registration( $errors ) {
 add_filter( 'registration_errors', 'rt_captcha_check_registration' );
 
 /**
- * Check comments posted through wp-comments-post.php. Failures are rejected;
- * unverified comments are held for moderation instead of published.
+ * Check comments posted through wp-comments-post.php. A missing token or a
+ * failed check is refused; only a provider outage lets a comment through,
+ * held for moderation.
  */
 function rt_captcha_check_comment( $commentdata ) {
 	if ( ! did_action( 'pre_comment_on_post' ) || is_user_logged_in() || ! rt_captcha_protects( 'comment' ) ) {
@@ -603,7 +604,21 @@ function rt_captcha_check_comment( $commentdata ) {
 		return $commentdata;
 	}
 
-	$result = rt_captcha_verify( rt_captcha_posted_token(), 'comment' );
+	// No token at all: the visitor's browser never ran the check. That's
+	// what bots do — they post the form without running the provider's
+	// script — so it's refused, like the login form (it used to be held for
+	// moderation, which filled the queue with spam). Visitors with JavaScript
+	// off get a clear message.
+	$token = rt_captcha_posted_token();
+	if ( '' === $token ) {
+		wp_die(
+			esc_html__( 'Please complete the security check before posting your comment. If you don\'t see it, make sure JavaScript is turned on, then go back and try again.', 'russteicheira' ),
+			esc_html__( 'Comment not posted', 'russteicheira' ),
+			array( 'response' => 403, 'back_link' => true )
+		);
+	}
+
+	$result = rt_captcha_verify( $token, 'comment' );
 
 	if ( 'fail' === $result ) {
 		wp_die(
@@ -613,6 +628,8 @@ function rt_captcha_check_comment( $commentdata ) {
 		);
 	}
 
+	// The provider couldn't be reached (outage): hold for moderation rather
+	// than lose a real comment.
 	if ( 'unverified' === $result ) {
 		add_filter( 'pre_comment_approved', function ( $approved ) {
 			return ( 1 === $approved || '1' === $approved ) ? 0 : $approved;
