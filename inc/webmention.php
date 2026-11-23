@@ -407,7 +407,7 @@ function rt_wm_parse_source( $html, $source_url ) {
 /**
  * XPath helper: first element with a given CSS class, optionally scoped to a context node.
  */
-function rt_wm_xp_class( DOMXPath $xp, $class, DOMNode $ctx = null ) {
+function rt_wm_xp_class( DOMXPath $xp, $class, ?DOMNode $ctx = null ) {
 	$q = './/*[contains(concat(" ",normalize-space(@class)," ")," ' . $class . ' ")]';
 	$r = $ctx ? $xp->query( $q, $ctx ) : $xp->query( '/' . $q );
 	return ( $r && $r->length ) ? $r->item(0) : null;
